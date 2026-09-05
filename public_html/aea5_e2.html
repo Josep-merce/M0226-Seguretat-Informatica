@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E2 — LSSI i cookies · AEA5 · M0226 · Cicle SMX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F8FB;--surface:#FFFFFF;--ink:#1A2230;--muted:#5A6677;--hairline:#E3E8EF;
+    --accent:#E07B1E;--accent-soft:#FBEFE0;--slate-soft:#EDF1F6;--slate-ink:#3A4658;
+    --display:"Space Grotesk",-apple-system,BlinkMacSystemFont,sans-serif;
+    --body:"Inter",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased;padding:clamp(1.5rem,5vw,4.5rem) clamp(1.25rem,5vw,3rem) 3rem}
+  .wrap{max-width:1080px;margin:0 auto}
+
+  .back{font-family:var(--mono);font-size:.78rem;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;transition:color .2s ease}
+  .back:hover,.back:focus-visible{color:var(--accent)}
+
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);display:inline-flex;align-items:center;gap:.55rem;margin-top:1.6rem}
+  .eyebrow::before{content:"";width:1.6rem;height:2px;background:var(--accent);display:inline-block}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(2.1rem,5.5vw,3.4rem);letter-spacing:-.02em;line-height:1.05;margin:1.1rem 0 0}
+  h1 .code{color:var(--accent)}
+  .lede{color:var(--muted);font-size:clamp(1rem,1.6vw,1.18rem);max-width:60ch;margin-top:1.1rem}
+  .rule{height:1px;background:var(--hairline);margin:clamp(2rem,5vw,3rem) 0}
+
+  /* ---- Llista de materials (estil Classroom) ---- */
+  .resource-list{border-top:1px solid var(--hairline)}
+  .resource{display:flex;align-items:center;gap:1rem;padding:1.05rem .35rem;border-bottom:1px solid var(--hairline);text-decoration:none;color:inherit;transition:background .18s ease}
+  .resource:hover,.resource:focus-visible{background:var(--surface);outline:none}
+  .resource-icon{flex-shrink:0;width:38px;height:38px;border-radius:10px;background:var(--slate-soft);display:flex;align-items:center;justify-content:center;color:var(--slate-ink)}
+  .resource-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .resource-body{flex:1;min-width:0;display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
+  .resource-type{font-family:var(--mono);font-size:.7rem;color:var(--accent);background:var(--accent-soft);padding:.2rem .5rem;border-radius:6px;white-space:nowrap;flex-shrink:0}
+  .resource-title{font-family:var(--body);font-weight:500;font-size:.96rem;color:var(--ink);min-width:0;white-space:normal;word-break:break-word}
+  .resource-menu{flex-shrink:0;color:var(--muted);width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+  .resource-menu svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+
+  @media (max-width:640px){
+    .resource{flex-wrap:wrap}
+    .resource-body{width:100%;order:1}
+    .resource-menu{order:0;margin-left:auto}
+  }
+
+  /* ---- Recurs expandible (acordió: contingut ocult fins que es clica) ---- */
+  :root{--slide-accent:#D9455F;--slide-accent-soft:#FCEAEE}
+  details.resource-expand{border-bottom:1px solid var(--hairline)}
+  details.resource-expand > summary{display:flex;align-items:center;gap:1rem;padding:1.05rem .35rem;cursor:pointer;list-style:none;transition:background .18s ease}
+  details.resource-expand > summary::-webkit-details-marker{display:none}
+  details.resource-expand > summary:hover{background:var(--surface)}
+  details.resource-expand .resource-chevron{flex-shrink:0;width:20px;height:20px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:transform .22s ease}
+  details.resource-expand .resource-chevron svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  details.resource-expand[open] .resource-chevron{transform:rotate(90deg)}
+  .resource-content{padding:0 .35rem 1.6rem calc(38px + 1rem + .35rem)}
+  .resource-content h4{font-family:var(--display);font-weight:700;font-size:1.02rem;color:var(--slide-accent);letter-spacing:-.01em;margin:1.3rem 0 .5rem}
+  .resource-content h4:first-child{margin-top:.2rem}
+  .resource-content p{color:var(--slate-ink);font-size:.92rem;line-height:1.6;margin-bottom:.4rem}
+  .resource-content ul{margin:.3rem 0 .6rem 1.1rem;padding:0}
+  .resource-content li{color:var(--slate-ink);font-size:.92rem;line-height:1.55;margin-bottom:.25rem}
+  .resource-content strong{color:var(--ink);font-weight:600}
+  .slide-tag{display:inline-block;font-family:var(--mono);font-size:.68rem;color:var(--slide-accent);background:var(--slide-accent-soft);padding:.15rem .5rem;border-radius:6px;margin-bottom:.3rem}
+  .resource-content .slide-block{background:var(--bg);border:1px solid var(--hairline);border-radius:10px;padding:.9rem 1rem;margin:.6rem 0 1rem}
+  .resource-content .bib{font-size:.85rem;color:var(--muted);border-top:1px dashed var(--hairline);padding-top:.7rem;margin-top:.9rem}
+  .resource-content .bib a{color:var(--accent)}
+  @media (max-width:640px){
+    .resource-content{padding-left:.35rem}
+  }
+
+  footer{margin-top:clamp(2.5rem,6vw,4rem);padding-top:1.5rem;border-top:1px solid var(--hairline);color:var(--muted);font-size:.82rem;font-family:var(--mono);letter-spacing:.01em}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <a class="back" href="aea5.html">← Tornar a AEA5</a>
+    <div class="eyebrow">AEA5 · E2</div>
+    <h1>LSSI i cookies</h1>
+    <p class="lede">Llei de Serveis de la Societat de la Informació i del Comerç Electrònic: obligacions d'informació dels prestadors de serveis, comunicacions comercials i normativa sobre l'ús de cookies als llocs web.</p>
+  </header>
+
+  <div class="rule"></div>
+
+  <main class="resource-list">
+
+    <details class="resource-expand">
+      <summary>
+        <span class="resource-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+        </span>
+        <span class="resource-body">
+          <span class="resource-title">(Presentació) LSSI</span>
+        </span>
+        <span class="resource-chevron" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </span>
+      </summary>
+      <div class="resource-content">
+        <h4>LSSI o LSSICE</h4>
+        <p>La <strong>LSSI o LSSICE</strong> és l'acrònim de la Llei sobre Serveis de la Societat de la Informació i de Comerç Electrònic. Estableix les regles per a la utilització d'Internet en relació amb l'activitat econòmica generada per la compra-venda de productes i serveis a la xarxa, i regula també les comunicacions comercials per via electrònica i la informació prèvia i posterior als contractes electrònics.</p>
+
+        <h4>LSSI: a qui afecta?</h4>
+        <p>La llei considera activitats subjectes a la LSSI: la contractació de béns i serveis per via electrònica, el subministrament d'informació (per exemple, diaris o revistes digitals), l'allotjament en servidors propis, serveis o aplicacions facilitats per tercers, la provisió d'eines de cerca o d'enllaços a altres llocs d'Internet, la descàrrega d'arxius de vídeo o àudio, i el comerç electrònic en general. Sempre que aquesta activitat representi un benefici econòmic per al prestador.</p>
+        <ul>
+          <li><strong>Proveïdors de serveis:</strong> ISP (Vodafone, Movistar...), serveis d'allotjament de dades (Dropbox, OneDrive, hostings...), cercadors (Google, Bing, DuckDuckGo...) o enllaçadors web (Meneame, Google News, Feedly...).</li>
+          <li><strong>Empreses</strong> que realitzin activitat econòmica a través d'Internet.</li>
+          <li><strong>Particulars</strong> que realitzin activitat econòmica a través d'Internet.</li>
+        </ul>
+
+        <h4>Proveïdors de serveis: obligacions i responsabilitats</h4>
+        <ul>
+          <li>Informar a la seva web sobre el nom o denominació social, dades de contacte (domicili, correu, telèfon) i NIF.</li>
+          <li>Col·laborar amb les autoritats si se'ls requereix aturar o retirar un contingut de la xarxa.</li>
+          <li><strong>Cookies:</strong> informar els usuaris de manera clara sobre la seva utilització i finalitat, i demanar el seu consentiment. Es poden usar sense consentiment les cookies estrictament tècniques (per exemple, l'identificador d'una cistella de compra).</li>
+          <li>Informar sobre els mitjans de seguretat que fan servir per protegir els usuaris a Internet (virus, programari espia, spam), normalment a la mateixa web del proveïdor.</li>
+        </ul>
+
+        <h4>Empreses: obligacions i responsabilitats</h4>
+        <p>Les empreses s'han d'identificar a la seva web amb el nom o denominació social i dades de contacte, el número d'inscripció al registre mercantil, el NIF, i han d'informar sobre el preu dels seus productes (indicant si inclou l'IVA i les despeses d'enviament).</p>
+        <p>Si ofereixen contractació electrònica, han d'informar dels passos per formalitzar el contracte, si l'arxiven i si serà accessible pel client, la possibilitat de canviar o eliminar les dades introduïdes, la llengua o llengües del contracte, les condicions generals i han de demanar confirmació de l'acceptació (per exemple, un correu de confirmació).</p>
+
+        <h4>Particulars: obligacions i responsabilitats</h4>
+        <p>Un particular amb botiga en línia, o que ofereixi serveis o qualsevol activitat amb benefici econòmic directe o indirecte (per exemple, un simple blog amb publicitat de Google Ads), ja queda subjecte a les mateixes obligacions bàsiques: identificar-se amb nom, dades de contacte i NIF, informar del preu dels productes de manera clara indicant si inclou l'IVA, i complir els mateixos requisits de contractació electrònica que les empreses (passos del procés, arxivament del contracte, possibilitat de modificar dades, llengua, condicions generals i confirmació).</p>
+
+        <h4>Comunicacions comercials per via electrònica</h4>
+        <ul>
+          <li>Han de ser clarament identificables, incloent-hi la persona física o jurídica que les realitza; promocions, descomptes, premis i regals s'han d'identificar clarament com a tals, amb condicions d'accés i participació fàcilment accessibles.</li>
+          <li>No està permès l'enviament de comunicacions publicitàries per correu electrònic o mitjà equivalent que no hagin estat prèviament sol·licitades o autoritzades pel destinatari, tret que existeixi una relació contractual prèvia i les ofertes siguin de matèries similars a les ja contractades. Sempre s'ha d'oferir un procediment senzill i gratuït per oposar-se a l'ús de les dades amb finalitats promocionals.</li>
+          <li>L'ús de cookies o dispositius similars als equips dels destinataris requereix el seu consentiment previ, amb informació clara i completa sobre la seva utilització, excepte quan siguin estrictament necessàries per efectuar la transmissió d'una comunicació o per prestar un servei expressament sol·licitat per l'usuari.</li>
+        </ul>
+
+        <h4>Compres segures en el comerç electrònic</h4>
+        <ul>
+          <li>Vigilar la pàgina web: comprar productes de primeres marques en webs amb adreces estranyes ha de posar en alerta.</li>
+          <li>Comprovar les dades del titular: les webs de productes originals publiquen les dades de l'empresa, el contacte, l'adreça, etc.</li>
+          <li>Llegir els textos: sintaxi estranya, errors gramaticals greus o paraules desconegudes poden indicar una traducció automàtica.</li>
+          <li>Anar amb compte amb les ofertes: preus anormalment baixos respecte al preu habitual han de generar desconfiança.</li>
+          <li>Verificar els comentaris d'altres usuaris: cercar la URL en un buscador per veure si algú ha tingut problemes amb aquella pàgina.</li>
+        </ul>
+
+        <p class="bib"><strong>Bibliografia:</strong> Triviño Mosquera, I. (2020). <em>Seguridad Informática</em> (edició 2020, e-book). Paraninfo/Síntesis. Autor de la presentació: Enrique Pacheco Buil.</p>
+      </div>
+    </details>
+
+    <a class="resource" href="https://www.youtube.com/watch?v=RDbYDya0oio&authuser=0" target="_blank" rel="noopener">
+      <span class="resource-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+      </span>
+      <span class="resource-body">
+        <span class="resource-title">(Video) LSSI</span>
+      </span>
+    </a>
+
+    <details class="resource-expand">
+      <summary>
+        <span class="resource-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+        </span>
+        <span class="resource-body">
+          <span class="resource-title">(Presentació) Cookies</span>
+        </span>
+        <span class="resource-chevron" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </span>
+      </summary>
+      <div class="resource-content">
+        <h4>Cookies</h4>
+        <p>Mitjançant la utilització de cookies, els prestadors de serveis obtenen dades relacionades amb els usuaris que posteriorment podran ser utilitzades per a la prestació de serveis concrets, per servir publicitat o com a base per al desenvolupament de millores o nous productes i serveis.</p>
+
+        <h4>Cookies i la privacitat de l'usuari</h4>
+        <p>L'ús de dispositius d'emmagatzematge i recuperació de dades als equips terminals dels usuaris té implicacions importants sobre la seva privacitat, tal com detalla la Guia sobre l'ús de les cookies de l'AEPD. L'ús de cookies fa necessari implantar un sistema en què l'usuari sigui plenament conscient de la utilització d'aquests dispositius i de la seva finalitat, i conegui el destí de les dades i les implicacions que això té sobre la seva privacitat.</p>
+
+        <h4>Tipus de cookies: segons l'entitat que les gestiona</h4>
+        <ul>
+          <li><strong>Cookies pròpies:</strong> s'envien a l'equip terminal de l'usuari des d'un domini gestionat pel mateix editor que presta el servei sol·licitat.</li>
+          <li><strong>Cookies de tercers:</strong> s'envien des d'un domini que no gestiona l'editor, sinó una altra entitat que tracta les dades obtingudes.</li>
+        </ul>
+
+        <h4>Tipus de cookies: segons el temps que romanen actives</h4>
+        <ul>
+          <li><strong>Cookies de sessió:</strong> recapten i emmagatzemen dades mentre l'usuari accedeix a la pàgina web.</li>
+          <li><strong>Cookies persistents:</strong> les dades resten emmagatzemades i es poden accedir i tractar durant un període definit pel responsable, que pot anar d'uns minuts a diversos anys.</li>
+        </ul>
+
+        <h4>Tipus de cookies: segons la finalitat</h4>
+        <ul>
+          <li><strong>Tècniques:</strong> permeten la navegació i l'ús de les funcions del lloc web (gestionar la sessió, el procés de compra, un pagament, el control del frau, elements de seguretat, difusió de vídeo o so, contingut dinàmic o compartició a xarxes socials).</li>
+          <li><strong>De preferències o personalització:</strong> recorden informació com l'idioma, el nombre de resultats de cerca o l'aspecte del servei segons el navegador o la regió d'accés.</li>
+          <li><strong>D'anàlisi o mesurament:</strong> permeten fer seguiment del comportament dels usuaris i mesurar l'activitat del lloc per introduir-hi millores.</li>
+          <li><strong>De publicitat comportamental:</strong> emmagatzemen l'observació continuada dels hàbits de navegació per desenvolupar un perfil i mostrar publicitat en funció d'aquest.</li>
+        </ul>
+
+        <h4>Obligacions: transparència i informació completa</h4>
+        <ul>
+          <li>Definició i funció genèrica de les cookies, i informació sobre el tipus utilitzat i la seva finalitat.</li>
+          <li>Identificació de qui les utilitza i, si escau, informació sobre transferències de dades a tercers països o elaboració de perfils amb decisions automatitzades.</li>
+          <li>Període de conservació de les dades i manera d'acceptar, denegar, revocar el consentiment o eliminar les cookies.</li>
+          <li>La informació ha de ser concisa, transparent i intel·ligible, amb llenguatge clar i senzill, i fàcilment accessible (per exemple, un enllaç visible a la "política de cookies").</li>
+        </ul>
+
+        <h4>Obligacions: consentiment</h4>
+        <ul>
+          <li>Cal obtenir el consentiment de l'usuari; la inactivitat per si sola no és vàlida.</li>
+          <li>L'usuari ha de ser informat de manera clara i prèvia, separada de qualsevol altre assumpte.</li>
+          <li>L'usuari sempre podrà negar-se a acceptar les cookies.</li>
+          <li>El consentiment es pot obtenir mitjançant botons d'acceptació, però no és vàlida la modalitat de "continuar navegant".</li>
+          <li>El consentiment l'ha de prestar el mateix destinatari del servei de la societat de la informació.</li>
+        </ul>
+
+        <p class="bib"><strong>Bibliografia:</strong> Triviño Mosquera, I. (2020). <em>Seguridad Informática</em> (edició 2020, e-book). Paraninfo/Síntesis. Autor de la presentació: Enrique Pacheco Buil.</p>
+      </div>
+    </details>
+
+    <a class="resource" href="https://www.youtube.com/watch?v=ub9H4e7mySQ" target="_blank" rel="noopener">
+      <span class="resource-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+      </span>
+      <span class="resource-body">
+        <span class="resource-title">(Video) Què són les cookies?</span>
+      </span>
+    </a>
+
+    <a class="resource" href="https://confilegal.com/20240718-la-audiencia-nacional-confirma-la-multa-de-30-000-que-la-aepd-puso-a-iberia-por-incumplir-la-politica-de-cookies/" target="_blank" rel="noopener">
+      <span class="resource-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
+      </span>
+      <span class="resource-body">
+        <span class="resource-title">(Noticia) Cookies a juicio</span>
+      </span>
+    </a>
+
+  </main>
+
+  <footer>
+    Institut La Mercè · Formació Professional · Seguretat Informàtica
+  </footer>
+
+</div>
+</body>
+</html>
