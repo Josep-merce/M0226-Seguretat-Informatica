@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E3 — Llicències · AEA5 · M0226 · Cicle SMX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F8FB;--surface:#FFFFFF;--ink:#1A2230;--muted:#5A6677;--hairline:#E3E8EF;
+    --accent:#E07B1E;--accent-soft:#FBEFE0;--slate-soft:#EDF1F6;--slate-ink:#3A4658;
+    --display:"Space Grotesk",-apple-system,BlinkMacSystemFont,sans-serif;
+    --body:"Inter",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased;padding:clamp(1.5rem,5vw,4.5rem) clamp(1.25rem,5vw,3rem) 3rem}
+  .wrap{max-width:1080px;margin:0 auto}
+
+  .back{font-family:var(--mono);font-size:.78rem;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;transition:color .2s ease}
+  .back:hover,.back:focus-visible{color:var(--accent)}
+
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);display:inline-flex;align-items:center;gap:.55rem;margin-top:1.6rem}
+  .eyebrow::before{content:"";width:1.6rem;height:2px;background:var(--accent);display:inline-block}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(2.1rem,5.5vw,3.4rem);letter-spacing:-.02em;line-height:1.05;margin:1.1rem 0 0}
+  h1 .code{color:var(--accent)}
+  .lede{color:var(--muted);font-size:clamp(1rem,1.6vw,1.18rem);max-width:60ch;margin-top:1.1rem}
+  .rule{height:1px;background:var(--hairline);margin:clamp(2rem,5vw,3rem) 0}
+
+  /* ---- Llista de materials (estil Classroom) ---- */
+  .resource-list{border-top:1px solid var(--hairline)}
+  .resource{display:flex;align-items:center;gap:1rem;padding:1.05rem .35rem;border-bottom:1px solid var(--hairline);text-decoration:none;color:inherit;transition:background .18s ease}
+  .resource:hover,.resource:focus-visible{background:var(--surface);outline:none}
+  .resource-icon{flex-shrink:0;width:38px;height:38px;border-radius:10px;background:var(--slate-soft);display:flex;align-items:center;justify-content:center;color:var(--slate-ink)}
+  .resource-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .resource-body{flex:1;min-width:0;display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
+  .resource-type{font-family:var(--mono);font-size:.7rem;color:var(--accent);background:var(--accent-soft);padding:.2rem .5rem;border-radius:6px;white-space:nowrap;flex-shrink:0}
+  .resource-title{font-family:var(--body);font-weight:500;font-size:.96rem;color:var(--ink);min-width:0;white-space:normal;word-break:break-word}
+  .resource-menu{flex-shrink:0;color:var(--muted);width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+  .resource-menu svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+
+  @media (max-width:640px){
+    .resource{flex-wrap:wrap}
+    .resource-body{width:100%;order:1}
+    .resource-menu{order:0;margin-left:auto}
+  }
+
+  /* ---- Recurs expandible (acordió: contingut ocult fins que es clica) ---- */
+  :root{--slide-accent:#D9455F;--slide-accent-soft:#FCEAEE}
+  details.resource-expand{border-bottom:1px solid var(--hairline)}
+  details.resource-expand > summary{display:flex;align-items:center;gap:1rem;padding:1.05rem .35rem;cursor:pointer;list-style:none;transition:background .18s ease}
+  details.resource-expand > summary::-webkit-details-marker{display:none}
+  details.resource-expand > summary:hover{background:var(--surface)}
+  details.resource-expand .resource-chevron{flex-shrink:0;width:20px;height:20px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:transform .22s ease}
+  details.resource-expand .resource-chevron svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  details.resource-expand[open] .resource-chevron{transform:rotate(90deg)}
+  .resource-content{padding:0 .35rem 1.6rem calc(38px + 1rem + .35rem)}
+  .resource-content h4{font-family:var(--display);font-weight:700;font-size:1.02rem;color:var(--slide-accent);letter-spacing:-.01em;margin:1.3rem 0 .5rem}
+  .resource-content h4:first-child{margin-top:.2rem}
+  .resource-content p{color:var(--slate-ink);font-size:.92rem;line-height:1.6;margin-bottom:.4rem}
+  .resource-content ul,.resource-content ol{margin:.3rem 0 .6rem 1.1rem;padding:0}
+  .resource-content li{color:var(--slate-ink);font-size:.92rem;line-height:1.55;margin-bottom:.25rem}
+  .resource-content strong{color:var(--ink);font-weight:600}
+  .slide-tag{display:inline-block;font-family:var(--mono);font-size:.68rem;color:var(--slide-accent);background:var(--slide-accent-soft);padding:.15rem .5rem;border-radius:6px;margin-bottom:.3rem}
+  .resource-content .slide-block{background:var(--bg);border:1px solid var(--hairline);border-radius:10px;padding:.9rem 1rem;margin:.6rem 0 1rem}
+  .resource-content .cols{display:grid;grid-template-columns:repeat(2,1fr);gap:0 1.5rem}
+  .resource-content .cols h5{font-family:var(--body);font-weight:600;font-size:.85rem;color:var(--ink);margin:.5rem 0 .3rem}
+  .resource-content img{max-width:100%;height:auto;border-radius:10px;border:1px solid var(--hairline);margin-top:.5rem;display:block}
+  .resource-content .cc-table{width:100%;border-collapse:collapse;margin:.7rem 0 1.2rem;font-size:.87rem}
+  .resource-content .cc-table th,.resource-content .cc-table td{border:1px solid var(--hairline);padding:.65rem .75rem;text-align:left;vertical-align:top}
+  .resource-content .cc-table th{background:var(--slate-soft);font-family:var(--body);font-weight:600;color:var(--ink);font-size:.8rem}
+  .resource-content .cc-table td:first-child{font-family:var(--mono);font-weight:600;font-size:.78rem;color:var(--slide-accent);white-space:nowrap;text-align:center}
+  .resource-content .cc-table .cc-badge{display:block;width:160px;height:56px;margin:0 auto .5rem;border:none;border-radius:0}
+  .resource-content .cc-table ul{margin:0;padding-left:1.1rem}
+  .resource-content .cc-table li{margin-bottom:.15rem}
+  @media (max-width:640px){
+    .resource-content .cc-table{font-size:.8rem}
+    .resource-content .cc-table th,.resource-content .cc-table td{padding:.5rem}
+  }
+  .resource-content .bib{font-size:.85rem;color:var(--muted);border-top:1px dashed var(--hairline);padding-top:.7rem;margin-top:.9rem}
+  .resource-content .bib a{color:var(--accent)}
+  @media (max-width:640px){
+    .resource-content{padding-left:.35rem}
+    .resource-content .cols{grid-template-columns:1fr}
+  }
+
+  footer{margin-top:clamp(2.5rem,6vw,4rem);padding-top:1.5rem;border-top:1px solid var(--hairline);color:var(--muted);font-size:.82rem;font-family:var(--mono);letter-spacing:.01em}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <a class="back" href="aea5.html">← Tornar a AEA5</a>
+    <div class="eyebrow">AEA5 · E3</div>
+    <h1>Llicències</h1>
+    <p class="lede">Propietat intel·lectual i drets d'autor, i els tres grans models de llicència digital —Copyleft, Copyright i Creative Commons— amb les seves implicacions legals en l'ús i la distribució de continguts i programari.</p>
+  </header>
+
+  <div class="rule"></div>
+
+  <main class="resource-list">
+
+    <details class="resource-expand">
+      <summary>
+        <span class="resource-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></svg>
+        </span>
+        <span class="resource-body">
+          <span class="resource-title">Llicències i drets d'autor</span>
+        </span>
+        <span class="resource-chevron" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </span>
+      </summary>
+      <div class="resource-content">
+
+        <h4>Què són els drets d'autor?</h4>
+        <p>Els drets d'autor constitueixen un dels principals drets de propietat intel·lectual. El seu objectiu és donar solució a una sèrie de conflictes d'interessos que neixen entre els autors de les creacions intel·lectuals, els editors, intermediaris que les distribueixen i el públic que les consumeix (Bondía, 1988).</p>
+        <p>A causa de la immediatesa dels mitjans digitals i al desconeixement general de les normes legals, de manera habitual ens trobem amb vulneracions als drets d'autor a Internet.</p>
+
+        <h4>Quines obres estan protegides pels drets d'autor?</h4>
+        <p>Qualsevol creació original artística, literària o científica està protegida pels drets d'autor, ja sigui analògica o digital. Les obres que queden fora d'aquesta protecció serien les disposicions legals i, en general, tots els documents públics.</p>
+        <p>El dret d'autor d'una obra el té la persona que la crea i no és necessari registrar-la per tenir-ne el dret d'autoria. Només en casos laborals es poden cedir els drets d'autoria a una persona jurídica, sempre que aquest fet vingui especificat en el contracte del treballador.</p>
+
+        <h4>Què són les llicències digitals?</h4>
+        <p>Tots els llocs web estan formats per continguts digitals com a textos, fotografies, vídeos, animacions, música... i tots ells estan subjectes a una sèrie de limitacions en la seva utilització imposades pel seu autor.</p>
+
+        <h4>Llicència: concepte</h4>
+        <p>Podem definir el concepte de llicència com l'autorització que l'autor d'un contingut o recurs digital atorga a altres persones per poder modificar o utilitzar aquest contingut.</p>
+        <p>Les llicències poden ser, en aquest sentit, de dues maneres: <strong>restrictives</strong>, com en el cas del Copyright, en la qual l'autor té tots els drets reservats sobre el contingut, o <strong>permissives</strong>, com Creative Commons, on l'autor només té alguns drets reservats. Existeixen tres tipus de llicències: <strong>Copyleft</strong>, <strong>Copyright</strong> i <strong>Creative Commons</strong>.</p>
+
+        <h4>Llicències Copyleft</h4>
+        <p>En aquest grup s'inclouen aquelles llicències obertes que tenen per objectiu l'ús, la modificació i la redistribució de l'obra original de l'autor o de versions d'aquesta. Depenent de l'autor es podrà permetre l'ús comercial o no. Es reconeixen els drets d'autor encara que es pot utilitzar lliurement, i sempre s'ha de citar la font original.</p>
+
+        <h4>Copyleft: GPL</h4>
+        <p>La <strong>General Public License</strong> o Llicència Pública General (GPL) està orientada principalment a protegir la lliure distribució, modificació i ús de programari i codi obert.</p>
+        <p>Altres llicències Copyleft populars: <strong>LGPL</strong>, <strong>AGPL</strong> i <strong>Mozilla Public License (MPL)</strong>.</p>
+
+        <h4>Copyleft: aplicació a la informàtica</h4>
+        <ul>
+          <li><strong>GPL:</strong> Linux kernel, Audacity, Drupal, F-Droid, Git, GParted, Joomla, MariaDB, MySQL, Notepad++, WordPress.</li>
+          <li><strong>LGPL</strong> (aplicat principalment a llibreries informàtiques): VLC media player, Qt, Wine, 7-Zip, KWrite, Pulseaudio.</li>
+          <li><strong>AGPL:</strong> Grafana, Mastodon, Nextcloud, ownCloud, PeerTube, Proxmox, Signal.</li>
+          <li><strong>Mozilla Public License (MPL):</strong> Firefox, Thunderbird, LibreOffice.</li>
+        </ul>
+
+        <h4>Copyleft: característiques positives i negatives</h4>
+        <div class="cols">
+          <div>
+            <h5>A favor</h5>
+            <ul>
+              <li>Afavoreixen l'ús de la cultura.</li>
+              <li>Proporcionen accés gratuït als continguts digitals.</li>
+              <li>Respecten els drets d'autor i les seves condicions.</li>
+              <li>Faciliten un major control de l'autor sobre les seves obres.</li>
+              <li>Permeten un ús públic col·lectiu sempre que s'esmenti el creador original, sense pagament previ de cap compensació econòmica.</li>
+            </ul>
+          </div>
+          <div>
+            <h5>En contra</h5>
+            <ul>
+              <li>Els autors no reben compensació econòmica per la seva contribució cultural a la societat.</li>
+              <li>Algunes persones poden beneficiar-se de la distribució d'obres que no són seves.</li>
+              <li>Requereix que totes les obres derivades heretin la mateixa llicència.</li>
+            </ul>
+          </div>
+        </div>
+        <p>Atès que aquestes llicències no reporten cap benefici econòmic directe als seus creadors, el seu ús no està penalitzat, encara que sempre s'han de citar les fonts de procedència dels recursos utilitzats.</p>
+
+        <h4>Llicències Copyright</h4>
+        <p>És la més comuna a Internet. És una llicència d'ús digital que protegeix els drets d'autor i, per tant, permet a l'autor decidir sobre les condicions en què les seves obres poden ser distribuïdes i reproduïdes. Per aquesta raó, té com a lema "tots els drets reservats". Qualsevol persona que vulgui fer ús d'un contingut protegit amb Copyright ha de ser autoritzada per l'autor i, en la majoria dels casos, pagar per això.</p>
+
+        <h4>Copyright: excepcions</h4>
+        <p>Existeixen certes excepcions en les quals és possible utilitzar contingut protegit per Copyright sense autorització de l'autor, com per exemple amb fins educatius, si bé s'ha de limitar a l'espai físic de l'aula on s'imparteixi el contingut.</p>
+        <p>Tot i que una pàgina web tingui fins educatius, no es pot utilitzar material protegit amb Copyright: es permet utilitzar-lo a l'aula, però no penjar-lo en un blog, pàgina web o aula virtual. Organitzacions com la SGAE vetllen pel compliment d'aquestes llicències.</p>
+
+        <h4>Copyright: DRM</h4>
+        <p>El <strong>DRM</strong> és un tipus de llicència Copyright que protegeix contra la còpia i que s'inclou en gran part dels productes digitals comercials (programari, música, vídeos, ebooks...), limitant tant l'ús del producte adquirit —sovint vinculat a una marca de dispositiu o plataforma— com el nombre de còpies privades permeses.</p>
+
+        <h4>Copyright: aplicació a la informàtica</h4>
+        <p><strong>OEM</strong> (original equipment manufacturer): tipus de llicència, normalment referida a sistemes operatius, que supedita la venda del programari com a part integrant d'un equip informàtic nou. No es pot vendre ni cedir a tercers independentment del maquinari.</p>
+        <p><strong>Retail:</strong> versions de venda normalitzades d'un programari que, a diferència de les OEM, es poden vendre independentment del maquinari que les suporta.</p>
+        <p><strong>Llicències per volum:</strong> destinades a empreses i institucions (com instituts i universitats). Són similars a les OEM però no estan vinculades a equips nous.</p>
+
+        <h4>Copyright: característiques positives i negatives</h4>
+        <div class="cols">
+          <div>
+            <h5>A favor</h5>
+            <ul>
+              <li>Respecten els drets d'autor.</li>
+              <li>L'autor rep diners per l'ús de la seva obra.</li>
+              <li>Eviten que altres persones s'atribueixin l'autoria d'una obra aliena.</li>
+              <li>L'autor decideix qui i com pot accedir a la seva obra.</li>
+            </ul>
+          </div>
+          <div>
+            <h5>En contra</h5>
+            <ul>
+              <li>No és possible accedir als materials complets.</li>
+              <li>Per accedir als materials es recorre sovint a la pirateria.</li>
+              <li>Dificultat per crear obres derivades de l'original.</li>
+              <li>Pot dificultar la difusió de l'obra.</li>
+            </ul>
+          </div>
+        </div>
+        <p>Les llicències Copyright són les més esteses i protegeixen l'autor davant la reproducció gratuïta dels seus continguts. Mai se'n pot fer un ús públic fora de l'aula sense reportar-hi econòmicament als seus creadors.</p>
+
+        <h4>Llicències Creative Commons</h4>
+        <p>Existeix una sèrie de llicències Creative Commons, cadascuna amb diferents configuracions, que permeten als autors decidir de quina manera la seva obra circularà per Internet, atorgant llibertat per citar, reproduir, crear obres derivades i oferir-les públicament sota certes restriccions. S'utilitzen sobretot en la creació de continguts.</p>
+
+        <h4>Reconeixement (BY)</h4>
+        <p>És el tipus de llicència Creative Commons més oberta. Es permet qualsevol explotació de l'obra, incloent-hi una finalitat comercial, així com la creació d'obres derivades i la seva distribució sense cap restricció. És molt semblant a una llicència copyleft o de caràcter obert.</p>
+        <p>Un exemple d'aquesta mena de llicència seria la Viquipèdia: se'n pot citar tot el que es vulgui sempre que se'n citi la font.</p>
+
+        <h4>Reconeixement - No comercial (BY-NC)</h4>
+        <p>Aquest tipus de llicència autoritza la generació d'obres derivades sempre que no se'n faci un ús comercial. Tampoc es pot utilitzar l'obra original amb finalitats comercials.</p>
+        <p>Per exemple, si un professor crea un recurs digital i el posa en obert perquè la gent pugui utilitzar-lo, el posaria amb aquesta mena de llicència: es pot usar lliurement sempre que se citi l'autor.</p>
+        <p>Aquest tipus de llicència és molt comuna en les fotos que els usuaris pugen a Flickr.</p>
+
+        <h4>Reconeixement - No comercial - Compartir igual (BY-NC-SA)</h4>
+        <p>No es permet un ús comercial de l'obra original ni de les possibles obres derivades, la distribució de les quals s'ha de fer amb una llicència igual a la que regula l'obra original.</p>
+        <p>Aquesta llicència permet a altres persones retocar i construir sobre el treball de forma no comercial, sempre que se'n doni crèdit i es llicenciïn les noves creacions sota termes idèntics.</p>
+        <p>Per exemple, si un professor puja una activitat al seu blog amb aquesta llicència, qualsevol altre professor pot usar-la i modificar-la al seu gust, sempre que respecti l'autoria original i posi la mateixa llicència a l'activitat modificada.</p>
+
+        <h4>Reconeixement - No comercial - Sense obra derivada (BY-NC-ND)</h4>
+        <p>No es permet un ús comercial de l'obra original ni la generació d'obres derivades.</p>
+        <p>És la llicència més restrictiva: només permet a altres persones descarregar els treballs i compartir-los amb altres persones a condició que se citi la font i l'autor, sense poder-los canviar de cap manera ni usar-los amb finalitat comercial.</p>
+        <p>Un exemple seria la utilització d'un mapa amb aquesta llicència a classe, el qual no es podria modificar ni complementar amb dades extres.</p>
+
+        <h4>Reconeixement - Compartir igual (BY-SA)</h4>
+        <p>Amb aquesta llicència es permet l'ús comercial de l'obra i de les possibles obres derivades, la distribució de les quals s'ha de fer amb una llicència igual a la que regula l'obra original.</p>
+
+        <h4>Reconeixement - Sense obra derivada (BY-ND)</h4>
+        <p>Amb aquesta llicència es permet l'ús comercial de l'obra però no la generació d'obres derivades.</p>
+
+        <h4>Domini públic</h4>
+        <p>L'autor que utilitzi aquesta llicència allibera la seva obra per al seu ús en qualsevol condició i context, sense necessitat de ser citat, i renuncia als drets derivats de l'obra, com l'explotació econòmica o el reconeixement.</p>
+
+        <h4>Creative Commons: característiques positives i negatives</h4>
+        <div class="cols">
+          <div>
+            <h5>A favor</h5>
+            <ul>
+              <li>Existeix un benefici mutu entre l'autor d'una obra digital i els usuaris d'aquesta.</li>
+              <li>Les cites a l'autor el poden beneficiar social o econòmicament.</li>
+              <li>En ser recursos digitals gratuïts, són consumits per molts usuaris.</li>
+              <li>Són molt difoses a les xarxes socials.</li>
+              <li>No solen ser objecte de pirateria, ja que no tenen un objectiu econòmic.</li>
+            </ul>
+          </div>
+          <div>
+            <h5>En contra</h5>
+            <ul>
+              <li>No hi ha beneficis econòmics directes per als autors.</li>
+              <li>No hi ha control sobre l'ús de les obres.</li>
+              <li>La diversitat de llicències i la falta d'informació poden provocar errors d'ús.</li>
+              <li>Aquest tipus de llicències no es respecten a tots els països.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h4>Com citar les fonts dels teus recursos?</h4>
+        <ol>
+          <li>Posa sota el recurs un enllaç a la pàgina web on es va trobar.</li>
+          <li>Cita l'autor.</li>
+          <li>Assenyala el tipus de llicència.</li>
+        </ol>
+
+        <p class="bib"><strong>Webgrafia:</strong> <em>Creación de contenidos digitales</em>, Francisco Javier López Iglesias (Formación Fundación Telefónica). <em>Legislació de seguretat i protecció de dades</em>, Miquel Colobran Huguet i Josep Ma. Arqués Soldevila. Autor de la presentació: Enrique Pacheco Buil.</p>
+      </div>
+    </details>
+
+    <a class="resource" href="https://www.youtube.com/watch?v=Ry5bVQ3y2FU" target="_blank" rel="noopener">
+      <span class="resource-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+      </span>
+      <span class="resource-body">
+        <span class="resource-title">Copyright vs Copyleft</span>
+      </span>
+    </a>
+
+    <a class="resource" href="https://www.youtube.com/watch?v=OUo3KMkOETY" target="_blank" rel="noopener">
+      <span class="resource-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+      </span>
+      <span class="resource-body">
+        <span class="resource-title">Creative Commons</span>
+      </span>
+    </a>
+
+    <details class="resource-expand">
+      <summary>
+        <span class="resource-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </span>
+        <span class="resource-body">
+          <span class="resource-title">Llicències Creative Commons</span>
+        </span>
+        <span class="resource-chevron" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </span>
+      </summary>
+      <div class="resource-content">
+        <p>Una llicència Creative Commons (CC) és un tipus de llicència pública que permet a l'autor decidir de manera flexible com altres persones poden utilitzar la seva obra.</p>
+        <p>En lloc de "tots els drets reservats" (el Copyright tradicional), les llicències Creative Commons funcionen de manera modular: combinen quatre condicions bàsiques —reconeixement de l'autoria, ús no comercial, prohibició d'obra derivada i compartir igual— per generar els sis tipus de llicència possibles. L'objectiu és facilitar que autors i creadors comparteixin les seves obres deixant clar, des del primer moment, què es pot fer amb elles.</p>
+
+        <table class="cc-table">
+          <thead>
+            <tr><th>Llicència</th><th>Permet</th><th>Sempre que</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><img class="cc-badge" src="https://licensebuttons.net/l/by/4.0/88x31.png" alt="CC BY">Reconeixement</td>
+              <td>Compartir (copiar i redistribuir) i adaptar (remesclar, transformar i construir a partir del material), inclosos fins comercials.</td>
+              <td><ul><li>Es reconegui l'autoria de l'obra original de forma adequada.</li></ul></td>
+            </tr>
+            <tr>
+              <td><img class="cc-badge" src="https://licensebuttons.net/l/by-sa/4.0/88x31.png" alt="CC BY-SA">Reconeixement — Compartir igual</td>
+              <td>Compartir i adaptar (remesclar, transformar i construir a partir del material), inclosos fins comercials.</td>
+              <td><ul><li>Es reconegui l'autoria de l'obra original de forma adequada.</li><li>Es llicenciï la nova creació (si escau) sota condicions idèntiques (BY-SA).</li></ul></td>
+            </tr>
+            <tr>
+              <td><img class="cc-badge" src="https://licensebuttons.net/l/by-nd/4.0/88x31.png" alt="CC BY-ND">Reconeixement — Sense obra derivada</td>
+              <td>Compartir (copiar i redistribuir) el material, inclosos fins comercials.</td>
+              <td><ul><li>Es reconegui l'autoria de l'obra original de forma adequada.</li><li>No es distribueixin modificacions de l'obra original.</li></ul></td>
+            </tr>
+            <tr>
+              <td><img class="cc-badge" src="https://licensebuttons.net/l/by-nc/4.0/88x31.png" alt="CC BY-NC">Reconeixement — No comercial</td>
+              <td>Compartir i adaptar (remesclar, transformar i construir a partir del material).</td>
+              <td><ul><li>Es reconegui l'autoria de l'obra original de forma adequada.</li><li>No s'utilitzi amb propòsits comercials.</li></ul></td>
+            </tr>
+            <tr>
+              <td><img class="cc-badge" src="https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png" alt="CC BY-NC-SA">Reconeixement — No comercial — Compartir igual</td>
+              <td>Compartir i adaptar (remesclar, transformar i construir a partir del material).</td>
+              <td><ul><li>Es reconegui l'autoria de l'obra original de forma adequada.</li><li>No s'utilitzi amb propòsits comercials.</li><li>Es llicenciï la nova creació (si escau) sota condicions idèntiques (BY-NC-SA).</li></ul></td>
+            </tr>
+            <tr>
+              <td><img class="cc-badge" src="https://licensebuttons.net/l/by-nc-nd/4.0/88x31.png" alt="CC BY-NC-ND">Reconeixement — No comercial — Sense obra derivada</td>
+              <td>Compartir (copiar i redistribuir) el material.</td>
+              <td><ul><li>Es reconegui l'autoria de l'obra original de forma adequada.</li><li>No s'utilitzi amb propòsits comercials.</li><li>No es distribueixin modificacions de l'obra original.</li></ul></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="bib"><strong>Font:</strong> badges oficials i definicions de <a href="https://creativecommons.org/" target="_blank" rel="noopener">creativecommons.org</a>.</p>
+      </div>
+    </details>
+
+  </main>
+
+  <footer>
+    Institut La Mercè · Formació Professional · Seguretat Informàtica
+  </footer>
+
+</div>
+</body>
+</html>
