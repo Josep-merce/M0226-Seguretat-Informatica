@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ca">
 <head>
@@ -49,30 +48,6 @@
     .resource-menu{order:0;margin-left:auto}
   }
 
-  /* ---- Recurs expandible (acordió: contingut ocult fins que es clica) ---- */
-  :root{--slide-accent:#D9455F;--slide-accent-soft:#FCEAEE}
-  details.resource-expand{border-bottom:1px solid var(--hairline)}
-  details.resource-expand > summary{display:flex;align-items:center;gap:1rem;padding:1.05rem .35rem;cursor:pointer;list-style:none;transition:background .18s ease}
-  details.resource-expand > summary::-webkit-details-marker{display:none}
-  details.resource-expand > summary:hover{background:var(--surface)}
-  details.resource-expand .resource-chevron{flex-shrink:0;width:20px;height:20px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:transform .22s ease}
-  details.resource-expand .resource-chevron svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  details.resource-expand[open] .resource-chevron{transform:rotate(90deg)}
-  .resource-content{padding:0 .35rem 1.6rem calc(38px + 1rem + .35rem)}
-  .resource-content h4{font-family:var(--display);font-weight:700;font-size:1.02rem;color:var(--slide-accent);letter-spacing:-.01em;margin:1.3rem 0 .5rem}
-  .resource-content h4:first-child{margin-top:.2rem}
-  .resource-content p{color:var(--slate-ink);font-size:.92rem;line-height:1.6;margin-bottom:.4rem}
-  .resource-content ul{margin:.3rem 0 .6rem 1.1rem;padding:0}
-  .resource-content li{color:var(--slate-ink);font-size:.92rem;line-height:1.55;margin-bottom:.25rem}
-  .resource-content strong{color:var(--ink);font-weight:600}
-  .slide-tag{display:inline-block;font-family:var(--mono);font-size:.68rem;color:var(--slide-accent);background:var(--slide-accent-soft);padding:.15rem .5rem;border-radius:6px;margin-bottom:.3rem}
-  .resource-content .slide-block{background:var(--bg);border:1px solid var(--hairline);border-radius:10px;padding:.9rem 1rem;margin:.6rem 0 1rem}
-  .resource-content .bib{font-size:.85rem;color:var(--muted);border-top:1px dashed var(--hairline);padding-top:.7rem;margin-top:.9rem}
-  .resource-content .bib a{color:var(--accent)}
-  @media (max-width:640px){
-    .resource-content{padding-left:.35rem}
-  }
-
   footer{margin-top:clamp(2.5rem,6vw,4rem);padding-top:1.5rem;border-top:1px solid var(--hairline);color:var(--muted);font-size:.82rem;font-family:var(--mono);letter-spacing:.01em}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;scroll-behavior:auto}}
 </style>
@@ -91,7 +66,7 @@
 
   <main class="resource-list">
 
-    <a class="resource" href="https://ioc.xtec.cat/materials/FP/Recursos/fp_smx_m06_/web/fp_smx_m06_htmlindex/media/fp_smx_m06_u3_pdfindex.pdf" target="_blank" rel="noopener">
+    <a class="resource" href="2.Legislacio_seguretat_i_proteccio_de_dades.pdf" target="_blank" rel="noopener">
       <span class="resource-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
       </span>
@@ -100,99 +75,14 @@
       </span>
     </a>
 
-    <details class="resource-expand">
-      <summary>
-        <span class="resource-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></svg>
-        </span>
-        <span class="resource-body">
-          <span class="resource-title">(Presentació) RGPD i els delictes informàtics</span>
-        </span>
-        <span class="resource-chevron" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
-        </span>
-      </summary>
-      <div class="resource-content">
-        <h4>Per què he de conèixer la legislació?</h4>
-        <p>Un <strong>professional de la informàtica</strong> ha de ser conscient de l'existència de legislació i normativa que s'aplica a la seva feina, i de la qual n'és <strong>responsable</strong>.</p>
-        <ul>
-          <li><strong>Legislació reguladora:</strong> normes i lleis que la persona i/o empresa ha de seguir per fer un bon ús de les dades personals que tracta i de la transmissió segura de la informació.</li>
-          <li><strong>Legislació penal:</strong> fa referència als fraus o delictes relacionats amb la informàtica.</li>
-        </ul>
-
-        <h4>RGPD: Reglament General de Protecció de Dades</h4>
-        <p><strong>RGPD = GDPR</strong> (són les sigles del reglament en anglès). És una <strong>normativa europea</strong> que s'aplica a tots els països de la UE des del 25 de maig de 2018, i afecta totes les persones i organitzacions que tracten amb les <strong>dades personals</strong> de ciutadans europeus.</p>
-
-        <h4>RGPD: Com m'afecta?</h4>
-        <ul>
-          <li>Quan una organització vulgui recollir dades personals d'un ciutadà de la UE necessita el seu <strong>permís explícit</strong>.</li>
-          <li>Aquest consentiment es pot retirar en qualsevol moment, i cal facilitar una manera de fer-ho.</li>
-          <li>Les empreses han de dir quines dades utilitzen, com les tracten, amb quina finalitat i qui és la persona responsable.</li>
-          <li>Els ciutadans poden demanar les dades que les organitzacions tenen sobre ells.</li>
-        </ul>
-
-        <h4>LOPDGDD</h4>
-        <p><strong>LOPDGDD</strong> (Ley Orgánica de Protección de Datos y Garantía de Derechos Digitales) és la llei espanyola que adapta el RGPD a la legislació d'Espanya. En aquest mòdul, per simplificar: <strong>RGPD = GDPR = LOPD = LOPDGDD</strong>.</p>
-
-        <h4>RGPD: Qui controla que es compleixi?</h4>
-        <p>A Espanya hi ha una agència que fa de "policia" i vigila que es compleixi el reglament: <strong>AEPD</strong> (Agència Espanyola de Protecció de Dades). Les seves funcions són vigilar el compliment del reglament i sancionar les infraccions.</p>
-
-        <div class="slide-block">
-          <span class="slide-tag">Mapa resum</span>
-          <p style="margin-bottom:0">Unió Europea → RGPD (GDPR) &nbsp;⊃&nbsp; Espanya → LOPDGDD &nbsp;⊃&nbsp; AEPD (vigilar i sancionar)</p>
-        </div>
-
-        <h4>Conceptes: dades personals</h4>
-        <p><strong>Dades personals:</strong> tota informació sobre una persona física (l'interessat) que descriu elements propis de la seva identitat física, fisiològica, genètica, psíquica, econòmica, cultural o social, i que permet identificar-la.</p>
-        <p>Exemple: una llista de telèfons amb noms i cognoms sí és dada personal; sense els noms, no ho seria perquè no permet identificar la persona.</p>
-
-        <h4>Conceptes: tractament i perfils</h4>
-        <ul>
-          <li><strong>Tractament:</strong> qualsevol operació sobre dades personals (recollida, cancel·lació, registre, classificació, modificació, etc.).</li>
-          <li><strong>Elaboració de perfils:</strong> quan el tractament busca analitzar i preveure aspectes personals (rendiment laboral, preferències, interessos polítics, salut, ubicació...). Només es pot fer si l'interessat ha estat informat i ha donat el seu consentiment.</li>
-        </ul>
-
-        <h4>Conceptes: fitxers i destinataris</h4>
-        <ul>
-          <li>Les dades personals es guarden estructuradament en fitxers (paper o digital, centralitzat o distribuït).</li>
-          <li>Els fitxers són propietat dels destinataris (empreses, grups o organismes públics), però les dades que hi ha dins sempre són propietat dels interessats.</li>
-          <li>Per disposar de les dades d'un interessat, cal el seu consentiment.</li>
-        </ul>
-
-        <h4>Conceptes: consentiment</h4>
-        <p>L'interessat ha de donar el seu consentiment de forma <strong>lliure, específica, informada i inequívoca</strong>, mitjançant una declaració signada o una acció afirmativa clara.</p>
-        <p><em>Exemple:</em> un botó "estic d'acord" en una web, sense el qual no es pot continuar amb l'enviament de les dades. L'interessat pot revocar el consentiment en qualsevol moment.</p>
-
-        <h4>Conceptes: cessió de dades personals</h4>
-        <p>El RGPD permet cedir fitxers amb dades personals a una 3a empresa que les pugui tractar. És habitual trobar clàusules com "Marqui aquesta casella si vol rebre publicitat d'altres empreses del grup".</p>
-
-        <h4>Categories de dades personals</h4>
-        <ul>
-          <li><strong>Bàsiques:</strong> les que no són especials (noms i cognoms, telèfon, DNI...).</li>
-          <li><strong>Especials</strong> (cal una anàlisi prèvia, DPIA): origen ètnic o racial, opinions polítiques, conviccions religioses o filosòfiques, afiliació sindical, dades genètiques o biomètriques, dades de salut, vida i orientació sexual.</li>
-        </ul>
-
-        <h4>Obligacions de l'organització</h4>
-        <ul>
-          <li>Anàlisi de riscos i adopció de mesures de seguretat (contrasenyes, videovigilància, antivirus, autenticació, xifrat...).</li>
-          <li>Responsable de protecció de dades.</li>
-          <li>Registre d'activitats de tractament.</li>
-          <li>Notificar les bretxes de dades personals a l'AEPD en un termini màxim de 72 hores.</li>
-        </ul>
-
-        <h4>Drets de l'interessat</h4>
-        <ul>
-          <li><strong>Accés:</strong> consultar quines dades meves té l'organització.</li>
-          <li><strong>Rectificació:</strong> canviar dades errònies o incompletes.</li>
-          <li><strong>Supressió</strong> ("el dret a l'oblit"): eliminar les meves dades.</li>
-          <li><strong>Limitació del tractament:</strong> que només es faci el mínim imprescindible amb les meves dades.</li>
-          <li><strong>Portabilitat:</strong> traspassar les dades a una altra organització.</li>
-          <li><strong>Oposició:</strong> que no es facin certes coses amb les meves dades.</li>
-        </ul>
-
-        <p class="bib"><strong>Bibliografia:</strong> Triviño Mosquera, I. <em>Seguridad Informática</em> (2020). Paraninfo. Autor de la presentació: Enrique Pacheco Buil.</p>
-      </div>
-    </details>
+    <a class="resource" href="1.RGPD i Delictes Informàtics.pdf" target="_blank" rel="noopener">
+      <span class="resource-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></svg>
+      </span>
+      <span class="resource-body">
+        <span class="resource-title">(Presentació) RGPD i els delictes informàtics</span>
+      </span>
+    </a>
 
     <a class="resource" href="https://www.youtube.com/watch?v=heKapvVLjng" target="_blank" rel="noopener">
       <span class="resource-icon" aria-hidden="true">
@@ -230,7 +120,7 @@
       </span>
     </a>
 
-    <a class="resource" href="#">
+    <a class="resource" href="https://create.kahoot.it/share/rgdp/0182113b-a5e6-46f2-bdd0-f28577b23e76" target="_blank" rel="noopener">
       <span class="resource-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       </span>
