@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>M0226 — Seguretat Informàtica · Cicle SMX · Institut La Mercè</title>
+<title>AEA3 — Aplicació de mecanismes de seguretat activa · M0226 · Cicle SMX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -20,11 +20,14 @@
   body{font-family:var(--body);color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased;padding:clamp(1.5rem,5vw,4.5rem) clamp(1.25rem,5vw,3rem) 3rem}
   .wrap{max-width:1080px;margin:0 auto}
 
-  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);display:inline-flex;align-items:center;gap:.55rem}
+  .back{font-family:var(--mono);font-size:.78rem;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;transition:color .2s ease}
+  .back:hover,.back:focus-visible{color:var(--accent)}
+
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);display:inline-flex;align-items:center;gap:.55rem;margin-top:1.6rem}
   .eyebrow::before{content:"";width:1.6rem;height:2px;background:var(--accent);display:inline-block}
   h1{font-family:var(--display);font-weight:700;font-size:clamp(2.1rem,5.5vw,3.4rem);letter-spacing:-.02em;line-height:1.05;margin:1.1rem 0 0}
   h1 .code{color:var(--accent)}
-  .lede{color:var(--muted);font-size:clamp(1rem,1.6vw,1.18rem);max-width:54ch;margin-top:1.1rem}
+  .lede{color:var(--muted);font-size:clamp(1rem,1.6vw,1.18rem);max-width:60ch;margin-top:1.1rem}
   .meta{margin-top:1.6rem;display:flex;flex-wrap:wrap;gap:.5rem .55rem;font-family:var(--mono);font-size:.78rem}
   .pill{border:1px solid var(--hairline);background:var(--surface);color:var(--slate-ink);padding:.4rem .75rem;border-radius:999px}
   .pill strong{color:var(--ink);font-weight:600}
@@ -38,21 +41,11 @@
   .card:focus-visible{box-shadow:0 0 0 3px var(--accent-soft),0 14px 34px -18px rgba(26,34,48,.34)}
   .card-top{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:1rem}
   .aea-code{font-family:var(--mono);font-weight:600;font-size:.8rem;letter-spacing:.04em;color:#fff;background:var(--ink);padding:.32rem .6rem;border-radius:7px}
-  .tags{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end}
-  .tag{font-family:var(--mono);font-size:.7rem;padding:.28rem .55rem;border-radius:6px;white-space:nowrap}
-  .tag.ra{background:var(--accent-soft);color:#9a5410}
   .card h2{font-family:var(--display);font-weight:600;font-size:1.18rem;letter-spacing:-.01em;line-height:1.25}
   .card p{color:var(--muted);font-size:.93rem;margin-top:.55rem;flex:1}
   .open{margin-top:1.25rem;font-family:var(--mono);font-size:.8rem;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:.4rem}
   .open .arrow{transition:transform .22s ease}
   .card:hover .open .arrow,.card:focus-visible .open .arrow{transform:translateX(4px)}
-
-  .card.disabled{cursor:not-allowed;background:#FAFBFC;opacity:.6;filter:grayscale(.4)}
-  .card.disabled:hover,.card.disabled:focus-visible{transform:none;box-shadow:none;border-color:var(--hairline)}
-  .card.disabled:hover::before,.card.disabled:focus-visible::before{transform:scaleY(0)}
-  .card.disabled .aea-code{background:#9aa4b2}
-  .card.disabled .open{color:#9aa4b2}
-  .card.disabled:hover .open .arrow,.card.disabled:focus-visible .open .arrow{transform:none}
 
   footer{margin-top:clamp(2.5rem,6vw,4rem);padding-top:1.5rem;border-top:1px solid var(--hairline);color:var(--muted);font-size:.82rem;font-family:var(--mono);letter-spacing:.01em}
   @media (max-width:680px){.grid{grid-template-columns:1fr}}
@@ -63,72 +56,49 @@
 <div class="wrap">
 
   <header>
-    <span class="eyebrow">Cicle SMX · Sistemes Microinformàtics i Xarxes</span>
-    <h1>M0226 <span class="code">—</span> Seguretat Informàtica</h1>
-    <p class="lede">Materials interactius de seguretat informàtica: des del compliment normatiu i la seguretat passiva fins a la gestió de dispositius, la seguretat activa i l'assegurament de la privacitat.</p>
+    <a class="back" href="index.html">← Tornar a l'índex</a>
+    <div class="eyebrow">AEA3 · RA3</div>
+    <h1>AEA3 <span class="code">—</span> Aplicació de mecanismes de seguretat activa</h1>
+    <p class="lede">Plans de contingència, criptografia simètrica i asimètrica, i tipus de programari maliciós amb els seus sistemes de defensa.</p>
   </header>
 
   <div class="rule"></div>
 
-  <!--
-  ============================================================
-   COM OBRIR UNA AEA QUAN AVANCEM EL CURS
-   Cada targeta comença desactivada amb  class="card disabled".
-   Per activar-la, esborra només la paraula  disabled :
-        class="card disabled"   ->   class="card"
-   En desar i recarregar la pàgina, la targeta ja serà clicable.
-  ============================================================
-  -->
-
   <main class="grid">
 
-    <a class="card" href="aea5.html">
+    <a class="card" href="aea3_a1.html">
       <div class="card-top">
-        <span class="aea-code">AEA5</span>
-        <span class="tags"><span class="tag ra">RA5</span></span>
+        <span class="aea-code">A1</span>
       </div>
-      <h2>Compliment de la legislació i de les normes sobre seguretat</h2>
-      <p>Marc normatiu de protecció de dades i propietat intel·lectual, legislació sobre serveis de la societat de la informació i normes de seguretat aplicables als sistemes informàtics.</p>
+      <h2>Pla de contingència</h2>
+      <p>Elaboració i aplicació de plans de contingència per garantir la continuïtat del servei davant incidents de seguretat i desastres informàtics.</p>
       <span class="open">Obrir <span class="arrow">→</span></span>
     </a>
 
-    <a class="card" href="aea1.html">
+    <a class="card" href="aea3_a2.html">
       <div class="card-top">
-        <span class="aea-code">AEA1</span>
-        <span class="tags"><span class="tag ra">RA1</span></span>
+        <span class="aea-code">A2</span>
       </div>
-      <h2>Aplicació de mesures de seguretat passiva</h2>
-      <p>Ubicació física i condicions ambientals dels equips, sistemes d'alimentació ininterrompuda, RAID i estratègies de còpia de seguretat i recuperació davant desastres.</p>
+      <h2>Criptografia simètrica</h2>
+      <p>Fonaments de la criptografia de clau simètrica, algorismes més utilitzats i aplicacions pràctiques en la protecció de la informació.</p>
       <span class="open">Obrir <span class="arrow">→</span></span>
     </a>
 
-    <a class="card" href="aea2.html">
+    <a class="card" href="aea3_a3.html">
       <div class="card-top">
-        <span class="aea-code">AEA2</span>
-        <span class="tags"><span class="tag ra">RA2</span></span>
+        <span class="aea-code">A3</span>
       </div>
-      <h2>Gestió de dispositius d'emmagatzematge</h2>
-      <p>Sistemes de fitxers i particions, còpies de seguretat, sistemes d'emmagatzematge en xarxa (NAS/SAN) i tècniques de recuperació de dades i destrucció segura.</p>
+      <h2>Criptografia asimètrica</h2>
+      <p>Criptografia de clau pública i privada, signatura digital, certificats digitals i infraestructura de clau pública (PKI).</p>
       <span class="open">Obrir <span class="arrow">→</span></span>
     </a>
 
-    <a class="card" href="aea3.html">
+    <a class="card" href="aea3_a4.html">
       <div class="card-top">
-        <span class="aea-code">AEA3</span>
-        <span class="tags"><span class="tag ra">RA3</span></span>
+        <span class="aea-code">A4</span>
       </div>
-      <h2>Aplicació de mecanismes de seguretat activa</h2>
-      <p>Criptografia i autenticació, tallafocs i llistes de control d'accés, detecció d'intrusions (IDS) i protecció contra programari maliciós.</p>
-      <span class="open">Obrir <span class="arrow">→</span></span>
-    </a>
-
-    <a class="card" href="aea4.html">
-      <div class="card-top">
-        <span class="aea-code">AEA4</span>
-        <span class="tags"><span class="tag ra">RA4</span></span>
-      </div>
-      <h2>Tallafocs i monitoratge de xarxes</h2>
-      <p>Configuració i gestió de tallafocs, filtratge de trànsit i regles d'accés, i eines de monitoratge i anàlisi de xarxes per detectar incidències i comportaments sospitosos.</p>
+      <h2>Tipus de malware i sistemes de defensa</h2>
+      <p>Classificació del programari maliciós, vies d'infecció i mecanismes de protecció: antivirus, tallafocs i sistemes de detecció d'intrusions.</p>
       <span class="open">Obrir <span class="arrow">→</span></span>
     </a>
 
@@ -139,17 +109,5 @@
   </footer>
 
 </div>
-
-<script>
-  document.querySelectorAll('.card').forEach(function(card){
-    if(card.classList.contains('disabled')){
-      card.setAttribute('aria-disabled','true');
-      card.setAttribute('tabindex','-1');
-    }
-    card.addEventListener('click', function(e){
-      if(card.classList.contains('disabled')) e.preventDefault();
-    });
-  });
-</script>
 </body>
 </html>
