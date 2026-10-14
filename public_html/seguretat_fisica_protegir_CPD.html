@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seguretat física: protegir el CPD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E6E2; --surface:#F6F7F4; --surface2:#ECEEEA; --ink:#1C2226; --muted:#56616A; --line:#C7CCC6;
+  --yellow:#F2C200; --yellow-ink:#3A2E00; --red:#C8281E; --green:#0E7F49; --blue:#2F5671;
+  --ok-bg:#DDF0E5; --bad-bg:#F8DEDB; --mid-bg:#FBF0C6; --focus:#2F5671;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+    --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+    --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+  --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+  --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variation-settings:"wdth" 100;font-size:17px;line-height:1.55}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+img,svg{max-width:100%}
+
+.hazard{height:10px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 14px,#1C2226 14px 28px)}
+header.top{padding:28px 24px 22px;max-width:1180px;margin:0 auto}
+header.top h1{margin:0;font-weight:800;font-variation-settings:"wdth" 70;font-size:clamp(2.1rem,6vw,3.6rem);line-height:1;letter-spacing:-.01em}
+header.top p{margin:.6rem 0 0;color:var(--muted);max-width:60ch}
+.scorebar{display:flex;gap:16px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.meter{flex:1 1 220px;max-width:360px;height:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--green);width:0;transition:width .4s}
+.scoretxt{font-weight:700;font-variant-numeric:tabular-nums}
+.reset{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:.85rem;color:var(--muted)}
+
+.layout{max-width:1180px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+nav.mods{position:sticky;top:env(safe-area-inset-top,0px);padding-top:8px}
+nav.mods ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+nav.mods button{width:100%;text-align:left;background:none;border:0;border-left:4px solid transparent;padding:9px 12px;border-radius:0 6px 6px 0;display:flex;gap:10px;align-items:baseline}
+nav.mods button:hover{background:var(--surface2)}
+nav.mods button[aria-current="true"]{background:var(--surface);border-left-color:var(--yellow);font-weight:700}
+nav.mods .n{font-variation-settings:"wdth" 70;font-weight:800;color:var(--muted);min-width:1.2em}
+nav.mods .done{margin-left:auto;color:var(--green);font-weight:800}
+
+main{min-width:0}
+section.mod{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px clamp(18px,4vw,40px) 34px}
+section.mod.active{display:block}
+.mod h2{margin:0 0 .2rem;font-weight:800;font-variation-settings:"wdth" 75;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
+.mod .lead{color:var(--muted);margin:0 0 1.4rem;max-width:68ch}
+.mod h3{font-variation-settings:"wdth" 85;font-weight:750;font-size:1.25rem;margin:2rem 0 .6rem}
+.mod p{max-width:70ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:1rem 0}
+.fact{background:var(--surface2);border-radius:8px;padding:14px 16px;border-top:4px solid var(--blue)}
+.fact b{display:block;margin-bottom:4px}
+.fact p{margin:0;font-size:.95rem}
+.note{border-left:4px solid var(--yellow);background:var(--mid-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:1.2rem 0;max-width:72ch}
+.steps{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface2);border-radius:8px;padding:12px 14px 12px 50px;position:relative;font-size:.95rem}
+.steps li::before{content:counter(s);position:absolute;left:12px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-weight:800}
+.tablewrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-variation-settings:"wdth" 85;background:var(--surface2)}
+
+.game{margin-top:2.2rem;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.game>.gh{background:var(--ink);color:var(--surface);padding:12px 18px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.game>.gh h3{margin:0;color:inherit;font-size:1.15rem}
+.game>.gh .gs{font-weight:700;font-variant-numeric:tabular-nums}
+.game>.gb{padding:18px}
+.hint{color:var(--muted);font-size:.92rem;margin:0 0 12px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:44px}
+.chip{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:7px 14px;font-size:.95rem}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--yellow);color:var(--yellow-ink);font-weight:700}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bucket{background:var(--surface2);border:2px dashed var(--line);border-radius:8px;padding:10px;text-align:left;min-height:110px;display:flex;flex-direction:column;gap:6px}
+.bucket.armed{border-color:var(--ink);border-style:solid}
+.bucket>strong{font-variation-settings:"wdth" 85}
+.placed{font-size:.85rem;border-radius:5px;padding:3px 8px}
+.placed.ok{background:var(--ok-bg)} .placed.bad{background:var(--bad-bg);text-decoration:line-through}
+.fb{margin-top:14px;padding:12px 14px;border-radius:8px;min-height:1em}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg)} .fb.bad{background:var(--bad-bg)} .fb.mid{background:var(--mid-bg)}
+.btn{background:var(--ink);color:var(--surface);border:0;border-radius:6px;padding:9px 16px;font-weight:700}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:11px 14px}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.opt.bad{background:var(--bad-bg);border-color:var(--red)}
+.opt.mid{background:var(--mid-bg);border-color:var(--yellow)}
+.opt small{display:block;color:var(--muted);margin-top:4px}
+.q{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.site{display:block}
+.site ul{margin:6px 0 0;padding-left:18px;font-size:.92rem;color:var(--muted);font-weight:400}
+
+.layers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center}
+.layers svg{width:100%;height:auto}
+.layers svg .ly{cursor:pointer}
+.layers svg .ly rect{stroke:var(--ink);stroke-width:2;transition:fill .2s}
+.layers svg .ly:hover rect,.layers svg .ly.sel rect{fill:var(--yellow)}
+.layers svg text{fill:var(--ink);font-family:inherit;font-size:13px;font-weight:700;pointer-events:none}
+.layerinfo{background:var(--surface2);border-radius:8px;padding:16px;min-height:150px}
+.layerinfo h4{margin:0 0 6px;font-size:1.1rem}
+
+.sim{display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:24px}
+.slider label{display:flex;justify-content:space-between;font-weight:700}
+.slider output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.slider input{width:100%;accent-color:var(--blue);margin:8px 0 18px}
+.eq{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;padding:9px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border-left:6px solid var(--green)}
+.eq.bad{border-left-color:var(--red)} .eq b{font-variation-settings:"wdth" 85}
+.eq .st{font-size:.88rem;color:var(--muted);grid-column:1/-1}
+
+.classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0}
+.cls{border-radius:8px;padding:12px;background:var(--surface2);display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center}
+.cls .L{grid-row:span 2;width:44px;height:44px;border-radius:6px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.5rem;font-variation-settings:"wdth" 70}
+.cls span{font-size:.88rem;color:var(--muted)}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.scen{background:var(--surface2);border-radius:8px;padding:14px 16px;font-size:1.05rem}
+.scen .num{color:var(--muted);font-size:.85rem}
+
+.ordlist{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px;counter-reset:o}
+.ordlist li{counter-increment:o;background:var(--ok-bg);padding:9px 12px 9px 44px;border-radius:6px;position:relative}
+.ordlist li::before{content:counter(o);position:absolute;left:12px;font-weight:800}
+
+.audit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
+.plan{width:100%;height:auto;background:var(--surface2);border-radius:8px}
+.plan .wall{fill:none;stroke:var(--ink);stroke-width:3}
+.plan .room{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.plan .rack{fill:var(--muted)}
+.plan .lbl{fill:var(--muted);font-size:12px;font-family:inherit}
+.plan .hs{cursor:pointer}
+.plan .hs circle{fill:var(--yellow);stroke:#1C2226;stroke-width:2}
+.plan .hs text{fill:#1C2226;font-weight:800;font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-family:inherit}
+.plan .hs.ok circle{fill:#4CC98A}.plan .hs.bad circle{fill:#F0675C}
+.plan .hs.sel circle{stroke-width:4}
+.panel{background:var(--surface2);border-radius:8px;padding:16px;min-height:200px}
+.panel h4{margin:0 0 8px}
+
+.pager{display:flex;justify-content:space-between;margin-top:28px;gap:10px}
+.final{background:var(--ink);color:var(--surface);border-radius:8px;padding:16px 18px;margin-top:16px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  nav.mods{position:static}
+  nav.mods ol{flex-direction:row;overflow-x:auto;padding-bottom:6px}
+  nav.mods button{white-space:nowrap;border-left:0;border-bottom:4px solid transparent;border-radius:6px 6px 0 0}
+  nav.mods button[aria-current="true"]{border-bottom-color:var(--yellow)}
+  .layers,.sim,.audit{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="hazard" aria-hidden="true"></div>
+<header class="top">
+  <h1>Seguretat física: protegir el CPD</h1>
+  <p>Set apartats. Cada un té una mica de teoria i una activitat per practicar-la. El progrés es guarda en aquest navegador.</p>
+  <div class="scorebar">
+    <div class="meter" role="progressbar" aria-label="Apartats completats" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><span id="meterFill"></span></div>
+    <span class="scoretxt" id="scoreTxt">0 de 7 apartats · 0 punts</span>
+    <button class="reset" id="resetAll" type="button">Reinicia el progrés</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="mods" aria-label="Apartats"><ol id="navList"></ol></nav>
+  <main>
+
+<!-- 1 -->
+<section class="mod" id="m1" data-title="Física o lògica">
+  <h2>Què és la seguretat física</h2>
+  <p class="lead">Si algú pot entrar a la sala i endur-se el servidor sota el braç, el millor tallafocs del món no serveix de res.</p>
+  <p>La seguretat física (en aquest tema també en direm passiva) protegeix el maquinari i les instal·lacions: robatoris, sabotatges, incendis, aigua, calor o talls de corrent. La seguretat lògica protegeix el programari, les dades i els processos: contrasenyes, permisos, antivirus, xifratge.</p>
+  <div class="cols">
+    <div class="fact"><b>Física</b><p>Protegeix el maquinari de les persones i de la naturalesa. Panys, càmeres, extintors, SAI, aire condicionat.</p></div>
+    <div class="fact"><b>Lògica</b><p>Protegeix programari, sistemes i dades. Tallafocs, permisos, xifratge, actualitzacions.</p></div>
+    <div class="fact"><b>Per què va primer</b><p>És la primera línia de defensa: sense ella, les mesures de ciberseguretat perden efectivitat.</p></div>
+  </div>
+  <h3>Com ha canviat</h3>
+  <ol class="steps">
+    <li><b>Anys 60–70.</b> Grans ordinadors en sales enormes, a l'abast de poques empreses.</li>
+    <li><b>Anys 80–2000.</b> Arriben els ordinadors personals, encara en entorns controlats.</li>
+    <li><b>Avui.</b> Mòbils, sense fil i accés remot: la seguretat és més complexa i cara.</li>
+  </ol>
+  <div class="game" id="g1"></div>
+</section>
+
+<!-- 2 -->
+<section class="mod" id="m2" data-title="Riscos i capes">
+  <h2>Riscos i defensa en capes</h2>
+  <p class="lead">No totes les organitzacions necessiten el mateix nivell de protecció. Un CPD governamental no té els requisits del servidor d'una distribuïdora.</p>
+  <div class="cols">
+    <div class="fact"><b>Vulnerabilitat</b><p>Un punt feble: una finestra sense reixa, una porta que no tanca bé.</p></div>
+    <div class="fact"><b>Amenaça</b><p>Allò que pot causar dany aprofitant una vulnerabilitat: un intrús, un incendi, una fuita d'aigua.</p></div>
+    <div class="fact"><b>Risc</b><p>La probabilitat que l'amenaça es materialitzi, combinada amb l'impacte que tindria.</p></div>
+  </div>
+  <p>Les amenaces poden ser <b>internes</b> (accidents com incendis o fuites, o empleats malintencionats amb accés privilegiat) o <b>externes</b> (atacants de fora que volen robar o fer malbé).</p>
+  <h3>Anàlisi de riscos, pas a pas</h3>
+  <ol class="steps">
+    <li>Identificar els actius que cal protegir.</li>
+    <li>Avaluar la probabilitat i l'impacte de cada amenaça.</li>
+    <li>Comparar el cost de cada mesura amb les pèrdues que evita.</li>
+    <li>Fer un pla d'acció i aplicar-lo.</li>
+  </ol>
+  <h3>Defensa en capes</h3>
+  <p>Diverses mesures complementàries, una dins l'altra. Si una capa falla, les altres continuen protegint, i cada capa fa guanyar temps per reaccionar. Clica cada capa del diagrama.</p>
+  <div class="layers">
+    <svg viewBox="0 0 320 320" role="group" aria-label="Diagrama de capes de seguretat" id="layerSvg"></svg>
+    <div class="layerinfo" id="layerInfo" aria-live="polite"><h4>Tria una capa</h4><p>Cada capa té les seves mesures pròpies.</p></div>
+  </div>
+  <div class="game" id="g2"></div>
+</section>
+
+<!-- 3 -->
+<section class="mod" id="m3" data-title="Emplaçament">
+  <h2>On posem el CPD</h2>
+  <p class="lead">L'emplaçament és la primera decisió de seguretat, i la més cara de corregir després.</p>
+  <div class="cols">
+    <div class="fact"><b>Visibilitat</b><p>Com menys cridi l'atenció, millor: sense rètols ni logos, i fixant-se en quines empreses hi ha al voltant.</p></div>
+    <div class="fact"><b>Factors externs</b><p>Índex de delinqüència i proximitat a policia, bombers i serveis mèdics.</p></div>
+    <div class="fact"><b>Accessibilitat</b><p>Bones carreteres per a subministraments i personal, i proximitat a autopistes, estacions o aeroports.</p></div>
+    <div class="fact"><b>Desastres naturals</b><p>Risc d'inundacions, terratrèmols, esllavissades o temporals.</p></div>
+  </div>
+  <div class="note">Algunes empreses porten la idea a l'extrem: CPD dins de mines antigues, en zones molt fredes per estalviar refrigeració, o fins i tot sota el mar. Microsoft va provar un CPD submarí (Projecte Natick) davant d'Escòcia; era experimental i ja s'ha tancat.</div>
+  <div class="game" id="g3"></div>
+</section>
+
+<!-- 4 -->
+<section class="mod" id="m4" data-title="Condicions ambientals">
+  <h2>Temperatura, humitat i aire</h2>
+  <p class="lead">Les temperatures excessives poden reduir a la meitat la vida útil dels components.</p>
+  <div class="cols">
+    <div class="fact"><b>Massa calor</b><p>Sobreescalfament i danys irreparables als components.</p></div>
+    <div class="fact"><b>Humitat alta</b><p>Condensació, corrosió i curtcircuits.</p></div>
+    <div class="fact"><b>Humitat baixa</b><p>Electricitat estàtica que pot danyar circuits.</p></div>
+    <div class="fact"><b>Pols i interferències</b><p>Ventiladors obstruïts; errors i pèrdua de dades.</p></div>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Equip</th><th>Temperatura</th><th>Humitat relativa</th><th>Si surt del rang</th></tr></thead>
+    <tbody>
+      <tr><td>Servidors</td><td>18–27 °C</td><td>45–55 %</td><td>Sobreescalfament, fallades</td></tr>
+      <tr><td>Discos durs</td><td>10–35 °C</td><td>20–80 %</td><td>Pèrdua de dades</td></tr>
+      <tr><td>Ordinadors</td><td>15–32 °C</td><td>30–70 %</td><td>Rendiment reduït</td></tr>
+      <tr><td>Equips de xarxa</td><td>20–25 °C</td><td>40–60 %</td><td>Interferències, caigudes</td></tr>
+      <tr><td>Emmagatzematge</td><td>fins a 38 °C</td><td>35–65 %</td><td>Corrosió, degradació</td></tr>
+    </tbody>
+  </table></div>
+  <p>Per mantenir-ho tot sota control, el CPD té sensors de temperatura, humitat, fum, fuites d'aigua sota el terra tècnic i qualitat del subministrament elèctric, amb alertes automàtiques. L'alimentació es protegeix amb SAI i grups electrògens.</p>
+  <div class="game" id="g4"></div>
+</section>
+
+<!-- 5 -->
+<section class="mod" id="m5" data-title="Incendis">
+  <h2>Prevenció i extinció d'incendis</h2>
+  <p class="lead">Fer servir l'agent equivocat pot ser més perillós que el mateix foc.</p>
+  <p>Perquè hi hagi foc calen tres coses: <b>combustible</b>, <b>oxigen</b> i <b>calor</b>. Apagar un foc vol dir treure'n una. La prevenció comença per evitar curtcircuits i no acumular paper, cartró ni plàstics prop dels equips.</p>
+  <h3>Classes de foc (norma europea UNE-EN 2)</h3>
+  <div class="classes">
+    <div class="cls"><div class="L">A</div><b>Sòlids</b><span>Paper, fusta, teixits</span></div>
+    <div class="cls"><div class="L">B</div><b>Líquids</b><span>Gasolina, gasoil, dissolvents</span></div>
+    <div class="cls"><div class="L">C</div><b>Gasos</b><span>Butà, propà, gas natural</span></div>
+    <div class="cls"><div class="L">D</div><b>Metalls</b><span>Magnesi, sodi, potassi</span></div>
+    <div class="cls"><div class="L">F</div><b>Olis de cuina</b><span>Fregidores</span></div>
+  </div>
+  <div class="note">El foc elèctric no és una classe a Europa, però és el que més ens afecta: <b>mai aigua ni escuma</b> sobre equips en tensió. Es fa servir CO₂. Als CPD s'instal·len sistemes automàtics de gas net (FM-200, Novec 1230 o gasos inerts), que substitueixen l'antic haló, prohibit per fer malbé la capa d'ozó.</div>
+  <p>La detecció es fa amb detectors òptics de fum (detecten partícules abans que siguin visibles) i sensors tèrmics. El CPD es divideix en zones amb sistemes independents, i els extintors han de passar revisions periòdiques.</p>
+  <div class="game" id="g5"></div>
+</section>
+
+<!-- 6 -->
+<section class="mod" id="m6" data-title="Accés i detecció">
+  <h2>Control d'accés i detecció d'intrusos</h2>
+  <p class="lead">Primer dissuadir, després dificultar, i sempre detectar.</p>
+  <div class="cols">
+    <div class="fact"><b>Dissuadir</b><p>Tanques de 2 a 3 metres, senyals d'avís, vigilants visibles i il·luminació nocturna sense zones fosques.</p></div>
+    <div class="fact"><b>Dificultar</b><p>Panys, targetes, teclats, biometria i mantraps: sales de doble porta on la segona només s'obre si la primera està tancada.</p></div>
+    <div class="fact"><b>Detectar</b><p>Càmeres IP, sensors de moviment (PIR), contactes magnètics, detectors de vibració i de trencament de vidres, amb alimentació pròpia.</p></div>
+  </div>
+  <h3>Els tres factors d'autenticació</h3>
+  <p>Una autenticació forta combina factors <b>de tipus diferent</b>: alguna cosa que <b>tens</b> (targeta, clau), alguna cosa que <b>saps</b> (PIN, contrasenya) i alguna cosa que <b>ets</b> (empremta, iris, cara). Dues contrasenyes no són dos factors.</p>
+  <div class="game" id="g6"></div>
+  <h3>Quan salta l'alarma</h3>
+  <p>Els sensors donen falsos positius, per això cal un protocol: consola central, verificació, cadena de notificació clara, actuació i registre de cada incident. I simulacres periòdics per comprovar que funciona.</p>
+  <div class="game" id="g6b"></div>
+</section>
+
+<!-- 7 -->
+<section class="mod" id="m7" data-title="Auditoria final">
+  <h2>Auditoria: revisa aquest CPD</h2>
+  <p class="lead">Ara ets l'auditor. Clica cada punt del plànol, llegeix què hi has trobat i decideix si és correcte o deficient.</p>
+  <div class="game" id="g7"></div>
+</section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+const MODS=[...document.querySelectorAll('section.mod')];
+let store={};
+try{store=JSON.parse(localStorage.getItem('segfis')||'{}')||{};}catch(e){store={};}
+function save(){try{localStorage.setItem('segfis',JSON.stringify(store));}catch(e){}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}kids.flat().forEach(c=>c!=null&&e.append(c));return e;};
+
+/* ---------- navigation & progress ---------- */
+const nav=document.getElementById('navList');
+function show(i){
+  MODS.forEach((m,k)=>m.classList.toggle('active',k===i));
+  [...nav.querySelectorAll('button')].forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'));
+  try{history.replaceState(null,'','#'+MODS[i].id);}catch(e){}
+}
+MODS.forEach((m,i)=>{
+  nav.append(h('li',{},h('button',{type:'button',onclick:()=>{show(i);window.scrollTo({top:0});}},
+    h('span',{class:'n'},String(i+1)),h('span',{},m.dataset.title),h('span',{class:'done','data-done':m.id}))));
+  const pager=h('div',{class:'pager'});
+  pager.append(i>0?h('button',{class:'btn ghost',type:'button',onclick:()=>{show(i-1);window.scrollTo({top:0});}},'Apartat anterior'):h('span'));
+  if(i<MODS.length-1)pager.append(h('button',{class:'btn',type:'button',onclick:()=>{show(i+1);window.scrollTo({top:0});}},'Següent apartat'));
+  m.append(pager);
+});
+function refresh(){
+  const keys=['g1','g2','g3','g4','g5','g6','g6b','g7'];
+  const modDone={m1:['g1'],m2:['g2'],m3:['g3'],m4:['g4'],m5:['g5'],m6:['g6','g6b'],m7:['g7']};
+  let n=0,pts=0;
+  keys.forEach(k=>{if(store[k])pts+=store[k].s;});
+  for(const[m,gs]of Object.entries(modDone)){
+    const d=gs.every(g=>store[g]);if(d)n++;
+    const el=nav.querySelector(`[data-done="${m}"]`);el.textContent=d?'✓':'';el.setAttribute('aria-label',d?'completat':'');
+  }
+  document.getElementById('meterFill').style.width=(n/7*100)+'%';
+  document.querySelector('.meter').setAttribute('aria-valuenow',n);
+  document.getElementById('scoreTxt').textContent=`${n} de 7 apartats · ${pts} punts`;
+}
+function finish(id,s,t){if(!store[id]||s>=store[id].s)store[id]={s,t};save();refresh();}
+document.getElementById('resetAll').onclick=()=>{store={};save();refresh();};
+
+function shell(id,title){
+  const g=document.getElementById(id);g.innerHTML='';
+  const sc=h('span',{class:'gs'});
+  g.append(h('div',{class:'gh'},h('h3',{},title),sc));
+  const body=h('div',{class:'gb'});g.append(body);
+  return {body,sc};
+}
+
+/* ---------- sorting game ---------- */
+function sortGame(id,title,hint,buckets,items){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(items),sel=null,score=0,done=0;
+  const pl=h('div',{class:'pool','aria-label':'Targetes per classificar'});
+  const bk=h('div',{class:'buckets'});
+  const fb=h('div',{class:'fb','aria-live':'polite'});
+  const upd=()=>sc.textContent=`${score} / ${items.length}`;
+  const bEls={};
+  buckets.forEach(b=>{
+    const el=h('button',{class:'bucket',type:'button',onclick:()=>place(b.id)},h('strong',{},b.label));
+    if(b.sub)el.append(h('span',{class:'hint',style:'margin:0'},b.sub));
+    bEls[b.id]=el;bk.append(el);
+  });
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach((it,i)=>pl.append(h('button',{class:'chip',type:'button','aria-pressed':sel===i?'true':'false',onclick:()=>{sel=sel===i?null:i;drawPool();}},it.t)));
+    Object.values(bEls).forEach(e=>e.classList.toggle('armed',sel!==null));
+  }
+  function place(bid){
+    if(sel===null){fb.className='fb mid';fb.textContent='Primer tria una targeta de dalt.';return;}
+    const it=pool[sel];const ok=it.b===bid;
+    if(ok)score++;done++;
+    bEls[bid].append(h('span',{class:'placed '+(ok?'ok':'bad')},it.t));
+    if(!ok)bEls[it.b].append(h('span',{class:'placed ok'},it.t));
+    fb.className='fb '+(ok?'ok':'bad');
+    fb.innerHTML=(ok?'<b>Correcte.</b> ':'<b>No.</b> Va a «'+buckets.find(b=>b.id===it.b).label+'». ')+(it.why||'');
+    pool.splice(sel,1);sel=null;drawPool();upd();
+    if(!pool.length){
+      finish(id,score,items.length);
+      body.append(h('div',{class:'row'},h('span',{},`Has encertat ${score} de ${items.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>sortGame(id,title,hint,buckets,items)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,bk,fb);drawPool();upd();
+}
+
+/* ---------- multiple-choice rounds ---------- */
+function choiceGame(id,title,rounds,opts={}){
+  const {body,sc}=shell(id,title);
+  let r=0,score=0;
+  const upd=()=>sc.textContent=`${score} / ${rounds.length}`;
+  function draw(){
+    body.innerHTML='';upd();
+    if(r>=rounds.length){
+      finish(id,score,rounds.length);
+      body.append(h('p',{},`Has encertat ${score} de ${rounds.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{r=0;score=0;draw();}},'Torna-hi'));return;
+    }
+    const R=rounds[r];
+    body.append(h('p',{class:'hint'},`Pregunta ${r+1} de ${rounds.length}`),h('p',{class:'q'},R.q));
+    if(R.ctx)body.append(h('p',{},R.ctx));
+    const box=h('div',{class:'opts'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    const btns=R.o.map(o=>{
+      const b=h('button',{class:'opt'+(o.site?' site':''),type:'button',html:o.t});
+      b.onclick=()=>{
+        btns.forEach((x,k)=>{x.disabled=true;const oo=R.o[k];if(oo.ok)x.classList.add('ok');x.append(h('small',{},oo.why));});
+        if(!o.ok)b.classList.add('bad');else score++;
+        fb.className='fb '+(o.ok?'ok':'bad');fb.innerHTML=o.ok?'<b>Correcte.</b> Llegeix també per què les altres no.':'<b>No és la millor opció.</b> Mira l\'explicació de cada resposta.';
+        upd();body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<rounds.length?'Següent pregunta':'Veure resultat')));
+      };
+      box.append(b);return b;
+    });
+    body.append(box,fb);
+  }
+  draw();
+}
+
+/* ---------- 1: física o lògica ---------- */
+sortGame('g1','Física o lògica?','Tria una targeta i després la caixa on va. Compte amb les trampes.',
+ [{id:'f',label:'Seguretat física'},{id:'l',label:'Seguretat lògica'}],
+ [
+  {t:'Rack tancat amb clau',b:'f',why:'Impedeix tocar el maquinari.'},
+  {t:'Tallafocs de la xarxa',b:'l',why:'Filtra el trànsit, és programari o configuració.'},
+  {t:'SAI (alimentació ininterrompuda)',b:'f',why:'Protegeix els equips de talls i pics de corrent.'},
+  {t:'Permisos d\'usuari a les carpetes',b:'l',why:'Controla qui accedeix a les dades dins del sistema.'},
+  {t:'Detector de fuites sota el terra tècnic',b:'f',why:'Avisa d\'una amenaça material: l\'aigua.'},
+  {t:'Xifratge del disc dur',b:'l',why:'Protegeix les dades, no el disc.'},
+  {t:'Lector d\'empremta a la porta del CPD',b:'f',why:'Controla l\'entrada física a la sala.'},
+  {t:'Empremta per desbloquejar el portàtil',b:'l',why:'La mateixa tecnologia, però aquí controla l\'accés al sistema, no a un espai.'},
+  {t:'Aire condicionat amb filtres',b:'f',why:'Controla temperatura i pols.'},
+  {t:'Actualitzacions del sistema operatiu',b:'l',why:'Tanquen vulnerabilitats del programari.'}
+ ]);
+
+/* ---------- 2: capes ---------- */
+const LAYERS=[
+ {id:'per',label:'Perímetre',d:'Tanques, murs, barreres i il·luminació exterior. Allunya l\'atacant i el fa visible.'},
+ {id:'edi',label:'Edifici',d:'Recepció, vigilants, torns amb targeta i registre de visites.'},
+ {id:'cri',label:'Espais crítics',d:'Sala de servidors: mantraps, biometria i targetes amb PIN.'},
+ {id:'equ',label:'Equips',d:'Racks amb pany, cadenats de portàtil, armaris tancats.'},
+ {id:'mon',label:'Monitoratge',d:'Travessa totes les capes: càmeres, sensors i alarmes que vigilen cada nivell.'}
+];
+(function(){
+  const svg=document.getElementById('layerSvg');const info=document.getElementById('layerInfo');
+  const fills=['#cfd6cf','#b9c3bc','#a3b0a9','#8d9d96'];
+  const ns='http://www.w3.org/2000/svg';
+  LAYERS.slice(0,4).forEach((L,i)=>{
+    const g=document.createElementNS(ns,'g');g.setAttribute('class','ly');g.setAttribute('tabindex','0');g.setAttribute('role','button');g.setAttribute('aria-label',L.label);
+    const p=10+i*36,s=300-i*72;
+    const r=document.createElementNS(ns,'rect');Object.entries({x:p,y:p+20,width:s,height:s-20,rx:10,fill:fills[i]}).forEach(([k,v])=>r.setAttribute(k,v));
+    const t=document.createElementNS(ns,'text');t.setAttribute('x',p+10);t.setAttribute('y',p+40);t.textContent=L.label;
+    g.append(r,t);svg.append(g);
+    const act=()=>{svg.querySelectorAll('.ly').forEach(x=>x.classList.remove('sel'));g.classList.add('sel');info.innerHTML=`<h4>${L.label}</h4><p>${L.d}</p>`;};
+    g.addEventListener('click',act);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});
+  });
+  const M=LAYERS[4];
+  const g=document.createElementNS(ns,'g');g.setAttribute('class','ly');g.setAttribute('tabindex','0');g.setAttribute('role','button');g.setAttribute('aria-label',M.label);
+  const r=document.createElementNS(ns,'rect');Object.entries({x:10,y:0,width:300,height:22,rx:6,fill:'#F2C200'}).forEach(([k,v])=>r.setAttribute(k,v));
+  const t=document.createElementNS(ns,'text');t.setAttribute('x',20);t.setAttribute('y',15);t.textContent='Monitoratge (a totes les capes)';t.style.fill='#1C2226';
+  g.append(r,t);svg.append(g);
+  const act=()=>{svg.querySelectorAll('.ly').forEach(x=>x.classList.remove('sel'));g.classList.add('sel');info.innerHTML=`<h4>${M.label}</h4><p>${M.d}</p>`;};
+  g.addEventListener('click',act);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});
+})();
+sortGame('g2','Cada mesura a la seva capa','Tria una mesura i la capa on la posaries.',
+ LAYERS.map(l=>({id:l.id,label:l.label})),
+ [
+  {t:'Tanca de 2,5 m',b:'per',why:'És la barrera exterior.'},
+  {t:'Focus que il·luminen el pàrquing',b:'per',why:'Elimina zones fosques a l\'exterior.'},
+  {t:'Vigilant a recepció',b:'edi',why:'Controla qui entra a l\'edifici.'},
+  {t:'Torn d\'entrada amb targeta',b:'edi',why:'Filtra l\'accés a l\'edifici.'},
+  {t:'Mantrap',b:'cri',why:'Típic de l\'entrada a la sala de servidors.'},
+  {t:'Escàner d\'iris a la sala de servidors',b:'cri',why:'Autenticació forta per a l\'espai més sensible.'},
+  {t:'Rack amb pany',b:'equ',why:'Protegeix l\'equip individual.'},
+  {t:'Cadenat Kensington al portàtil',b:'equ',why:'Lliga l\'equip a la taula.'},
+  {t:'Càmeres IP amb analítica de vídeo',b:'mon',why:'Vigilen i alerten de comportaments estranys.'},
+  {t:'Sensors de moviment PIR',b:'mon',why:'Detecten presència i disparen l\'alarma.'}
+ ]);
+
+/* ---------- 3: emplaçament ---------- */
+choiceGame('g3','Tria l\'emplaçament',[
+ {q:'L\'empresa ha de construir un CPD nou. Quina parcel·la tries?',
+  o:[
+   {site:1,t:'<b>Parcel·la A: polígon vora el riu</b><ul><li>Accés directe a l\'autopista</li><li>Parc de bombers a 5 minuts</li><li>Zona marcada com a inundable</li><li>Rètol gran amb el logo a la façana</li></ul>',ok:false,why:'Bona accessibilitat, però el risc d\'inundació és molt greu per a un CPD i el rètol el fa visible.'},
+   {site:1,t:'<b>Parcel·la B: zona elevada a les afores</b><ul><li>Bona carretera fins a l\'autovia</li><li>Bombers i policia a 10 minuts</li><li>Risc natural baix</li><li>Nau discreta, sense rètols</li></ul>',ok:true,why:'Equilibra bé els quatre factors: baixa visibilitat, accés correcte, serveis a prop i poc risc natural.'},
+   {site:1,t:'<b>Parcel·la C: baixos d\'un edifici al centre</b><ul><li>Comissaria a la mateixa plaça</li><li>Aparcament públic just a sota</li><li>Carrers estrets, camions amb dificultats</li><li>Façana de vidre a peu de carrer</li></ul>',ok:false,why:'Molta visibilitat, mal accés per a subministraments i un aparcament a sota (risc d\'incendi i de vehicles).'}
+  ]},
+ {q:'Dins l\'edifici, en quina planta poses la sala de servidors?',
+  o:[
+   {t:'Al soterrani, que és el lloc més amagat',ok:false,why:'És on primer arriba l\'aigua en una inundació o una fuita.'},
+   {t:'A la planta baixa, amb finestres al carrer per ventilar',ok:false,why:'Les finestres són un punt d\'entrada i deixen veure l\'interior; la ventilació ha de ser per climatització tancada.'},
+   {t:'En una planta intermèdia, en una sala interior sense finestres',ok:true,why:'Lluny de l\'aigua del soterrani, sense accés directe des del carrer i fàcil de climatitzar.'},
+   {t:'Al terrat, per aprofitar l\'aire fresc',ok:false,why:'Exposada a la intempèrie, a llamps i a la calor del sol.'}
+  ]},
+ {q:'Quin d\'aquests detalls fa augmentar la visibilitat del CPD?',
+  o:[
+   {t:'Que la nau sigui grisa i sense finestres',ok:false,why:'Això justament la fa passar desapercebuda.'},
+   {t:'Que el web de l\'empresa publiqui fotos de la sala i l\'adreça exacta',ok:true,why:'Dona informació gratuïta a qualsevol atacant.'},
+   {t:'Que hi hagi una tanca perimetral',ok:false,why:'La tanca és dissuasiva i no revela què hi ha a dins.'}
+  ]}
+]);
+
+/* ---------- 4: simulador ---------- */
+(function(){
+  const {body,sc}=shell('g4','Simulador: troba la zona segura');
+  const EQ=[
+   {n:'Servidors',t:[18,27],h:[45,55]},
+   {n:'Discos durs',t:[10,35],h:[20,80]},
+   {n:'Ordinadors',t:[15,32],h:[30,70]},
+   {n:'Equips de xarxa',t:[20,25],h:[40,60]},
+   {n:'Emmagatzematge',t:[10,38],h:[35,65]}
+  ];
+  let won=!!store.g4;
+  const tIn=h('input',{type:'range',min:'0',max:'45',value:'33',id:'simT'});
+  const hIn=h('input',{type:'range',min:'5',max:'95',value:'25',id:'simH'});
+  const tOut=h('output',{for:'simT'}),hOut=h('output',{for:'simH'});
+  const list=h('div',{'aria-live':'polite'});const fb=h('div',{class:'fb'});
+  function why(e,t,hu){
+    const r=[];
+    if(t>e.t[1])r.push('massa calor: sobreescalfament');
+    if(t<e.t[0])r.push('massa fred: condensació en canvis bruscos');
+    if(hu>e.h[1])r.push('humitat alta: corrosió');
+    if(hu<e.h[0])r.push('humitat baixa: electricitat estàtica');
+    return r;
+  }
+  function upd(){
+    const t=+tIn.value,hu=+hIn.value;tOut.textContent=t+' °C';hOut.textContent=hu+' %';
+    list.innerHTML='';let okc=0;
+    EQ.forEach(e=>{const r=why(e,t,hu);if(!r.length)okc++;
+      list.append(h('div',{class:'eq'+(r.length?' bad':'')},h('b',{},e.n),h('span',{},r.length?'Fora de rang':'Correcte'),h('span',{class:'st'},r.length?r.join(' · '):`${e.t[0]}–${e.t[1]} °C, ${e.h[0]}–${e.h[1]} %`)));});
+    sc.textContent=`${okc} / ${EQ.length} equips bé`;
+    if(okc===EQ.length){fb.className='fb ok';fb.innerHTML='<b>Ho tens.</b> La zona on tot funciona és 20–25 °C i 45–55 % d\'humitat: la marquen els equips de xarxa (temperatura) i els servidors (humitat). En un CPD es treballa sempre dins d\'aquesta franja.';
+      if(!won){won=true;finish('g4',5,5);}}
+    else{fb.className='fb mid';fb.textContent='Mou els controls fins que tots els equips estiguin en verd.';}
+  }
+  tIn.oninput=hIn.oninput=upd;
+  body.append(h('p',{class:'hint'},'La sala està a 33 °C i 25 % d\'humitat. Ajusta la climatització fins que tots els equips funcionin dins del seu rang.'),
+    h('div',{class:'sim'},h('div',{},
+      h('div',{class:'slider'},h('label',{for:'simT'},'Temperatura',tOut),tIn),
+      h('div',{class:'slider'},h('label',{for:'simH'},'Humitat relativa',hOut),hIn)),list),fb);
+  upd();
+})();
+
+/* ---------- 5: apaga el foc ---------- */
+(function(){
+  const id='g5';
+  const AG=['Aigua','Escuma','Pols ABC','CO₂','Pols específica D','Agent per a classe F','Gas net automàtic (FM-200)'];
+  const SC=[
+   {s:'La paperera de l\'oficina, plena de paper, ha agafat foc.',c:'A',r:{'Aigua':'ok','Escuma':'ok','Pols ABC':'ok','CO₂':'mid'},x:'Foc de classe A (sòlids). L\'aigua, l\'escuma i la pols ABC hi van bé. El CO₂ l\'apaga en superfície però pot revifar.'},
+   {s:'S\'ha vessat gasoil al costat del grup electrogen i crema.',c:'B',r:{'Escuma':'ok','Pols ABC':'ok','CO₂':'ok','Aigua':'bad'},x:'Classe B (líquids). L\'aigua escampa el combustible i amplia el foc.'},
+   {s:'Una fuita de propà s\'ha encès a la sala de calderes.',c:'C',r:{'Pols ABC':'ok','Aigua':'bad','Escuma':'bad'},x:'Classe C (gasos). Pols ABC, però el més important és tallar el subministrament de gas.'},
+   {s:'Una regleta treu fum dins d\'un rack amb els servidors en marxa.',c:'elèctric',r:{'CO₂':'ok','Gas net automàtic (FM-200)':'ok','Pols ABC':'mid','Aigua':'bad','Escuma':'bad'},x:'Foc elèctric. CO₂ o gas net: no condueixen ni deixen residu. La pols ABC l\'apaga però fa malbé els equips. Aigua i escuma condueixen: risc d\'electrocució.'},
+   {s:'Llimadures de magnesi cremen al taller de manteniment.',c:'D',r:{'Pols específica D':'ok','Aigua':'bad','CO₂':'bad'},x:'Classe D (metalls). Només pols específica. L\'aigua i el CO₂ poden reaccionar amb el metall i empitjorar-ho.'},
+   {s:'La fregidora de la cafeteria del costat ha pres foc.',c:'F',r:{'Agent per a classe F':'ok','Aigua':'bad'},x:'Classe F (olis de cuina). L\'aigua sobre oli bullent provoca una explosió de vapor.'},
+   {s:'S\'ha declarat un incendi a tota la sala de servidors.',c:'CPD',r:{'Gas net automàtic (FM-200)':'ok','CO₂':'mid','Aigua':'bad'},x:'Sistema automàtic de gas net: actua a tota la sala, no fa malbé els equips i és segur per a les persones si s\'evacua seguint el protocol. Un extintor de CO₂ no arriba a tota la sala i en espais tancats és perillós per a les persones.'}
+  ];
+  const {body,sc}=shell(id,'Apaga el foc');
+  let i=0,score=0;
+  function draw(){
+    body.innerHTML='';sc.textContent=`${score} / ${SC.length}`;
+    if(i>=SC.length){finish(id,score,SC.length);body.append(h('p',{},`Has triat bé a la primera ${score} de ${SC.length} vegades.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{i=0;score=0;draw();}},'Torna-hi'));return;}
+    const S=SC[i];
+    body.append(h('p',{class:'hint'},'Tria l\'agent extintor. Compte: alguns agents són perillosos.'),
+      h('div',{class:'scen'},h('div',{class:'num'},`Situació ${i+1} de ${SC.length}`),S.s));
+    const box=h('div',{class:'agents'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    const btns=AG.map(a=>{const b=h('button',{class:'opt',type:'button'},a);
+      b.onclick=()=>{
+        const res=S.r[a]||'no';if(res==='ok')score++;
+        btns.forEach(x=>{x.disabled=true;const rr=S.r[x.textContent];if(rr==='ok')x.classList.add('ok');else if(rr==='bad')x.classList.add('bad');else if(rr==='mid')x.classList.add('mid');});
+        const head={ok:'<b>Bona tria.</b> ',mid:'<b>Funciona, però no és el millor.</b> ',bad:'<b>Perillós!</b> ',no:'<b>No és adequat.</b> '}[res];
+        fb.className='fb '+(res==='ok'?'ok':res==='mid'?'mid':'bad');fb.innerHTML=head+S.x+'<br><small>Verd: adequat · groc: funciona amb inconvenients · vermell: perillós</small>';
+        sc.textContent=`${score} / ${SC.length}`;
+        body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{i++;draw();}},i+1<SC.length?'Següent situació':'Veure resultat')));
+      };box.append(b);return b;});
+    body.append(box,fb);
+  }
+  draw();
+})();
+
+/* ---------- 6: factors + 2FA ---------- */
+sortGame('g6','Tens, saps o ets?','Classifica cada mètode segons el tipus de factor.',
+ [{id:'t',label:'Alguna cosa que tens'},{id:'s',label:'Alguna cosa que saps'},{id:'e',label:'Alguna cosa que ets'}],
+ [
+  {t:'Targeta intel·ligent amb xip',b:'t'},{t:'PIN de 6 xifres',b:'s'},{t:'Empremta dactilar',b:'e'},
+  {t:'Clau del rack',b:'t'},{t:'Contrasenya',b:'s'},{t:'Patró de l\'iris',b:'e'},
+  {t:'Clauer de proximitat',b:'t'},{t:'Codi del teclat de la porta',b:'s'},{t:'Reconeixement facial 3D',b:'e'},{t:'Geometria de la mà',b:'e'}
+ ]);
+
+/* ---------- 6b: ordre del protocol ---------- */
+(function(){
+  const id='g6b';
+  const STEPS=['L\'alarma arriba a la consola central','Es verifica amb les càmeres si és real o un fals positiu','S\'avisa seguint la cadena de notificació','S\'avisa les forces de seguretat i es confina la zona','Es registra l\'incident: hora, tipus, resposta i resolució'];
+  const {body,sc}=shell(id,'Ordena el protocol d\'intrusió');
+  function start(){
+    body.innerHTML='';let next=0,errors=0;
+    const ol=h('ol',{class:'ordlist'});const box=h('div',{class:'opts'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    sc.textContent='0 / '+STEPS.length;
+    shuffle(STEPS.map((s,k)=>({s,k}))).forEach(o=>{
+      const b=h('button',{class:'opt',type:'button'},o.s);
+      b.onclick=()=>{
+        if(o.k===next){next++;b.remove();ol.append(h('li',{},o.s));fb.className='fb ok';fb.textContent='Correcte.';sc.textContent=next+' / '+STEPS.length;
+          if(next===STEPS.length){const s=Math.max(0,STEPS.length-errors);finish(id,s,STEPS.length);fb.innerHTML=`<b>Protocol complet</b> amb ${errors} error${errors===1?'':'s'}.`;body.append(h('button',{class:'btn ghost',type:'button',onclick:start},'Torna-hi'));}}
+        else{errors++;fb.className='fb bad';fb.textContent='Aquest pas encara no toca. Pensa què ha de passar abans.';}
+      };box.append(b);});
+    body.append(h('p',{class:'hint'},'Ha saltat l\'alarma de la porta del CPD a les 3 de la matinada. Clica els passos en l\'ordre correcte.'),ol,box,fb);
+  }
+  start();
+})();
+
+/* ---------- 7: auditoria ---------- */
+(function(){
+  const id='g7';
+  const HS=[
+   {x:30,y:200,t:'Tanca perimetral',d:'La tanca exterior fa 1 metre d\'alçada.',ok:false,w:'Massa baixa. Per ser dissuasiva ha de fer entre 2 i 3 metres.'},
+   {x:135,y:320,t:'Recepció',d:'Hi ha un vigilant les 24 hores i es registren totes les visites.',ok:true,w:'Control d\'accés a l\'edifici i traçabilitat.'},
+   {x:240,y:310,t:'Entrada a la sala',d:'Mantrap: la primera porta s\'obre amb targeta i la segona amb empremta.',ok:true,w:'Dos factors diferents (tens + ets) i doble porta.'},
+   {x:562,y:185,t:'Paret exterior de la sala',d:'La sala de servidors té una finestra que dona al carrer.',ok:false,w:'Punt d\'entrada i de visibilitat. La sala ha de ser interior i sense finestres.'},
+   {x:300,y:75,t:'Termòstat',d:'Marca 31 °C de manera constant.',ok:false,w:'Fora del rang dels servidors (18–27 °C) i dels equips de xarxa (20–25 °C).'},
+   {x:300,y:330,t:'Higròmetre',d:'La humitat relativa és del 50 %.',ok:true,w:'Dins del rang de tots els equips.'},
+   {x:525,y:330,t:'Extintor',d:'Al costat dels racks hi ha un extintor d\'aigua.',ok:false,w:'Aigua sobre equips en tensió: risc d\'electrocució. Ha de ser de CO₂.'},
+   {x:135,y:105,t:'Sala tècnica',d:'Bombones de FM-200 connectades a detectors òptics de fum de la sala.',ok:true,w:'Extinció automàtica amb gas net, sense danyar els equips.'},
+   {x:430,y:195,t:'Terra tècnic',d:'Sota el terra tècnic s\'hi guarden capses de cartró i manuals.',ok:false,w:'Material combustible on passa el cablejat, i tapa els sensors de fuites.'},
+   {x:135,y:190,t:'Alimentació',d:'SAI per als racks i grup electrogen que es prova cada mes.',ok:true,w:'Continuïtat del servei davant de talls de corrent.'}
+  ];
+  const ans={};let cur=null;
+  const {body,sc}=shell(id,'Auditoria del CPD');
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 600 400');svg.setAttribute('class','plan');svg.setAttribute('role','group');svg.setAttribute('aria-label','Plànol del CPD amb punts a revisar');
+  const mk=(tag,a,txt)=>{const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);if(txt)e.textContent=txt;return e;};
+  svg.append(
+    mk('rect',{x:12,y:12,width:576,height:376,class:'wall','stroke-dasharray':'8 6','stroke-width':'2'}),
+    mk('rect',{x:60,y:50,width:500,height:320,class:'room'}),
+    mk('rect',{x:60,y:50,width:150,height:190,class:'room'}),
+    mk('rect',{x:60,y:240,width:150,height:130,class:'room'}),
+    mk('rect',{x:210,y:250,width:60,height:120,class:'room'}),
+    mk('rect',{x:270,y:50,width:290,height:320,class:'room'}),
+    mk('line',{x1:560,y1:155,x2:560,y2:215,stroke:'#8DB6D3','stroke-width':'8'}),
+    mk('text',{x:70,y:68,class:'lbl'},'Sala tècnica'),
+    mk('text',{x:70,y:258,class:'lbl'},'Recepció'),
+    mk('text',{x:214,y:268,class:'lbl'},'Mantrap'),
+    mk('text',{x:280,y:68,class:'lbl'},'Sala de servidors'),
+    mk('text',{x:20,y:30,class:'lbl'},'Tanca')
+  );
+  for(let k=0;k<5;k++){svg.append(mk('rect',{x:340+k*42,y:100,width:28,height:60,class:'rack'}));svg.append(mk('rect',{x:340+k*42,y:230,width:28,height:60,class:'rack'}));}
+  const gs=HS.map((p,k)=>{
+    const g=mk('g',{class:'hs',tabindex:'0',role:'button','aria-label':`Punt ${k+1}: ${p.t}`});
+    g.append(mk('circle',{cx:p.x,cy:p.y,r:14}),mk('text',{x:p.x,y:p.y},String(k+1)));
+    const act=()=>open(k);g.addEventListener('click',act);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});
+    svg.append(g);return g;});
+  const panel=h('div',{class:'panel','aria-live':'polite'},h('h4',{},'Tria un punt del plànol'),h('p',{},'Hi ha 10 punts per revisar. Alguns estan bé i d\'altres no.'));
+  const upd=()=>{const n=Object.keys(ans).length,s=Object.values(ans).filter(Boolean).length;sc.textContent=`${n} / ${HS.length} revisats · ${s} encerts`;return {n,s};};
+  function open(k){
+    cur=k;gs.forEach((g,j)=>g.classList.toggle('sel',j===k));
+    const p=HS[k];panel.innerHTML='';
+    panel.append(h('h4',{},`${k+1}. ${p.t}`),h('p',{},p.d));
+    if(k in ans){showRes(k);return;}
+    panel.append(h('div',{class:'row'},
+      h('button',{class:'btn',type:'button',onclick:()=>judge(k,true)},'Correcte'),
+      h('button',{class:'btn ghost',type:'button',onclick:()=>judge(k,false)},'Deficient')));
+  }
+  function showRes(k){const p=HS[k];const good=ans[k];
+    panel.append(h('div',{class:'fb '+(good?'ok':'bad')},h('b',{},(good?'Encertat. ':'No. ')+(p.ok?'És correcte. ':'És deficient. ')),p.w));}
+  function judge(k,v){
+    ans[k]=(v===HS[k].ok);gs[k].classList.add(HS[k].ok?'ok':'bad');
+    open(k);const {n,s}=upd();
+    if(n===HS.length){finish(id,s,HS.length);
+      const bad=HS.filter(p=>!p.ok).length;
+      body.append(h('div',{class:'final'},h('b',{},`Auditoria acabada: ${s} de ${HS.length} encerts. `),`El CPD té ${bad} deficiències: tanca baixa, finestra exterior, temperatura alta, extintor d'aigua i material combustible sota el terra tècnic.`));}
+  }
+  body.append(h('p',{class:'hint'},'Els punts es tornen verds (correcte) o vermells (deficient) quan els revises.'),h('div',{class:'audit'},svg,panel));upd();
+})();
+
+/* ---------- start ---------- */
+refresh();
+const start=Math.max(0,MODS.findIndex(m=>'#'+m.id===location.hash));show(start);
+})();
+</script>
+</body>
+</html>
