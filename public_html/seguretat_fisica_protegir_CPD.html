@@ -182,15 +182,30 @@ th{font-variation-settings:"wdth" 85;background:var(--surface2)}
   <main>
 
 <!-- 1 -->
-<section class="mod" id="m1" data-title="Física o lògica">
-  <h2>Què és la seguretat física?</h2>
+<section class="mod" id="m1" data-title="Tipus de seguretat">
+  <h2>Tipus de seguretat</h2>
   <p class="lead">Si algú pot entrar a la sala i endur-se el servidor sota el braç, el millor tallafocs del món no serveix de res.</p>
-  <p>La seguretat física protegeix el maquinari i les instal·lacions: robatoris, sabotatges, incendis, aigua, calor o talls de corrent. La seguretat lògica protegeix el programari i les dades: contrasenyes, permisos, antivirus, xifratge. Són una classificació diferent de la d'activa i passiva: una mesura física pot ser activa (un pany, una càmera) o passiva (un SAI, un sistema d'extinció).</p>
+  <p>La seguretat física protegeix el maquinari i les instal·lacions: robatoris, sabotatges, incendis, aigua, calor o talls de corrent. La seguretat lògica protegeix el programari i les dades: contrasenyes, permisos, antivirus, xifratge.</p>
   <div class="cols">
     <div class="fact"><b>Física</b><p>Protegeix el maquinari de les persones i de la naturalesa. Panys, càmeres, extintors, SAI, aire condicionat.</p></div>
     <div class="fact"><b>Lògica</b><p>Protegeix programari, sistemes i dades. Tallafocs, permisos, xifratge, actualitzacions.</p></div>
     <div class="fact"><b>Per què va primer</b><p>És la primera línia de defensa: sense ella, les mesures de ciberseguretat perden efectivitat.</p></div>
   </div>
+  <h3>Activa o passiva</h3>
+  <p>Hi ha una segona classificació, independent de l'anterior. Física o lògica respon a <b>què</b> protegim. Activa o passiva respon a <b>quan</b> actua la mesura.</p>
+  <div class="cols">
+    <div class="fact"><b>Activa</b><p>Actua abans de l'incident: l'evita o el detecta. Panys, control d'accés, càmeres, antivirus, tallafocs.</p></div>
+    <div class="fact"><b>Passiva</b><p>Actua quan l'incident ja ha passat: en redueix el dany i permet recuperar-se. SAI, extinció automàtica, còpies de seguretat, RAID.</p></div>
+  </div>
+  <p>Les dues classificacions es combinen. Una mesura física pot ser activa o passiva, i una de lògica també:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Activa (evitar / detectar)</th><th>Passiva (minimitzar / recuperar)</th></tr></thead>
+    <tbody>
+      <tr><th>Física</th><td>Panys, control d'accés, càmeres, detectors de fum</td><td>SAI, grup electrogen, extinció automàtica, CPD redundant</td></tr>
+      <tr><th>Lògica</th><td>Contrasenyes, antivirus, tallafocs, permisos</td><td>Còpies de seguretat, RAID, plans de recuperació</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">Aquesta pàgina se centra en la seguretat <b>física</b> del CPD, i per això hi trobaràs mesures actives (control d'accés, detecció d'intrusos) i passives (SAI, extinció d'incendis).</div>
   <h3>Com ha canviat</h3>
   <ol class="steps">
     <li><b>Anys 60–70.</b> Grans ordinadors en sales enormes, a l'abast de poques empreses.</li>
@@ -198,6 +213,7 @@ th{font-variation-settings:"wdth" 85;background:var(--surface2)}
     <li><b>Avui.</b> Mòbils, sense fil i accés remot: la seguretat és més complexa i cara.</li>
   </ol>
   <div class="game" id="g1"></div>
+  <div class="game" id="g1b"></div>
 </section>
 
 <!-- 2 -->
@@ -334,8 +350,8 @@ MODS.forEach((m,i)=>{
   m.append(pager);
 });
 function refresh(){
-  const keys=['g1','g2','g3','g4','g5','g6','g6b','g7'];
-  const modDone={m1:['g1'],m2:['g2'],m3:['g3'],m4:['g4'],m5:['g5'],m6:['g6','g6b'],m7:['g7']};
+  const keys=['g1','g1b','g2','g3','g4','g5','g6','g6b','g7'];
+  const modDone={m1:['g1','g1b'],m2:['g2'],m3:['g3'],m4:['g4'],m5:['g5'],m6:['g6','g6b'],m7:['g7']};
   let n=0,pts=0;
   keys.forEach(k=>{if(store[k])pts+=store[k].s;});
   for(const[m,gs]of Object.entries(modDone)){
@@ -437,6 +453,21 @@ sortGame('g1','Física o lògica?','Tria una targeta i després la caixa on va. 
   {t:'Empremta per desbloquejar el portàtil',b:'l',why:'La mateixa tecnologia, però aquí controla l\'accés al sistema, no a un espai.'},
   {t:'Aire condicionat amb filtres',b:'f',why:'Controla temperatura i pols.'},
   {t:'Actualitzacions del sistema operatiu',b:'l',why:'Tanquen vulnerabilitats del programari.'}
+ ]);
+
+sortGame('g1b','Activa o passiva?','Abans o després de l\'incident? Classifica cada mesura.',
+ [{id:'a',label:'Seguretat activa',sub:'Evita o detecta'},{id:'p',label:'Seguretat passiva',sub:'Minimitza el dany o recupera'}],
+ [
+  {t:'Pany a la porta del CPD',b:'a',why:'Impedeix l\'entrada abans que passi res.'},
+  {t:'Càmeres de vigilància',b:'a',why:'Dissuadeixen i detecten intrusos.'},
+  {t:'Antivirus',b:'a',why:'Detecta i bloqueja el programari maliciós.'},
+  {t:'Tallafocs',b:'a',why:'Bloqueja connexions no permeses.'},
+  {t:'Contrasenyes robustes',b:'a',why:'Eviten accessos no autoritzats.'},
+  {t:'SAI',b:'p',why:'Quan ja ha marxat el corrent, manté els equips en marxa.'},
+  {t:'Grup electrogen',b:'p',why:'Dona continuïtat al servei durant un tall llarg.'},
+  {t:'Extinció automàtica amb gas net',b:'p',why:'Actua quan el foc ja ha començat i en limita el dany.'},
+  {t:'Còpies de seguretat',b:'p',why:'Permeten recuperar les dades després d\'una pèrdua.'},
+  {t:'RAID amb redundància',b:'p',why:'Si falla un disc, les dades continuen disponibles.'}
  ]);
 
 /* ---------- 2: capes ---------- */
