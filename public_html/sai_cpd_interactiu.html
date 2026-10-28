@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El CPD i els SAI · AEA1 · M0226</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E6E2; --surface:#F6F7F4; --surface2:#ECEEEA; --ink:#1C2226; --muted:#56616A; --line:#C7CCC6;
+  --yellow:#F2C200; --yellow-ink:#3A2E00; --red:#C8281E; --green:#0E7F49; --blue:#2F5671;
+  --ok-bg:#DDF0E5; --bad-bg:#F8DEDB; --mid-bg:#FBF0C6; --focus:#2F5671;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+    --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+    --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+  --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+  --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variation-settings:"wdth" 100;font-size:17px;line-height:1.55}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+img,svg{max-width:100%}
+
+.hazard{height:10px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 14px,#1C2226 14px 28px)}
+header.top{padding:28px 24px 22px;max-width:1180px;margin:0 auto}
+header.top h1{margin:0;font-weight:800;font-variation-settings:"wdth" 70;font-size:clamp(2.1rem,6vw,3.6rem);line-height:1;letter-spacing:-.01em}
+header.top p{margin:.6rem 0 0;color:var(--muted);max-width:60ch}
+.scorebar{display:flex;gap:16px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.meter{flex:1 1 220px;max-width:360px;height:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--green);width:0;transition:width .4s}
+.scoretxt{font-weight:700;font-variant-numeric:tabular-nums}
+.reset{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:.85rem;color:var(--muted)}
+
+.layout{max-width:1180px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+nav.mods{position:sticky;top:env(safe-area-inset-top,0px);padding-top:8px}
+nav.mods ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+nav.mods button{width:100%;text-align:left;background:none;border:0;border-left:4px solid transparent;padding:9px 12px;border-radius:0 6px 6px 0;display:flex;gap:10px;align-items:baseline}
+nav.mods button:hover{background:var(--surface2)}
+nav.mods button[aria-current="true"]{background:var(--surface);border-left-color:var(--yellow);font-weight:700}
+nav.mods .n{font-variation-settings:"wdth" 70;font-weight:800;color:var(--muted);min-width:1.2em}
+nav.mods .done{margin-left:auto;color:var(--green);font-weight:800}
+
+main{min-width:0}
+section.mod{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px clamp(18px,4vw,40px) 34px}
+section.mod.active{display:block}
+.mod h2{margin:0 0 .2rem;font-weight:800;font-variation-settings:"wdth" 75;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
+.mod .lead{color:var(--muted);margin:0 0 1.4rem;max-width:68ch}
+.mod h3{font-variation-settings:"wdth" 85;font-weight:750;font-size:1.25rem;margin:2rem 0 .6rem}
+.mod p{max-width:70ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:1rem 0}
+.fact{background:var(--surface2);border-radius:8px;padding:14px 16px;border-top:4px solid var(--blue)}
+.fact b{display:block;margin-bottom:4px}
+.fact p{margin:0;font-size:.95rem}
+.note{border-left:4px solid var(--yellow);background:var(--mid-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:1.2rem 0;max-width:72ch}
+.steps{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface2);border-radius:8px;padding:12px 14px 12px 50px;position:relative;font-size:.95rem}
+.steps li::before{content:counter(s);position:absolute;left:12px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-weight:800}
+.tablewrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-variation-settings:"wdth" 85;background:var(--surface2)}
+
+.game{margin-top:2.2rem;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.game>.gh{background:var(--ink);color:var(--surface);padding:12px 18px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.game>.gh h3{margin:0;color:inherit;font-size:1.15rem}
+.game>.gh .gs{font-weight:700;font-variant-numeric:tabular-nums}
+.game>.gb{padding:18px}
+.hint{color:var(--muted);font-size:.92rem;margin:0 0 12px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:44px}
+.chip{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:7px 14px;font-size:.95rem}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--yellow);color:var(--yellow-ink);font-weight:700}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bucket{background:var(--surface2);border:2px dashed var(--line);border-radius:8px;padding:10px;text-align:left;min-height:110px;display:flex;flex-direction:column;gap:6px}
+.bucket.armed{border-color:var(--ink);border-style:solid}
+.bucket>strong{font-variation-settings:"wdth" 85}
+.placed{font-size:.85rem;border-radius:5px;padding:3px 8px}
+.placed.ok{background:var(--ok-bg)} .placed.bad{background:var(--bad-bg);text-decoration:line-through}
+.fb{margin-top:14px;padding:12px 14px;border-radius:8px;min-height:1em}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg)} .fb.bad{background:var(--bad-bg)} .fb.mid{background:var(--mid-bg)}
+.btn{background:var(--ink);color:var(--surface);border:0;border-radius:6px;padding:9px 16px;font-weight:700}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:11px 14px}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.opt.bad{background:var(--bad-bg);border-color:var(--red)}
+.opt.mid{background:var(--mid-bg);border-color:var(--yellow)}
+.opt small{display:block;color:var(--muted);margin-top:4px}
+.q{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.site{display:block}
+.site ul{margin:6px 0 0;padding-left:18px;font-size:.92rem;color:var(--muted);font-weight:400}
+
+.layers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center}
+.layers svg{width:100%;height:auto}
+.layers svg .ly{cursor:pointer}
+.layers svg .ly rect{stroke:var(--ink);stroke-width:2;transition:fill .2s}
+.layers svg .ly:hover rect,.layers svg .ly.sel rect{fill:var(--yellow)}
+.layers svg text{fill:var(--ink);font-family:inherit;font-size:13px;font-weight:700;pointer-events:none}
+.layerinfo{background:var(--surface2);border-radius:8px;padding:16px;min-height:150px}
+.layerinfo h4{margin:0 0 6px;font-size:1.1rem}
+
+.sim{display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:24px}
+.slider label{display:flex;justify-content:space-between;font-weight:700}
+.slider output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.slider input{width:100%;accent-color:var(--blue);margin:8px 0 18px}
+.eq{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;padding:9px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border-left:6px solid var(--green)}
+.eq.bad{border-left-color:var(--red)} .eq b{font-variation-settings:"wdth" 85}
+.eq .st{font-size:.88rem;color:var(--muted);grid-column:1/-1}
+
+.classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0}
+.cls{border-radius:8px;padding:12px;background:var(--surface2);display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center}
+.cls .L{grid-row:span 2;width:44px;height:44px;border-radius:6px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.5rem;font-variation-settings:"wdth" 70}
+.cls span{font-size:.88rem;color:var(--muted)}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.scen{background:var(--surface2);border-radius:8px;padding:14px 16px;font-size:1.05rem}
+.scen .num{color:var(--muted);font-size:.85rem}
+
+.ordlist{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px;counter-reset:o}
+.ordlist li{counter-increment:o;background:var(--ok-bg);padding:9px 12px 9px 44px;border-radius:6px;position:relative}
+.ordlist li::before{content:counter(o);position:absolute;left:12px;font-weight:800}
+
+.audit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
+.plan{width:100%;height:auto;background:var(--surface2);border-radius:8px}
+.plan .wall{fill:none;stroke:var(--ink);stroke-width:3}
+.plan .room{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.plan .rack{fill:var(--muted)}
+.plan .lbl{fill:var(--muted);font-size:12px;font-family:inherit}
+.plan .hs{cursor:pointer}
+.plan .hs circle{fill:var(--yellow);stroke:#1C2226;stroke-width:2}
+.plan .hs text{fill:#1C2226;font-weight:800;font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-family:inherit}
+.plan .hs.ok circle{fill:#4CC98A}.plan .hs.bad circle{fill:#F0675C}
+.plan .hs.sel circle{stroke-width:4}
+.panel{background:var(--surface2);border-radius:8px;padding:16px;min-height:200px}
+.panel h4{margin:0 0 8px}
+
+.pager{display:flex;justify-content:space-between;margin-top:28px;gap:10px}
+.final{background:var(--ink);color:var(--surface);border-radius:8px;padding:16px 18px;margin-top:16px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  nav.mods{position:static}
+  nav.mods ol{flex-direction:row;overflow-x:auto;padding-bottom:6px}
+  nav.mods button{white-space:nowrap;border-left:0;border-bottom:4px solid transparent;border-radius:6px 6px 0 0}
+  nav.mods button[aria-current="true"]{border-bottom-color:var(--yellow)}
+  .layers,.sim,.audit{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.back{display:inline-block;color:var(--muted);font-size:.9rem;text-decoration:none;margin-bottom:10px}
+.back:hover{color:var(--ink);text-decoration:underline}
+.res{margin:1.6rem 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);max-width:72ch}
+.res b{display:block;margin-bottom:6px}
+.res ul{margin:0;padding-left:20px}
+.res li{margin:3px 0}
+.res a{color:var(--blue);font-weight:600}
+.formula{font-variation-settings:"wdth" 80;font-weight:800;font-size:1.15rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;margin:4px 0;font-variant-numeric:tabular-nums}
+.typesel{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.circuit,.wave{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block}
+.wave{margin-top:10px}
+.circuit .blk rect{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.circuit .blk text{fill:var(--ink);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:inherit}
+.circuit .blk.dead rect{fill:var(--surface2);stroke:var(--muted);stroke-dasharray:5 4}
+.circuit .blk.dead text{fill:var(--muted)}
+.circuit .w{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.circuit .w.by{stroke-dasharray:3 7}
+.circuit .w.on{stroke:var(--yellow);stroke-width:6;stroke-dasharray:12 8;animation:flow .7s linear infinite}
+.circuit .lever{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+.circuit .dot{fill:var(--ink)}
+.circuit .tag{fill:var(--muted);font-size:12px;font-family:inherit}
+.circuit .cut{fill:var(--red);font-size:13px;font-weight:800;font-family:inherit;text-anchor:middle}
+@keyframes flow{to{stroke-dashoffset:-20}}
+.wave .sig{fill:none;stroke:var(--blue);stroke-width:3;stroke-linejoin:round}
+.wave .gap{fill:var(--bad-bg)}
+.wave .axis{stroke:var(--line);stroke-width:1}
+.wave .mk{stroke:var(--red);stroke-width:2;stroke-dasharray:4 3}
+.wave text{fill:var(--muted);font-size:12px;font-family:inherit}
+.wave text.hot{fill:var(--red);font-weight:800}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.readout div{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.readout span{display:block;color:var(--muted);font-size:.85rem}
+.readout b{font-variation-settings:"wdth" 80;font-size:1.2rem;line-height:1.2}
+.readout p{margin:2px 0 0;font-size:.93rem}
+.ups{display:grid;grid-template-columns:minmax(0,280px) 1fr;gap:22px;align-items:start}
+.ups svg{width:100%;height:auto;display:block}
+.ups .led{cursor:pointer}
+.ups .led .l{stroke:#0d1012;stroke-width:2}
+.ups .led .ring{fill:none;stroke-width:3}
+.ups .led text{fill:#E7EAE6;font-size:14px;font-family:inherit;font-weight:600;pointer-events:none}
+.ups .led:hover .hit{fill:rgba(255,255,255,.08)}
+.ups .led:focus{outline:none}
+.ups .led:focus-visible .hit{stroke:#8DB6D3;stroke-width:3}
+.field{display:grid;gap:4px;margin:12px 0}
+.field label{font-weight:700}
+.field input,.field select{font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:min(240px,100%)}
+.field.ok input,.field.ok select{border-color:var(--green);background:var(--ok-bg)}
+.field.bad input,.field.bad select{border-color:var(--red);background:var(--bad-bg)}
+.data{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0 4px}
+.data div{background:var(--surface2);border-radius:8px;padding:8px 12px}
+.data span{display:block;font-size:.82rem;color:var(--muted)}
+.data b{font-variation-settings:"wdth" 80;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.sol{margin-top:12px;background:var(--surface2);border-radius:8px;padding:12px 14px;font-variant-numeric:tabular-nums}
+.sol p{margin:.2rem 0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:860px){.ups{grid-template-columns:1fr}.ups svg{max-width:300px}}
+@media (prefers-reduced-motion:reduce){.circuit .w.on{animation:none}}
+</style>
+</head>
+<body>
+<div class="hazard" aria-hidden="true"></div>
+<header class="top">
+  <a class="back" href="aea1_a2.html">← Tornar a A2 · SAI</a>
+  <h1>El CPD i els SAI: que no s'apagui res</h1>
+  <p>Set apartats sobre el centre de processament de dades i els sistemes d'alimentació ininterrompuda. Cada un té una mica de teoria i una activitat. El progrés es guarda en aquest navegador.</p>
+  <div class="scorebar">
+    <div class="meter" role="progressbar" aria-label="Apartats completats" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><span id="meterFill"></span></div>
+    <span class="scoretxt" id="scoreTxt">0 de 7 apartats · 0 punts</span>
+    <button class="reset" id="resetAll" type="button">Reinicia el progrés</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="mods" aria-label="Apartats"><ol id="navList"></ol></nav>
+  <main>
+
+<!-- 1 -->
+<section class="mod" id="m1" data-title="El CPD">
+  <h2>El centre de processament de dades</h2>
+  <p class="lead">Tota l'empresa depèn d'una sala que gairebé ningú no visita.</p>
+  <p>Un CPD és l'espai físic que allotja la infraestructura tecnològica imprescindible per al funcionament d'una organització. Allà s'emmagatzemen i es processen les dades de manera segura i eficient.</p>
+  <div class="cols">
+    <div class="fact"><b>Emmagatzemar</b><p>Servidors i dispositius d'emmagatzematge que guarden la informació de forma segura.</p></div>
+    <div class="fact"><b>Processar</b><p>Processa i analitza dades per facilitar la presa de decisions i la gestió de l'empresa.</p></div>
+    <div class="fact"><b>Garantir disponibilitat</b><p>Les dades han d'estar sempre accessibles i protegides d'amenaces físiques i informàtiques.</p></div>
+  </div>
+  <h3>Què hi ha a dins</h3>
+  <div class="cols">
+    <div class="fact"><b>Servidors</b><p>La base del CPD: executen les aplicacions i processen les dades.</p></div>
+    <div class="fact"><b>Emmagatzematge</b><p>Cabines de discos, llibreries de cintes i emmagatzematge al núvol.</p></div>
+    <div class="fact"><b>Xarxa</b><p>Connexions d'alta velocitat entre tots els components i cap a l'exterior.</p></div>
+  </div>
+  <h3>Com es dissenya</h3>
+  <div class="cols">
+    <div class="fact"><b>Refrigeració</b><p>Els racks s'organitzen en passadissos freds i calents per evitar sobreescalfaments sense malgastar energia.</p></div>
+    <div class="fact"><b>Energia</b><p>Un consum eficient fa el CPD sostenible econòmicament i ambientalment.</p></div>
+    <div class="fact"><b>Espai</b><p>Modular i escalable: s'ha de poder ampliar quan calgui més capacitat.</p></div>
+  </div>
+  <h3>Com es protegeix i es gestiona</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Seguretat i redundància</th><th>Gestió i operació</th></tr></thead>
+    <tbody>
+      <tr><td><b>Control d'accés:</b> només hi entra personal autoritzat.</td><td><b>Monitoratge:</b> plataformes que vigilen el CPD de manera contínua i detecten problemes.</td></tr>
+      <tr><td><b>Vigilància:</b> càmeres, sensors i detecció d'intrusos.</td><td><b>Manteniment:</b> preventiu i correctiu, per mantenir-ho tot operatiu.</td></tr>
+      <tr><td><b>Redundància:</b> equips i sistemes crítics duplicats, perquè una fallada no aturi el servei.</td><td><b>Gestió de recursos:</b> energia, espai i personal ben aprofitats.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">L'alimentació elèctrica és un dels sistemes que més redundància necessita: si s'atura, s'atura tot. D'això tracta la resta d'aquesta activitat. La seguretat física del CPD (emplaçament, incendis, control d'accés) la tens a <a href="seguretat_fisica_protegir_CPD.html">Seguretat física: protegir el CPD</a>.</div>
+  <p>Tendències actuals: el <b>núvol</b> redueix la infraestructura pròpia, la <b>intel·ligència artificial</b> automatitza la gestió i la seguretat, i l'<b>eficiència energètica</b> és clau per reduir el consum.</p>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="Introduccion-a-los-Centros-de-Procesamiento-de-Datos-CPD.pdf" target="_blank" rel="noopener">Presentació: Centre de processament de dades</a></li>
+    <li><a href="https://www.youtube.com/watch?v=zDAYZU4A3w0" target="_blank" rel="noopener">Vídeo: Google Data Center 360º</a></li>
+    <li><a href="https://www.youtube.com/watch?v=XZmGGAbHqa0" target="_blank" rel="noopener">Vídeo: Inside a Google data center</a></li>
+    <li><a href="https://www.youtube.com/watch?v=6vM4N3OQNCU" target="_blank" rel="noopener">Vídeo: El 60% de INTERNET pasa por AQUÍ, el CPD més gran d'Espanya</a></li>
+  </ul></div>
+  <div class="game" id="g1"></div>
+</section>
+
+<!-- 2 -->
+<section class="mod" id="m2" data-title="Alteracions elèctriques">
+  <h2>Alteracions del subministrament elèctric</h2>
+  <p class="lead">Els ordinadors necessiten un corrent constant i tan pur com sigui possible. La xarxa no sempre l'hi dona.</p>
+  <p>Una pèrdua sobtada de corrent acaba immediatament qualsevol activitat informàtica: es poden perdre dades i fer malbé el maquinari. Però el tall no és l'únic problema.</p>
+  <div class="cols">
+    <div class="fact"><b>Sobretensió</b><p>El voltatge és més alt del que hauria de ser. Pot cremar components electrònics.</p></div>
+    <div class="fact"><b>Baixada de tensió</b><p>El voltatge és més baix del normal. Provoca mal funcionament i reinicis inesperats.</p></div>
+    <div class="fact"><b>Variació de freqüència</b><p>El senyal no va a la freqüència correcta (50 Hz a Europa). Afecta equips sensibles.</p></div>
+    <div class="fact"><b>Tall de corrent</b><p>Absència total d'energia. Apagada immediata, amb risc de perdre dades i d'avaries.</p></div>
+  </div>
+  <h3>Sobretensions: dues durades</h3>
+  <div class="cols">
+    <div class="fact"><b>Permanents</b><p>Duren molt i són constants. Són més fàcils de detectar, però molt perjudicials.</p></div>
+    <div class="fact"><b>Transitòries</b><p>Duren nanosegons. Són les més habituals i també poden ser perilloses.</p></div>
+  </div>
+  <h3>D'on surten</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Causa</th><th>Què passa</th></tr></thead>
+    <tbody>
+      <tr><td>Llamps</td><td>Una de les fonts més potents: pics de tensió molt elevats.</td></tr>
+      <tr><td>Apagades elèctriques</td><td>La interrupció i, sobretot, el retorn sobtat del subministrament.</td></tr>
+      <tr><td>Curtcircuits</td><td>Contacte directe entre fase i neutre que genera pics de corrent.</td></tr>
+      <tr><td>Maniobres de la companyia</td><td>Operacions a la xarxa de distribució.</td></tr>
+      <tr><td>Equips d'alta potència</td><td>Engegar o aturar grans motors, aires condicionats i aparells de molt consum.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">Una sobretensió pot provocar tres coses: danys als components, pèrdua de dades i risc d'incendi.</div>
+  <div class="game" id="g2"></div>
+</section>
+
+<!-- 3 -->
+<section class="mod" id="m3" data-title="Del descarregador al SAI">
+  <h2>Del descarregador al SAI</h2>
+  <p class="lead">Hi ha una protecció senzilla i barata, i una de completa. Convé saber què fa cada una.</p>
+  <h3>Descarregadors de sobretensió</h3>
+  <p>Un descarregador (en anglès, <i>surge suppressor</i>) protegeix els equips de les sobretensions transitòries desviant l'excés de tensió cap a terra.</p>
+  <div class="cols">
+    <div class="fact"><b>Protecció bàsica</b><p>Primera mesura, econòmica, per a ordinadors, impressores i monitors.</p></div>
+    <div class="fact"><b>Diverses preses</b><p>Molts porten diversos endolls protegits alhora.</p></div>
+    <div class="fact"><b>Compte amb les regletes</b><p>Una regleta normal no protegeix. Ha d'indicar explícitament protecció contra sobretensions.</p></div>
+    <div class="fact"><b>No substitueix el SAI</b><p>Si marxa el corrent, el descarregador no fa res. El SAI ja inclou aquesta funció i moltes més.</p></div>
+  </div>
+  <h3>Què és un SAI</h3>
+  <p>Un sistema d'alimentació ininterrompuda (SAI, en anglès UPS) dona corrent als equips connectats quan falla el subministrament principal i evita la pèrdua sobtada d'alimentació.</p>
+  <div class="cols">
+    <div class="fact"><b>Talls de corrent</b><p>Evita l'apagada sobtada que fa malbé maquinari i dades.</p></div>
+    <div class="fact"><b>Alteracions</b><p>Filtra sobretensions, baixades de tensió i altres anomalies.</p></div>
+    <div class="fact"><b>Temps per tancar</b><p>Dona autonomia per desar la feina i apagar els sistemes correctament.</p></div>
+    <div class="fact"><b>Serveis crítics</b><p>Imprescindible en hospitals, CPD i sistemes de seguretat.</p></div>
+  </div>
+  <h3>Les parts d'un SAI</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Part</th><th>Funció</th></tr></thead>
+    <tbody>
+      <tr><td>Circuits de conversió i inversió</td><td>El rectificador passa l'altern a continu per carregar la bateria; l'inversor el torna a altern per alimentar els equips.</td></tr>
+      <tr><td>Bateria</td><td>Emmagatzema l'energia per als talls. La seva mida determina gairebé tota l'autonomia.</td></tr>
+      <tr><td>Interruptor principal</td><td>Activa o desactiva la sortida cap als equips. Normalment és al frontal.</td></tr>
+      <tr><td>Connectors de sortida</td><td>Endolls on es connecten els equips protegits, normalment al darrere.</td></tr>
+      <tr><td>Indicadors d'estat</td><td>LED i alarmes: en línia, en bateria, sobrecàrrega, bateria baixa…</td></tr>
+      <tr><td>Programari de control</td><td>Permet controlar i monitoritzar el SAI des d'un ordinador.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="sai_sistemes_alimentacio_ininterrompuda.pptx.pdf" target="_blank" rel="noopener">Presentació: SAI</a></li>
+  </ul></div>
+  <div class="game" id="g3"></div>
+</section>
+
+<!-- 4 -->
+<section class="mod" id="m4" data-title="Indicadors i monitoratge">
+  <h2>Indicadors i monitoratge</h2>
+  <p class="lead">El SAI t'avisa quan alguna cosa va malament. Cal saber-lo llegir.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Indicador</th><th>Quan s'encén</th><th>Què has de fer</th></tr></thead>
+    <tbody>
+      <tr><td><b>De línia</b> (Online)</td><td>El SAI funciona amb corrent de la xarxa. En un SAI standby és el mode normal.</td><td>Res, tot va bé.</td></tr>
+      <tr><td><b>Bateria</b> (On battery)</td><td>El SAI tira de bateria: hi ha un problema a la línia elèctrica.</td><td>Desar la feina i preparar l'apagada si el tall s'allarga.</td></tr>
+      <tr><td><b>Sobrecàrrega</b> (Overload)</td><td>Hi ha connectats més equips dels que el SAI pot gestionar.</td><td>Desconnectar equips o posar un SAI de més capacitat.</td></tr>
+      <tr><td><b>Substituir bateria</b> (Replace battery)</td><td>La comprovació periòdica detecta que la bateria està malament.</td><td>Canviar la bateria.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">Molts SAI també fan servir <b>alarmes sonores</b>. El nombre i el ritme dels xiulets indiquen de quina alerta es tracta.</div>
+  <h3>Programes de control i monitoratge</h3>
+  <p>Aplicacions que mostren informació detallada del SAI i en permeten un control avançat. Necessiten una connexió física entre l'ordinador i el SAI, per <b>USB</b> o per <b>port sèrie</b>.</p>
+  <div class="cols">
+    <div class="fact"><b>Estat</b><p>En temps real: càrrega de la bateria, càrrega dels equips, condicions ambientals i dades del corrent d'entrada i sortida.</p></div>
+    <div class="fact"><b>Registre</b><p>Diari d'esdeveniments: talls de corrent, comprovacions rutinàries…</p></div>
+    <div class="fact"><b>Diagnòstic</b><p>Fer comprovacions al SAI ara mateix o programar-les per més endavant.</p></div>
+    <div class="fact"><b>Alarmes</b><p>Avisos a l'ordinador quan hi ha problemes o quan es passa a bateria.</p></div>
+    <div class="fact"><b>Apagada automàtica</b><p>Si el tall s'allarga, tanca els programes i el sistema operatiu de manera segura.</p></div>
+  </div>
+  <div class="game" id="g4"></div>
+  <div class="game" id="g4b"></div>
+</section>
+
+<!-- 5 -->
+<section class="mod" id="m5" data-title="Tipus de SAI">
+  <h2>Tipus de SAI</h2>
+  <p class="lead">Tots tres protegeixen d'un tall. La diferència és què fan mentre no n'hi ha cap.</p>
+  <div class="cols">
+    <div class="fact"><b>Standby / Offline</b><p>En mode normal els equips s'alimenten directament de la xarxa. Quan hi ha un tall, un commutador passa a la bateria en una fracció de segon.</p></div>
+    <div class="fact"><b>Interactiu de línia</b><p>També és offline, però l'inversor està sempre connectat i un regulador (AVR) corregeix les baixades i pujades lleus sense gastar bateria. Commuta més ràpid.</p></div>
+    <div class="fact"><b>Online (doble conversió)</b><p>El corrent sempre passa per rectificador i inversor: els equips sempre reben corrent generat pel SAI. Si hi ha un tall, no cal commutar res.</p></div>
+  </div>
+  <div class="game" id="sim"></div>
+  <h3>Comparació</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Característica</th><th>Standby / Offline</th><th>Interactiu de línia</th><th>Online</th></tr></thead>
+    <tbody>
+      <tr><td>Temps de transferència</td><td>2–10 ms</td><td>1–4 ms</td><td>0 ms</td></tr>
+      <tr><td>Protecció elèctrica</td><td>Bàsica</td><td>Alta</td><td>Màxima</td></tr>
+      <tr><td>Autonomia típica</td><td>5–15 min</td><td>10–30 min</td><td>30 min – diverses hores</td></tr>
+      <tr><td>Cost</td><td>Econòmic</td><td>Mitjà</td><td>Elevat</td></tr>
+      <tr><td>Manteniment</td><td>Baix</td><td>Mitjà</td><td>Alt (més components)</td></tr>
+      <tr><td>Eficiència</td><td>95–98 %</td><td>90–96 %</td><td>85–94 %</td></tr>
+      <tr><td>Ús ideal</td><td>PC domèstic, petits equips</td><td>Petites empreses, servidors departamentals</td><td>CPD, equips crítics, hospitals</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">L'online és el que menys eficiència té perquè converteix el corrent dues vegades, tota l'estona. És el preu de la màxima protecció.</div>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="https://www.rackonline.es/content/que-es-un-sai-y-tipos-de-sai?srsltid=AfmBOopnsNH22xBzMdy95eDnkwJ2TKC0qfbyHYT6J-2NpV-KL5AeL6Yh" target="_blank" rel="noopener">Tipus de SAIs (Rackonline)</a></li>
+    <li><a href="sai_sistemes_alimentacio_ininterrompuda.pptx.pdf" target="_blank" rel="noopener">Presentació: SAI</a></li>
+  </ul></div>
+  <div class="game" id="g5"></div>
+</section>
+
+<!-- 6 -->
+<section class="mod" id="m6" data-title="Triar i instal·lar">
+  <h2>Triar i instal·lar un SAI</h2>
+  <p class="lead">El millor SAI no és el més car: és el que encaixa amb el que protegeix.</p>
+  <div class="cols">
+    <div class="fact"><b>Potència</b><p>Sumar el consum de tots els equips i comprovar que el SAI en pot donar prou.</p></div>
+    <div class="fact"><b>Autonomia</b><p>Des d'uns minuts per apagar ordenadament fins a hores per a operacions crítiques.</p></div>
+    <div class="fact"><b>Espai</b><p>Com més capacitat, més gran és el SAI i més lloc ocupa.</p></div>
+    <div class="fact"><b>Criticitat i pressupost</b><p>Com més crítics són els equips, més protecció cal i més inversió es justifica.</p></div>
+  </div>
+  <h3>Casos d'ús</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Entorn</th><th>Tipus</th><th>Per què</th></tr></thead>
+    <tbody>
+      <tr><td>Centre de dades</td><td>Online de doble conversió</td><td>Gran capacitat i autonomia, bateries redundants i connexió amb grups electrògens.</td></tr>
+      <tr><td>Hospital</td><td>Online amb bateries de llarga durada</td><td>Monitors de pacients i quiròfans: una fallada pot posar vides en perill.</td></tr>
+      <tr><td>Oficina o petita empresa</td><td>Interactiu de línia</td><td>Servidors departamentals, estacions de treball i equips de xarxa.</td></tr>
+      <tr><td>Casa</td><td>Standby / Offline</td><td>Protecció bàsica per a l'ordinador i el router.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>On i com s'instal·la</h3>
+  <div class="cols">
+    <div class="fact"><b>Ambient</b><p>Bona ventilació i temperatura controlada, per evitar sobreescalfaments.</p></div>
+    <div class="fact"><b>Cables</b><p>Recollits i ordenats per evitar accidents.</p></div>
+    <div class="fact"><b>Accessibilitat</b><p>On es puguin veure els indicadors i fer el manteniment fàcilment.</p></div>
+    <div class="fact"><b>Compatibilitat elèctrica</b><p>La presa de corrent ha de complir els requisits del SAI.</p></div>
+  </div>
+  <div class="note">Cal revisar periòdicament les bateries i provar el SAI. Un SAI que mai s'ha provat pot fallar justament el dia que el necessites. I es recomana complementar-lo amb descarregadors i una bona connexió a terra.</div>
+  <div class="game" id="g6"></div>
+</section>
+
+<!-- 7 -->
+<section class="mod" id="m7" data-title="Càlculs">
+  <h2>Càlculs: potència i autonomia</h2>
+  <p class="lead">Si el SAI és massa petit, salta per sobrecàrrega. Si és massa gran, has malgastat diners.</p>
+  <p>La potència dels SAI s'expressa en <b>VA</b> (volt-ampers), la potència aparent. Els equips sovint indiquen el consum en watts (W) o en ampers (A), així que cal passar-ho tot a VA.</p>
+  <ol class="steps">
+    <li>Si només saps els ampers: <span class="formula">W = V × A</span> amb V = 220 V</li>
+    <li>Passa els watts a VA: <span class="formula">VA = W × 1,4</span></li>
+    <li>Suma els VA de tots els equips.</li>
+    <li>Els equips no han de passar del 70 % del SAI: <span class="formula">SAI ≥ VA total ÷ 0,7</span></li>
+    <li>Tria el model comercial immediatament superior.</li>
+  </ol>
+  <h3>Exemple resolt</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Equip</th><th>Dada</th><th>Càlcul</th><th class="n">VA</th></tr></thead>
+    <tbody>
+      <tr><td>Ordinador complet</td><td>200 W</td><td>200 × 1,4</td><td class="n">280</td></tr>
+      <tr><td>Switch</td><td>0,1 A</td><td>220 × 0,1 = 22 W → 22 × 1,4</td><td class="n">30,8</td></tr>
+      <tr><td>Impressora</td><td>200 VA</td><td>Ja està en VA</td><td class="n">200</td></tr>
+      <tr><td colspan="3"><b>Total</b></td><td class="n"><b>510,8</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>Si 510,8 VA han de ser el 70 % del SAI, el 100 % és 510,8 ÷ 0,7 ≈ <b>730 VA</b>. Necessitem com a mínim un SAI de <b>750 VA</b>.</p>
+  <h3>Quant de temps aguanta</h3>
+  <p><span class="formula">Minuts = (N × V × Ah × Eff ÷ VA) × 60</span></p>
+  <p>N és el nombre de bateries, V el voltatge de cada bateria, Ah els ampers-hora, Eff l'eficiència del SAI (entre 0,90 i 0,98) i VA la potència del SAI.</p>
+  <p>Amb 2 bateries de 9 V i 12 Ah, eficiència del 95 % i un SAI de 750 VA: (2 × 9 × 12 × 0,95 ÷ 750) × 60 ≈ <b>16,4 minuts</b> per fer còpies de seguretat i apagar el servidor.</p>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="Càlculs SAI.pdf" target="_blank" rel="noopener">Presentació: Càlculs SAI</a></li>
+  </ul></div>
+  <div class="game" id="g7"></div>
+  <div class="game" id="g7b"></div>
+</section>
+
+  </main>
+</div>
+<script>
+(function(){
+const MODS=[...document.querySelectorAll('section.mod')];
+let store={};
+try{store=JSON.parse(localStorage.getItem('saicpd')||'{}')||{};}catch(e){store={};}
+function save(){try{localStorage.setItem('saicpd',JSON.stringify(store));}catch(e){}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}kids.flat().forEach(c=>c!=null&&e.append(c));return e;};
+const fmt=(n,d=1)=>{const r=Math.round(n*Math.pow(10,d))/Math.pow(10,d);return r.toLocaleString('ca-ES',{maximumFractionDigits:d});};
+const num=s=>{s=String(s).trim().replace(/\s/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');const v=parseFloat(s);return isNaN(v)?null:v;};
+
+/* ---------- navigation & progress ---------- */
+const nav=document.getElementById('navList');
+function show(i){
+  MODS.forEach((m,k)=>m.classList.toggle('active',k===i));
+  [...nav.querySelectorAll('button')].forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'));
+  try{history.replaceState(null,'','#'+MODS[i].id);}catch(e){}
+}
+MODS.forEach((m,i)=>{
+  nav.append(h('li',{},h('button',{type:'button',onclick:()=>{show(i);window.scrollTo({top:0});}},
+    h('span',{class:'n'},String(i+1)),h('span',{},m.dataset.title),h('span',{class:'done','data-done':m.id}))));
+  const pager=h('div',{class:'pager'});
+  pager.append(i>0?h('button',{class:'btn ghost',type:'button',onclick:()=>{show(i-1);window.scrollTo({top:0});}},'Apartat anterior'):h('span'));
+  if(i<MODS.length-1)pager.append(h('button',{class:'btn',type:'button',onclick:()=>{show(i+1);window.scrollTo({top:0});}},'Següent apartat'));
+  m.append(pager);
+});
+const MODGAMES={m1:['g1'],m2:['g2'],m3:['g3'],m4:['g4','g4b'],m5:['g5'],m6:['g6'],m7:['g7','g7b']};
+function refresh(){
+  let n=0,pts=0;
+  Object.values(MODGAMES).flat().forEach(k=>{if(store[k])pts+=store[k].s;});
+  for(const[m,gs]of Object.entries(MODGAMES)){
+    const d=gs.every(g=>store[g]);if(d)n++;
+    const el=nav.querySelector(`[data-done="${m}"]`);el.textContent=d?'✓':'';el.setAttribute('aria-label',d?'completat':'');
+  }
+  document.getElementById('meterFill').style.width=(n/7*100)+'%';
+  document.querySelector('.meter').setAttribute('aria-valuenow',n);
+  document.getElementById('scoreTxt').textContent=`${n} de 7 apartats · ${pts} punts`;
+}
+function finish(id,s,t){if(!store[id]||s>=store[id].s)store[id]={s,t};save();refresh();}
+document.getElementById('resetAll').onclick=()=>{store={};save();refresh();};
+
+function shell(id,title){
+  const g=document.getElementById(id);g.innerHTML='';
+  const sc=h('span',{class:'gs'});
+  g.append(h('div',{class:'gh'},h('h3',{},title),sc));
+  const body=h('div',{class:'gb'});g.append(body);
+  return {body,sc};
+}
+
+/* ---------- sorting game ---------- */
+function sortGame(id,title,hint,buckets,items){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(items),sel=null,score=0;
+  const pl=h('div',{class:'pool','aria-label':'Targetes per classificar'});
+  const bk=h('div',{class:'buckets'});
+  const fb=h('div',{class:'fb','aria-live':'polite'});
+  const upd=()=>sc.textContent=`${score} / ${items.length}`;
+  const bEls={};
+  buckets.forEach(b=>{
+    const el=h('button',{class:'bucket',type:'button',onclick:()=>place(b.id)},h('strong',{},b.label));
+    if(b.sub)el.append(h('span',{class:'hint',style:'margin:0'},b.sub));
+    bEls[b.id]=el;bk.append(el);
+  });
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach((it,i)=>pl.append(h('button',{class:'chip',type:'button','aria-pressed':sel===i?'true':'false',onclick:()=>{sel=sel===i?null:i;drawPool();}},it.t)));
+    Object.values(bEls).forEach(e=>e.classList.toggle('armed',sel!==null));
+  }
+  function place(bid){
+    if(sel===null){fb.className='fb mid';fb.textContent='Primer tria una targeta de dalt.';return;}
+    const it=pool[sel];const ok=it.b===bid;
+    if(ok)score++;
+    bEls[bid].append(h('span',{class:'placed '+(ok?'ok':'bad')},it.t));
+    if(!ok)bEls[it.b].append(h('span',{class:'placed ok'},it.t));
+    fb.className='fb '+(ok?'ok':'bad');
+    fb.innerHTML=(ok?'<b>Correcte.</b> ':'<b>No.</b> Va a «'+buckets.find(b=>b.id===it.b).label+'». ')+(it.why||'');
+    pool.splice(sel,1);sel=null;drawPool();upd();
+    if(!pool.length){
+      finish(id,score,items.length);
+      body.append(h('div',{class:'row'},h('span',{},`Has encertat ${score} de ${items.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>sortGame(id,title,hint,buckets,items)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,bk,fb);drawPool();upd();
+}
+
+/* ---------- multiple-choice rounds ---------- */
+function choiceGame(id,title,rounds){
+  const {body,sc}=shell(id,title);
+  let r=0,score=0;
+  const upd=()=>sc.textContent=`${score} / ${rounds.length}`;
+  function draw(){
+    body.innerHTML='';upd();
+    if(r>=rounds.length){
+      finish(id,score,rounds.length);
+      body.append(h('p',{},`Has encertat ${score} de ${rounds.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{r=0;score=0;draw();}},'Torna-hi'));return;
+    }
+    const R=rounds[r];
+    body.append(h('p',{class:'hint'},`Pregunta ${r+1} de ${rounds.length}`),h('p',{class:'q'},R.q));
+    if(R.ctx)body.append(h('p',{},R.ctx));
+    const box=h('div',{class:'opts'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    const btns=R.o.map(o=>{
+      const b=h('button',{class:'opt',type:'button',html:o.t});
+      b.onclick=()=>{
+        btns.forEach((x,k)=>{x.disabled=true;const oo=R.o[k];if(oo.ok)x.classList.add('ok');x.append(h('small',{},oo.why));});
+        if(!o.ok)b.classList.add('bad');else score++;
+        fb.className='fb '+(o.ok?'ok':'bad');fb.innerHTML=o.ok?'<b>Correcte.</b> Llegeix també per què les altres no.':"<b>No és la millor opció.</b> Mira l'explicació de cada resposta.";
+        upd();body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<rounds.length?'Següent pregunta':'Veure resultat')));
+      };
+      box.append(b);return b;
+    });
+    body.append(box,fb);
+  }
+  draw();
+}
+
+/* ---------- 1: CPD ---------- */
+sortGame('g1','Cada element al seu bloc','Tria una targeta i després el bloc del CPD on encaixa.',
+ [{id:'c',label:'Components'},{id:'d',label:'Disseny i eficiència'},{id:'s',label:'Seguretat i redundància'},{id:'g',label:'Gestió i operació'}],
+ [
+  {t:'Servidors de rack que executen les aplicacions',b:'c',why:'Són la base del CPD: processen dades i aplicacions.'},
+  {t:'Cabina de discos i llibreria de cintes',b:'c',why:"Són el sistema d'emmagatzematge."},
+  {t:"Commutadors de xarxa d'alta velocitat",b:'c',why:'Connecten tots els components entre ells.'},
+  {t:'Passadissos freds i calents entre racks',b:'d',why:'És una decisió de disseny per refrigerar millor amb menys energia.'},
+  {t:'Sala modular que es pot ampliar amb més racks',b:'d',why:"El disseny de l'espai ha de ser escalable."},
+  {t:'Equips de baix consum per reduir la factura',b:'d',why:'Eficiència energètica.'},
+  {t:'Porta amb targeta només per al personal autoritzat',b:'s',why:"Control d'accés."},
+  {t:"Càmeres i sensors de detecció d'intrusos",b:'s',why:'Vigilància física.'},
+  {t:'Dues fonts d’alimentació a cada servidor',b:'s',why:"Redundància: si en falla una, l'altra manté el servidor en marxa."},
+  {t:'Plataforma que avisa quan un disc comença a fallar',b:'g',why:'Monitoratge continu.'},
+  {t:"Revisió periòdica dels filtres de l'aire condicionat",b:'g',why:'Manteniment preventiu.'},
+  {t:"Planificar l'espai lliure als racks i els torns del personal",b:'g',why:'Gestió de recursos.'}
+ ]);
+
+/* ---------- 2: alteracions ---------- */
+sortGame('g2','Quina alteració és?','Llegeix cada situació i classifica-la.',
+ [{id:'so',label:'Sobretensió'},{id:'ba',label:'Baixada de tensió'},{id:'fr',label:'Variació de freqüència'},{id:'ta',label:'Tall de corrent'}],
+ [
+  {t:'Cau un llamp a prop i hi ha un pic de nanosegons',b:'so',why:'Sobretensió transitòria, de les més potents.'},
+  {t:'Per una avaria, la línia es manté a 260 V durant hores',b:'so',why:'Sobretensió permanent: llarga i constant.'},
+  {t:'Quan torna el corrent després d’una apagada hi ha un pic',b:'so',why:'El retorn sobtat del subministrament és una causa típica.'},
+  {t:'La companyia fa maniobres a la xarxa i la tensió supera el màxim',b:'so',why:'Les operacions de la companyia elèctrica poden provocar sobretensions.'},
+  {t:'La línia dona 190 V i un ordinador es reinicia sol',b:'ba',why:'Voltatge per sota del normal: reinicis inesperats.'},
+  {t:'Molts aparells a la mateixa línia deixen la tensió per sota del normal',b:'ba',why:'La línia no dona prou tensió.'},
+  {t:'Un generador sobrecarregat dona corrent a 47 Hz',b:'fr',why:'A Europa hauria de ser 50 Hz.'},
+  {t:'Els equips sensibles fallen perquè la xarxa no va a 50 Hz',b:'fr',why:'La freqüència del senyal no és la correcta.'},
+  {t:'Un curtcircuit fa saltar el diferencial i tot s’apaga',b:'ta',why:"Absència total d'energia."},
+  {t:'Una tempesta deixa el barri sense llum mitja hora',b:'ta',why:'Tall de corrent: apagada immediata dels equips sense SAI.'}
+ ]);
+
+/* ---------- 3: parts ---------- */
+sortGame('g3','Quina part del SAI ho fa?','Cada targeta descriu una funció. Porta-la a la part del SAI que la fa.',
+ [{id:'cv',label:'Circuits de conversió i inversió'},{id:'bt',label:'Bateria'},{id:'in',label:'Interruptor principal'},{id:'co',label:'Connectors de sortida'},{id:'id',label:"Indicadors d'estat"},{id:'pr',label:'Programari de control'}],
+ [
+  {t:"Passa l'altern a continu per carregar la bateria",b:'cv',why:'És la feina del rectificador.'},
+  {t:"Torna el continu a altern per alimentar els equips",b:'cv',why:"És la feina de l'inversor."},
+  {t:'Guarda l’energia per quan falla la xarxa',b:'bt',why:'La bateria és la reserva del SAI.'},
+  {t:'La seva mida decideix gairebé tota l’autonomia',b:'bt',why:'Més capacitat de bateria, més minuts.'},
+  {t:'Botó del frontal que activa o desactiva la sortida',b:'in',why:'Interruptor principal.'},
+  {t:'Endolls del darrere on connectes el servidor',b:'co',why:'Connectors de sortida.'},
+  {t:'LED vermell i xiulet quan hi ha massa equips',b:'id',why:"Indicador de sobrecàrrega."},
+  {t:'Apaga el servidor de manera ordenada',b:'pr',why:'Funció d’apagada automàtica del programari.'},
+  {t:'Necessita un cable USB o sèrie fins a l’ordinador',b:'pr',why:'El programari es comunica amb el SAI per aquesta connexió.'}
+ ]);
+
+/* ---------- 4: panell de LED ---------- */
+(function(){
+  const id='g4';
+  const LEDS=[
+   {k:'on',lb:'De línia',c:'#4CC98A'},
+   {k:'bat',lb:'Bateria',c:'#F2C200'},
+   {k:'ovl',lb:'Sobrecàrrega',c:'#F0675C'},
+   {k:'rep',lb:'Substituir bateria',c:'#F0675C'}
+  ];
+  const SC=[
+   {s:'Dilluns al matí. Hi ha corrent a la xarxa i tot funciona amb normalitat.',a:'on',x:"El SAI funciona amb corrent de la línia. En un SAI standby aquest és el mode normal."},
+   {s:'Una tempesta deixa l’oficina sense corrent. El SAI comença a xiular.',a:'bat',x:"Ara els equips funcionen amb l'energia de la bateria. És el moment de desar la feina."},
+   {s:'A més del servidor, algú ha endollat al SAI una impressora làser i un radiador.',a:'ovl',x:'Massa càrrega. Cal desconnectar equips (la impressora làser i el radiador no hi haurien de ser) o posar un SAI de més capacitat.'},
+   {s:'El test automàtic setmanal detecta que la bateria ja no aguanta la càrrega.',a:'rep',x:"La bateria està malament i s'ha de canviar abans que arribi un tall."},
+   {s:'La tensió baixa tant que el SAI standby ja no la pot aprofitar.',a:'bat',x:"Si la xarxa no dona una tensió aprofitable, el SAI passa a bateria encara que no hi hagi un tall total."},
+   {s:'Després de la tempesta torna el corrent i el SAI deixa de xiular.',a:'on',x:'Torna a funcionar amb corrent de la línia i comença a recarregar la bateria.'}
+  ];
+  const {body,sc}=shell(id,"Llegeix el panell del SAI");
+  const ns='http://www.w3.org/2000/svg';
+  const mk=(tag,a,txt)=>{const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);if(txt)e.textContent=txt;return e;};
+  let i=0,score=0,locked=false;
+  const svg=mk('svg',{viewBox:'0 0 280 360',role:'group','aria-label':'Panell frontal del SAI'});
+  svg.append(mk('rect',{x:10,y:10,width:260,height:340,rx:18,fill:'#1C2226'}),
+    mk('rect',{x:24,y:24,width:232,height:44,rx:6,fill:'#2a3237'}),
+    mk('text',{x:40,y:52,fill:'#E7EAE6','font-size':'16','font-weight':'800','font-family':'inherit'},'SAI 1000 VA'));
+  const ledEls={};
+  LEDS.forEach((L,k)=>{
+    const y=105+k*54;
+    const g=mk('g',{class:'led',tabindex:'0',role:'button','aria-label':L.lb});
+    g.append(mk('rect',{class:'hit',x:24,y:y-22,width:232,height:44,rx:8,fill:'transparent'}),
+      mk('circle',{class:'ring',cx:50,cy:y,r:17,stroke:'transparent'}),
+      mk('circle',{class:'l',cx:50,cy:y,r:11,fill:'#3a4247'}),
+      mk('text',{x:76,y:y+5},L.lb));
+    const act=()=>choose(L.k);g.addEventListener('click',act);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});
+    svg.append(g);ledEls[L.k]=g;
+  });
+  svg.append(mk('circle',{cx:140,cy:320,r:16,fill:'#2a3237',stroke:'#56616A','stroke-width':'2'}),
+    mk('path',{d:'M140 310 V320 M133 314 A10 10 0 1 0 147 314',stroke:'#E7EAE6','stroke-width':'2.5',fill:'none','stroke-linecap':'round'}));
+  const panel=h('div',{'aria-live':'polite'});
+  function reset(){LEDS.forEach(L=>{ledEls[L.k].querySelector('.l').setAttribute('fill','#3a4247');ledEls[L.k].querySelector('.ring').setAttribute('stroke','transparent');});}
+  function draw(){
+    reset();locked=false;panel.innerHTML='';sc.textContent=`${score} / ${SC.length}`;
+    if(i>=SC.length){locked=true;finish(id,score,SC.length);
+      panel.append(h('p',{},`Has encertat ${score} de ${SC.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{i=0;score=0;draw();}},'Torna-hi'));return;}
+    panel.append(h('div',{class:'scen'},h('div',{class:'num'},`Situació ${i+1} de ${SC.length}`),SC[i].s),h('p',{class:'hint',style:'margin-top:10px'},'Clica el LED que estarà encès.'));
+  }
+  function choose(k){
+    if(locked)return;locked=true;
+    const S=SC[i];const L=LEDS.find(x=>x.k===S.a);const ok=k===S.a;
+    ledEls[S.a].querySelector('.l').setAttribute('fill',L.c);
+    if(!ok)ledEls[k].querySelector('.ring').setAttribute('stroke','#F0675C');
+    if(ok)score++;sc.textContent=`${score} / ${SC.length}`;
+    panel.append(h('div',{class:'fb '+(ok?'ok':'bad'),html:(ok?'<b>Correcte.</b> ':`<b>No.</b> S'encén «${L.lb}». `)+S.x}),
+      h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{i++;draw();}},i+1<SC.length?'Següent situació':'Veure resultat')));
+  }
+  body.append(h('p',{class:'hint'},'Per a cada situació, decideix quin indicador del panell s’il·lumina.'),h('div',{class:'ups'},svg,panel));
+  draw();
+})();
+
+sortGame('g4b','Què fa el programari?','Classifica cada tasca segons la funció del programa de monitoratge.',
+ [{id:'es',label:'Estat'},{id:'re',label:'Registre'},{id:'di',label:'Diagnòstic'},{id:'al',label:'Alarmes'},{id:'ap',label:'Apagada automàtica'}],
+ [
+  {t:'Veure que la bateria està al 63 %',b:'es'},
+  {t:'Consultar la tensió d’entrada en temps real',b:'es'},
+  {t:'Saber quants talls hi va haver el mes passat',b:'re'},
+  {t:'Veure a quina hora va tornar el corrent ahir',b:'re'},
+  {t:'Programar un test de bateria cada diumenge',b:'di'},
+  {t:'Comprovar ara mateix si la bateria aguanta',b:'di'},
+  {t:'Rebre un avís a l’ordinador quan passa a bateria',b:'al'},
+  {t:'Que surti una notificació si hi ha sobrecàrrega',b:'al'},
+  {t:'Tancar el servidor quan queden 5 minuts de bateria',b:'ap'},
+  {t:'Tancar els programes i el sistema operatiu sense perdre dades',b:'ap'}
+ ]);
+
+/* ---------- 5: simulador de tipus ---------- */
+(function(){
+  const {body,sc}=shell('sim','Simulador: provoca un tall');
+  sc.textContent='Explora';
+  const T={
+    sb:{n:'Standby / Offline',gap:8,tt:'2–10 ms',
+      ok:'Corrent de la xarxa tal com arriba, amb les seves alteracions.',
+      cut:"Un microtall de fins a 10 ms mentre el commutador canvia. La majoria de fonts d'ordinador l'aguanten, però un equip sensible es pot reiniciar."},
+    li:{n:'Interactiu de línia',gap:3,tt:'1–4 ms',
+      ok:"Corrent de la xarxa corregit per l'AVR: les baixades i pujades lleus no arriben als equips.",
+      cut:"Un microtall més curt, d'1 a 4 ms, perquè l'inversor ja està connectat i preparat."},
+    on:{n:'Online (doble conversió)',gap:0,tt:'0 ms',
+      ok:"Corrent generat per l'inversor: net i estable, sense cap alteració de la xarxa.",
+      cut:"Res. L'inversor ja els alimentava abans del tall: la bateria simplement deixa de recarregar-se i comença a descarregar-se."}
+  };
+  let type='sb',cut=false;
+  const tb={};const sel=h('div',{class:'typesel',role:'group','aria-label':'Tipus de SAI'});
+  Object.entries(T).forEach(([k,v])=>{tb[k]=h('button',{class:'chip',type:'button','aria-pressed':'false',onclick:()=>{type=k;draw();}},v.n);sel.append(tb[k]);});
+  const cutBtn=h('button',{class:'btn',type:'button',onclick:()=>{cut=!cut;draw();}});
+  const cir=h('div');const wav=h('div');const ro=h('div',{class:'readout','aria-live':'polite'});
+  const W=(d,on,extra='')=>`<path class="w${on?' on':''}${extra}" d="${d}"/>`;
+  const B=(x,y,w,hh,l,dead)=>`<g class="blk${dead?' dead':''}"><rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8"/><text x="${x+w/2}" y="${y+hh/2}">${l}</text></g>`;
+  function circuit(){
+    const on=!cut;let s='';
+    s+=W('M90 125 H130',on);
+    if(type==='on'){
+      s+=W('M130 125 V40 H520 V115','',' by');
+      s+=`<text class="tag" x="300" y="30" text-anchor="middle">Bypass de manteniment (no s'usa normalment)</text>`;
+      s+=W('M130 125 V210 H160',on)+W('M250 210 H290',on)+W('M360 210 H400',true)+W('M480 210 H520 V125 H550',true);
+    }else{
+      s+=W('M130 125 V40 H500 V100 H510',on);
+      s+=W('M130 125 V210 H160',on)+W('M250 210 H290',on)+W('M360 210 H400',cut)+W('M480 210 H500 V150 H510',cut);
+      s+=W('M545 125 H550',true);
+      const ty=cut?150:100;
+      s+=`<line class="lever" x1="545" y1="125" x2="512" y2="${ty}"/><circle class="dot" cx="510" cy="100" r="5"/><circle class="dot" cx="510" cy="150" r="5"/><circle class="dot" cx="545" cy="125" r="5"/>`;
+      s+=`<text class="tag" x="585" y="180" text-anchor="middle">Commutador</text>`;
+      if(type==='li')s+=B(270,22,80,36,'AVR',cut);
+    }
+    s+=B(10,100,80,50,'Xarxa',cut);
+    if(cut)s+=`<text class="cut" x="50" y="170">Tall</text>`;
+    s+=B(160,190,90,40,type==='li'?'Carregador':'Rectificador',cut);
+    s+=B(290,190,70,40,'Bateria',false);
+    s+=B(400,190,80,40,'Inversor',false);
+    s+=B(550,100,80,50,'Equips',false);
+    return `<svg class="circuit" viewBox="0 0 640 250" role="img" aria-label="Esquema del SAI ${T[type].n}${cut?' durant un tall':' en funcionament normal'}">${s}</svg>`;
+  }
+  function wave(){
+    const g=T[type].gap,x0=20,px=6,c=60,a=34,t0=40;let d='';
+    for(let t=0;t<=100;t+=0.25){
+      const y=(cut&&t>=t0&&t<t0+g)?c:c-a*Math.sin(2*Math.PI*t/20);
+      d+=(t===0?'M':'L')+(x0+t*px).toFixed(1)+' '+y.toFixed(1)+' ';
+    }
+    let s=`<line class="axis" x1="${x0}" y1="${c}" x2="${x0+600}" y2="${c}"/>`;
+    if(cut){
+      if(g>0)s+=`<rect class="gap" x="${x0+t0*px}" y="16" width="${g*px}" height="88"/>`;
+      s+=`<line class="mk" x1="${x0+t0*px}" y1="10" x2="${x0+t0*px}" y2="110"/>`;
+      s+=`<text class="hot" x="${x0+t0*px+(g*px)+8}" y="22">${g>0?g+' ms sense corrent':'Cap interrupció'}</text>`;
+      s+=`<text x="${x0+t0*px-6}" y="22" text-anchor="end">Tall</text>`;
+    }
+    s+=`<path class="sig" d="${d}"/>`;
+    s+=`<text x="${x0}" y="118">0 ms</text><text x="${x0+600}" y="118" text-anchor="end">100 ms</text>`;
+    return `<svg class="wave" viewBox="0 0 640 122" role="img" aria-label="Ona de sortida cap als equips">${s}</svg>`;
+  }
+  function draw(){
+    Object.entries(tb).forEach(([k,b])=>b.setAttribute('aria-pressed',k===type?'true':'false'));
+    cutBtn.textContent=cut?'Torna el corrent':'Talla el corrent';
+    cir.innerHTML=circuit();wav.innerHTML=wave();
+    const t=T[type];
+    const mode=cut?'Bateria':(type==='on'?'Doble conversió':'Xarxa');
+    const path=cut?'Bateria → inversor → equips':(type==='on'?'Xarxa → rectificador → inversor → equips':(type==='li'?'Xarxa → AVR → equips':'Xarxa → equips'));
+    ro.innerHTML=`<div><span>Alimentació dels equips</span><b>${mode}</b><p>${path}</p></div><div><span>Temps de transferència</span><b>${cut?t.tt:'—'}</b><p>${cut?'Del tall a l’alimentació per bateria':'No hi ha cap tall'}</p></div><div><span>Què noten els equips</span><p>${cut?t.cut:t.ok}</p></div>`;
+  }
+  body.append(h('p',{class:'hint'},'Tria un tipus de SAI i talla el corrent. Fixa’t per on circula l’energia (en groc) i què arriba als equips.'),sel,h('div',{class:'row',style:'margin:0 0 12px'},cutBtn),cir,h('p',{class:'hint',style:'margin:12px 0 0'},'Ona de sortida cap als equips (50 Hz):'),wav,ro);
+  draw();
+})();
+
+sortGame('g5','Standby, interactiu o online?','Classifica cada característica segons el tipus de SAI.',
+ [{id:'sb',label:'Standby / Offline'},{id:'li',label:'Interactiu de línia'},{id:'on',label:'Online'}],
+ [
+  {t:'En mode normal, els equips van directes a la xarxa',b:'sb',why:'La bateria només entra en joc durant un tall.'},
+  {t:'Temps de transferència de 2 a 10 ms',b:'sb'},
+  {t:'El més econòmic, per al PC de casa',b:'sb'},
+  {t:'Regulador AVR que corregeix baixades sense gastar bateria',b:'li',why:"L'AVR és el tret distintiu de l'interactiu de línia."},
+  {t:'Temps de transferència d’1 a 4 ms',b:'li'},
+  {t:'Per als servidors departamentals d’una petita empresa',b:'li'},
+  {t:'Altern → continu → altern, tota l’estona',b:'on',why:'Per això es diu de doble conversió.'},
+  {t:'Temps de transferència de 0 ms',b:'on'},
+  {t:'El de menys eficiència: 85–94 %',b:'on',why:'Convertir el corrent dues vegades té pèrdues.'},
+  {t:'Imprescindible en un CPD o un hospital',b:'on'}
+ ]);
+
+/* ---------- 6: triar i instal·lar ---------- */
+choiceGame('g6','Tria el SAI adequat',[
+ {q:'Un hospital vol protegir els monitors de pacients dels quiròfans. Quin SAI recomanes?',
+  o:[
+   {t:'Standby, perquè és el més eficient',ok:false,why:'Té microtall en commutar i poca autonomia: inacceptable si hi ha vides en joc.'},
+   {t:'Interactiu de línia de 15 minuts',ok:false,why:'Millor que un standby, però continua tenint temps de transferència i poca autonomia.'},
+   {t:'Online amb bateries de llarga durada',ok:true,why:'Zero temps de transferència i màxima protecció. En un hospital, a més, amb grup electrogen.'}
+  ]},
+ {q:'Un estudiant vol protegir l’ordinador i el router de casa. Què li recomanes?',
+  o:[
+   {t:'Un SAI standby',ok:true,why:'Protecció bàsica, econòmica i suficient per desar i apagar.'},
+   {t:'Un SAI online de doble conversió',ok:false,why:'Funciona, però és car, gasta més energia i és desproporcionat.'},
+   {t:'Una regleta qualsevol amb interruptor',ok:false,why:'No protegeix de cap tall, i si no ho indica, tampoc de sobretensions.'}
+  ]},
+ {q:'Una gestoria té vuit llocs de treball i un servidor de fitxers. La zona té baixades de tensió freqüents. Què tries?',
+  o:[
+   {t:'Interactiu de línia',ok:true,why:"L'AVR corregeix les baixades freqüents sense gastar bateria, a un cost raonable."},
+   {t:'Standby',ok:false,why:'Cada baixada el faria passar a bateria: més desgast i més microtalls.'},
+   {t:'Cap: amb un descarregador n’hi ha prou',ok:false,why:'El descarregador no fa res davant de baixades ni talls.'}
+  ]},
+ {q:'Un CPD ha de funcionar sense interrupcions 24 hores al dia. Quina solució és la correcta?',
+  o:[
+   {t:'Un SAI online molt gran i prou',ok:false,why:'Cap bateria aguanta un tall de diverses hores, i sense redundància és un punt únic de fallada.'},
+   {t:'SAI online amb bateries redundants i grup electrogen',ok:true,why:'El SAI cobreix sense cap microtall fins que arrenca el grup electrogen, que dona autonomia per a hores.'},
+   {t:'Un SAI interactiu per a cada rack',ok:false,why:'Continua havent-hi temps de transferència en equips crítics.'}
+  ]},
+ {q:'On instal·les el SAI del servidor?',
+  o:[
+   {t:'Dins d’un armari tancat sense ventilació, perquè no faci soroll',ok:false,why:'Sense ventilació, el SAI i la bateria s’escalfen i s’escurça la seva vida.'},
+   {t:'En un lloc ventilat, amb temperatura controlada i on es vegin els indicadors',ok:true,why:'Compleix les condicions ambientals i d’accessibilitat.'},
+   {t:'A terra al costat de la finestra, que hi toca el sol tot el matí',ok:false,why:'Calor, possible aigua i risc de cops: tot malament.'}
+  ]},
+ {q:'Fa quatre anys que tens el SAI i mai no l’has provat. Què fas?',
+  o:[
+   {t:'Res: si el LED de línia està verd, tot va bé',ok:false,why:'El LED de línia només diu que hi ha corrent a la xarxa, no si la bateria aguanta.'},
+   {t:'Fer un test de bateria i programar proves periòdiques',ok:true,why:'Les bateries es degraden. Cal comprovar-les abans que arribi el tall.'},
+   {t:'Canviar tot el SAI per un de més gran',ok:false,why:'Primer cal saber què li passa. Potser només cal canviar la bateria.'}
+  ]}
+]);
+
+/* ---------- 7: càlculs ---------- */
+(function(){
+  const id='g7';
+  const {body,sc}=shell(id,'Dimensiona el SAI');
+  const MODELS=[500,650,750,1000,1500,2000,3000];
+  let first=true;
+  function gen(){
+    const big=pick([{n:'Ordinador complet',u:'W',v:pick([150,200,250,300])},{n:'Servidor',u:'W',v:pick([300,350,400])}]);
+    const mon={n:'Monitor',u:'W',v:pick([25,30,40])};
+    const net=pick([{n:'Switch',u:'A',v:pick([0.1,0.2,0.3])},{n:'Router',u:'A',v:pick([0.05,0.1])}]);
+    const prn={n:'Impressora',u:'VA',v:pick([150,200,250])};
+    const devs=[big,mon,net,prn].map(d=>{
+      let va,how;
+      if(d.u==='W'){va=d.v*1.4;how=`${d.v} × 1,4`;}
+      else if(d.u==='A'){const w=220*d.v;va=w*1.4;how=`220 × ${fmt(d.v,2)} = ${fmt(w)} W → ${fmt(w)} × 1,4`;}
+      else{va=d.v;how=null;}
+      return {...d,va,how};
+    });
+    const total=devs.reduce((s,d)=>s+d.va,0),min=total/0.7,model=MODELS.find(m=>m>=min);
+    return {devs,total,min,model};
+  }
+  let P;
+  function draw(){
+    P=gen();first=true;body.innerHTML='';sc.textContent=store[id]?`Millor: ${store[id].s} / 3`:'0 / 3';
+    body.append(h('p',{class:'hint'},"Has de posar un SAI per a aquests equips. Fes servir 220 V i el factor 1,4. Pots escriure decimals amb coma."));
+    body.append(h('div',{class:'data'},P.devs.map(d=>h('div',{},h('span',{},d.n),h('b',{},`${fmt(d.v,2)} ${d.u}`)))));
+    const f1=h('div',{class:'field'},h('label',{for:'c1'},'1. Consum total en VA'),h('input',{id:'c1',type:'text',inputmode:'decimal',autocomplete:'off'}));
+    const f2=h('div',{class:'field'},h('label',{for:'c2'},'2. Capacitat mínima del SAI (el consum és el 70 %)'),h('input',{id:'c2',type:'text',inputmode:'decimal',autocomplete:'off'}));
+    const s3=h('select',{id:'c3'},h('option',{value:''},'Tria un model'),MODELS.map(m=>h('option',{value:String(m)},`${m} VA`)));
+    const f3=h('div',{class:'field'},h('label',{for:'c3'},'3. Model comercial que compraries'),s3);
+    const fb=h('div',{class:'fb','aria-live':'polite'});const sol=h('div');
+    const chk=h('button',{class:'btn',type:'button'},'Comprova');
+    chk.onclick=()=>{
+      const v1=num(f1.querySelector('input').value),v2=num(f2.querySelector('input').value),v3=+s3.value;
+      const ok1=v1!==null&&Math.abs(v1-P.total)<=Math.max(1,P.total*0.005);
+      const ok2=v2!==null&&Math.abs(v2-P.min)<=Math.max(2,P.min*0.01);
+      const ok3=v3===P.model;
+      [[f1,ok1],[f2,ok2],[f3,ok3]].forEach(([f,o])=>{f.classList.toggle('ok',o);f.classList.toggle('bad',!o);});
+      const n=ok1+ok2+ok3;
+      if(first){first=false;finish(id,n,3);sc.textContent=`Millor: ${store[id].s} / 3`;}
+      if(n===3){fb.className='fb ok';fb.innerHTML='<b>Perfecte.</b> SAI ben dimensionat.';showSol();}
+      else{fb.className='fb bad';fb.innerHTML=`<b>${n} de 3 correctes.</b> Revisa les caselles en vermell o mira la solució.`;}
+    };
+    function showSol(){
+      sol.innerHTML='';
+      sol.append(h('div',{class:'sol'},
+        P.devs.map(d=>h('p',{},d.how?`${d.n}: ${d.how} = ${fmt(d.va)} VA`:`${d.n}: ja està en VA → ${fmt(d.va)} VA`)),
+        h('p',{},h('b',{},`Total: ${fmt(P.total)} VA`)),
+        h('p',{},`Mínim: ${fmt(P.total)} ÷ 0,7 = ${fmt(P.min)} VA`),
+        h('p',{},h('b',{},`Model: ${P.model} VA`),' (el primer model comercial que arriba al mínim)')));
+    }
+    body.append(f1,f2,f3,h('div',{class:'row'},chk,h('button',{class:'btn ghost',type:'button',onclick:()=>{if(first){first=false;finish(id,0,3);sc.textContent=`Millor: ${store[id].s} / 3`;}showSol();}},'Mostra la solució'),h('button',{class:'btn ghost',type:'button',onclick:draw},'Nou exercici')),fb,sol);
+  }
+  draw();
+})();
+
+(function(){
+  const id='g7b',ROUNDS=3;
+  const {body,sc}=shell(id,'Quants minuts aguanta?');
+  let r=0,score=0,first=true,P;
+  function gen(){
+    const N=pick([1,2,2,4]),V=pick([6,9,12,12]),Ah=pick([7,9,12,18]),E=pick([90,92,95,98]),VA=pick([500,650,750,1000,1500]);
+    return {N,V,Ah,E,VA,m:(N*V*Ah*(E/100)/VA)*60};
+  }
+  function draw(){
+    body.innerHTML='';sc.textContent=`${score} / ${ROUNDS}`;
+    if(r>=ROUNDS){finish(id,score,ROUNDS);
+      body.append(h('p',{},`Has encertat a la primera ${score} de ${ROUNDS}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{r=0;score=0;draw();}},'Torna-hi'));return;}
+    P=gen();first=true;
+    body.append(h('p',{class:'hint'},`Exercici ${r+1} de ${ROUNDS}. Calcula l'autonomia en minuts (amb un decimal). Recorda que l'eficiència va en tant per u: 95 % → 0,95.`),
+      h('div',{class:'data'},
+        h('div',{},h('span',{},'Bateries (N)'),h('b',{},String(P.N))),
+        h('div',{},h('span',{},'Voltatge (V)'),h('b',{},`${P.V} V`)),
+        h('div',{},h('span',{},'Capacitat'),h('b',{},`${P.Ah} Ah`)),
+        h('div',{},h('span',{},'Eficiència'),h('b',{},`${P.E} %`)),
+        h('div',{},h('span',{},'Potència SAI'),h('b',{},`${P.VA} VA`))));
+    const inp=h('input',{id:'au',type:'text',inputmode:'decimal',autocomplete:'off'});
+    const f=h('div',{class:'field'},h('label',{for:'au'},'Autonomia (minuts)'),inp);
+    const fb=h('div',{class:'fb','aria-live':'polite'});
+    const next=h('div',{class:'row'});
+    const solTxt=()=>`(${P.N} × ${P.V} × ${P.Ah} × ${fmt(P.E/100,2)} ÷ ${P.VA}) × 60 = ${fmt(P.m)} minuts`;
+    const chk=h('button',{class:'btn',type:'button'},'Comprova');
+    const goNext=()=>{if(!next.childNodes.length)next.append(h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<ROUNDS?'Següent exercici':'Veure resultat'));};
+    chk.onclick=()=>{
+      const v=num(inp.value);const ok=v!==null&&Math.abs(v-P.m)<=Math.max(0.15,P.m*0.01);
+      f.classList.toggle('ok',ok);f.classList.toggle('bad',!ok);
+      if(first){first=false;if(ok)score++;sc.textContent=`${score} / ${ROUNDS}`;}
+      if(ok){fb.className='fb ok';fb.innerHTML='<b>Correcte.</b> '+solTxt();goNext();}
+      else{fb.className='fb bad';fb.innerHTML="<b>No.</b> Revisa l'ordre: multiplica N × V × Ah × Eff, divideix pels VA i multiplica per 60.";}
+    };
+    const reveal=h('button',{class:'btn ghost',type:'button',onclick:()=>{first=false;fb.className='fb mid';fb.innerHTML='<b>Solució:</b> '+solTxt();goNext();}},'Mostra la solució');
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk.click();});
+    body.append(f,h('div',{class:'row'},chk,reveal),fb,next);
+  }
+  draw();
+})();
+
+/* ---------- start ---------- */
+refresh();
+const start=Math.max(0,MODS.findIndex(m=>'#'+m.id===location.hash));show(start);
+})();
+</script>
+</body>
+</html>
