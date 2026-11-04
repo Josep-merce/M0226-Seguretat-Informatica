@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contrasenyes i seguretat lògica · AEA1 · M0226</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E6E2; --surface:#F6F7F4; --surface2:#ECEEEA; --ink:#1C2226; --muted:#56616A; --line:#C7CCC6;
+  --yellow:#F2C200; --yellow-ink:#3A2E00; --red:#C8281E; --green:#0E7F49; --blue:#2F5671;
+  --ok-bg:#DDF0E5; --bad-bg:#F8DEDB; --mid-bg:#FBF0C6; --focus:#2F5671;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+    --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+    --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+  --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+  --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variation-settings:"wdth" 100;font-size:17px;line-height:1.55}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+img,svg{max-width:100%}
+
+.hazard{height:10px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 14px,#1C2226 14px 28px)}
+header.top{padding:28px 24px 22px;max-width:1180px;margin:0 auto}
+header.top h1{margin:0;font-weight:800;font-variation-settings:"wdth" 70;font-size:clamp(2.1rem,6vw,3.6rem);line-height:1;letter-spacing:-.01em}
+header.top p{margin:.6rem 0 0;color:var(--muted);max-width:60ch}
+.scorebar{display:flex;gap:16px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.meter{flex:1 1 220px;max-width:360px;height:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--green);width:0;transition:width .4s}
+.scoretxt{font-weight:700;font-variant-numeric:tabular-nums}
+.reset{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:.85rem;color:var(--muted)}
+
+.layout{max-width:1180px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+nav.mods{position:sticky;top:env(safe-area-inset-top,0px);padding-top:8px}
+nav.mods ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+nav.mods button{width:100%;text-align:left;background:none;border:0;border-left:4px solid transparent;padding:9px 12px;border-radius:0 6px 6px 0;display:flex;gap:10px;align-items:baseline}
+nav.mods button:hover{background:var(--surface2)}
+nav.mods button[aria-current="true"]{background:var(--surface);border-left-color:var(--yellow);font-weight:700}
+nav.mods .n{font-variation-settings:"wdth" 70;font-weight:800;color:var(--muted);min-width:1.2em}
+nav.mods .done{margin-left:auto;color:var(--green);font-weight:800}
+
+main{min-width:0}
+section.mod{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px clamp(18px,4vw,40px) 34px}
+section.mod.active{display:block}
+.mod h2{margin:0 0 .2rem;font-weight:800;font-variation-settings:"wdth" 75;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
+.mod .lead{color:var(--muted);margin:0 0 1.4rem;max-width:68ch}
+.mod h3{font-variation-settings:"wdth" 85;font-weight:750;font-size:1.25rem;margin:2rem 0 .6rem}
+.mod p{max-width:70ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:1rem 0}
+.fact{background:var(--surface2);border-radius:8px;padding:14px 16px;border-top:4px solid var(--blue)}
+.fact b{display:block;margin-bottom:4px}
+.fact p{margin:0;font-size:.95rem}
+.note{border-left:4px solid var(--yellow);background:var(--mid-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:1.2rem 0;max-width:72ch}
+.steps{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface2);border-radius:8px;padding:12px 14px 12px 50px;position:relative;font-size:.95rem}
+.steps li::before{content:counter(s);position:absolute;left:12px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-weight:800}
+.tablewrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-variation-settings:"wdth" 85;background:var(--surface2)}
+
+.game{margin-top:2.2rem;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.game>.gh{background:var(--ink);color:var(--surface);padding:12px 18px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.game>.gh h3{margin:0;color:inherit;font-size:1.15rem}
+.game>.gh .gs{font-weight:700;font-variant-numeric:tabular-nums}
+.game>.gb{padding:18px}
+.hint{color:var(--muted);font-size:.92rem;margin:0 0 12px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:44px}
+.chip{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:7px 14px;font-size:.95rem}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--yellow);color:var(--yellow-ink);font-weight:700}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bucket{background:var(--surface2);border:2px dashed var(--line);border-radius:8px;padding:10px;text-align:left;min-height:110px;display:flex;flex-direction:column;gap:6px}
+.bucket.armed{border-color:var(--ink);border-style:solid}
+.bucket>strong{font-variation-settings:"wdth" 85}
+.placed{font-size:.85rem;border-radius:5px;padding:3px 8px}
+.placed.ok{background:var(--ok-bg)} .placed.bad{background:var(--bad-bg);text-decoration:line-through}
+.fb{margin-top:14px;padding:12px 14px;border-radius:8px;min-height:1em}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg)} .fb.bad{background:var(--bad-bg)} .fb.mid{background:var(--mid-bg)}
+.btn{background:var(--ink);color:var(--surface);border:0;border-radius:6px;padding:9px 16px;font-weight:700}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:11px 14px}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.opt.bad{background:var(--bad-bg);border-color:var(--red)}
+.opt.mid{background:var(--mid-bg);border-color:var(--yellow)}
+.opt small{display:block;color:var(--muted);margin-top:4px}
+.q{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.site{display:block}
+.site ul{margin:6px 0 0;padding-left:18px;font-size:.92rem;color:var(--muted);font-weight:400}
+
+.layers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center}
+.layers svg{width:100%;height:auto}
+.layers svg .ly{cursor:pointer}
+.layers svg .ly rect{stroke:var(--ink);stroke-width:2;transition:fill .2s}
+.layers svg .ly:hover rect,.layers svg .ly.sel rect{fill:var(--yellow)}
+.layers svg text{fill:var(--ink);font-family:inherit;font-size:13px;font-weight:700;pointer-events:none}
+.layerinfo{background:var(--surface2);border-radius:8px;padding:16px;min-height:150px}
+.layerinfo h4{margin:0 0 6px;font-size:1.1rem}
+
+.sim{display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:24px}
+.slider label{display:flex;justify-content:space-between;font-weight:700}
+.slider output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.slider input{width:100%;accent-color:var(--blue);margin:8px 0 18px}
+.eq{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;padding:9px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border-left:6px solid var(--green)}
+.eq.bad{border-left-color:var(--red)} .eq b{font-variation-settings:"wdth" 85}
+.eq .st{font-size:.88rem;color:var(--muted);grid-column:1/-1}
+
+.classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0}
+.cls{border-radius:8px;padding:12px;background:var(--surface2);display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center}
+.cls .L{grid-row:span 2;width:44px;height:44px;border-radius:6px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.5rem;font-variation-settings:"wdth" 70}
+.cls span{font-size:.88rem;color:var(--muted)}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.scen{background:var(--surface2);border-radius:8px;padding:14px 16px;font-size:1.05rem}
+.scen .num{color:var(--muted);font-size:.85rem}
+
+.ordlist{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px;counter-reset:o}
+.ordlist li{counter-increment:o;background:var(--ok-bg);padding:9px 12px 9px 44px;border-radius:6px;position:relative}
+.ordlist li::before{content:counter(o);position:absolute;left:12px;font-weight:800}
+
+.audit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
+.plan{width:100%;height:auto;background:var(--surface2);border-radius:8px}
+.plan .wall{fill:none;stroke:var(--ink);stroke-width:3}
+.plan .room{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.plan .rack{fill:var(--muted)}
+.plan .lbl{fill:var(--muted);font-size:12px;font-family:inherit}
+.plan .hs{cursor:pointer}
+.plan .hs circle{fill:var(--yellow);stroke:#1C2226;stroke-width:2}
+.plan .hs text{fill:#1C2226;font-weight:800;font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-family:inherit}
+.plan .hs.ok circle{fill:#4CC98A}.plan .hs.bad circle{fill:#F0675C}
+.plan .hs.sel circle{stroke-width:4}
+.panel{background:var(--surface2);border-radius:8px;padding:16px;min-height:200px}
+.panel h4{margin:0 0 8px}
+
+.pager{display:flex;justify-content:space-between;margin-top:28px;gap:10px}
+.final{background:var(--ink);color:var(--surface);border-radius:8px;padding:16px 18px;margin-top:16px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  nav.mods{position:static;min-width:0}
+  nav.mods ol{flex-direction:row;overflow-x:auto;padding-bottom:6px}
+  nav.mods button{white-space:nowrap;border-left:0;border-bottom:4px solid transparent;border-radius:6px 6px 0 0}
+  nav.mods button[aria-current="true"]{border-bottom-color:var(--yellow)}
+  .layers,.sim,.audit{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.back{display:inline-block;color:var(--muted);font-size:.9rem;text-decoration:none;margin-bottom:10px}
+.back:hover{color:var(--ink);text-decoration:underline}
+.res{margin:1.6rem 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);max-width:72ch}
+.res b{display:block;margin-bottom:6px}
+.res ul{margin:0;padding-left:20px}
+.res li{margin:3px 0}
+.res a{color:var(--blue);font-weight:600}
+.formula{font-variation-settings:"wdth" 80;font-weight:800;font-size:1.15rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;margin:4px 0;font-variant-numeric:tabular-nums}
+.typesel{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.circuit,.wave{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block}
+.wave{margin-top:10px}
+.circuit .blk rect{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.circuit .blk text{fill:var(--ink);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:inherit}
+.circuit .blk.dead rect{fill:var(--surface2);stroke:var(--muted);stroke-dasharray:5 4}
+.circuit .blk.dead text{fill:var(--muted)}
+.circuit .w{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.circuit .w.by{stroke-dasharray:3 7}
+.circuit .w.on{stroke:var(--yellow);stroke-width:6;stroke-dasharray:12 8;animation:flow .7s linear infinite}
+.circuit .lever{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+.circuit .dot{fill:var(--ink)}
+.circuit .tag{fill:var(--muted);font-size:12px;font-family:inherit}
+.circuit .cut{fill:var(--red);font-size:13px;font-weight:800;font-family:inherit;text-anchor:middle}
+@keyframes flow{to{stroke-dashoffset:-20}}
+.wave .sig{fill:none;stroke:var(--blue);stroke-width:3;stroke-linejoin:round}
+.wave .gap{fill:var(--bad-bg)}
+.wave .axis{stroke:var(--line);stroke-width:1}
+.wave .mk{stroke:var(--red);stroke-width:2;stroke-dasharray:4 3}
+.wave text{fill:var(--muted);font-size:12px;font-family:inherit}
+.wave text.hot{fill:var(--red);font-weight:800}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.readout div{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.readout span{display:block;color:var(--muted);font-size:.85rem}
+.readout b{font-variation-settings:"wdth" 80;font-size:1.2rem;line-height:1.2}
+.readout p{margin:2px 0 0;font-size:.93rem}
+.ups{display:grid;grid-template-columns:minmax(0,280px) 1fr;gap:22px;align-items:start}
+.ups svg{width:100%;height:auto;display:block}
+.ups .led{cursor:pointer}
+.ups .led .l{stroke:#0d1012;stroke-width:2}
+.ups .led .ring{fill:none;stroke-width:3}
+.ups .led text{fill:#E7EAE6;font-size:14px;font-family:inherit;font-weight:600;pointer-events:none}
+.ups .led:hover .hit{fill:rgba(255,255,255,.08)}
+.ups .led:focus{outline:none}
+.ups .led:focus-visible .hit{stroke:#8DB6D3;stroke-width:3}
+.field{display:grid;gap:4px;margin:12px 0}
+.field label{font-weight:700}
+.field input,.field select{font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:min(240px,100%)}
+.field.ok input,.field.ok select{border-color:var(--green);background:var(--ok-bg)}
+.field.bad input,.field.bad select{border-color:var(--red);background:var(--bad-bg)}
+.data{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0 4px}
+.data div{background:var(--surface2);border-radius:8px;padding:8px 12px}
+.data span{display:block;font-size:.82rem;color:var(--muted)}
+.data b{font-variation-settings:"wdth" 80;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.sol{margin-top:12px;background:var(--surface2);border-radius:8px;padding:12px 14px;font-variant-numeric:tabular-nums}
+.sol p{margin:.2rem 0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:860px){.ups{grid-template-columns:1fr}.ups svg{max-width:300px}}
+@media (prefers-reduced-motion:reduce){.circuit .w.on{animation:none}}
+/* ---- específic d'aquesta pàgina ---- */
+.warn{border-left:4px solid var(--red);background:var(--bad-bg);padding:10px 14px;border-radius:0 8px 8px 0;margin:0 0 14px;font-size:.93rem}
+.pwbox{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.pwfield input{font:inherit;font-size:1.1rem;padding:10px 12px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:100%;font-variant-ligatures:none;letter-spacing:.02em}
+.pwfield label{font-weight:700;display:block;margin-bottom:6px}
+.strength{height:14px;background:var(--surface2);border:1px solid var(--line);border-radius:7px;overflow:hidden;margin:14px 0 6px}
+.strength span{display:block;height:100%;width:0;transition:width .3s,background .3s}
+.level{font-variation-settings:"wdth" 75;font-weight:800;font-size:1.6rem;line-height:1.1}
+.checks{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.checks li{background:var(--surface2);border-radius:6px;padding:7px 12px 7px 36px;position:relative;font-size:.93rem}
+.checks li::before{position:absolute;left:12px;font-weight:800}
+.checks li.ok::before{content:"✓";color:var(--green)}
+.checks li.bad::before{content:"✗";color:var(--red)}
+.mnemo{font-variation-settings:"wdth" 80;font-weight:800;font-size:1.5rem;letter-spacing:.03em;background:var(--surface2);border-radius:8px;padding:10px 14px;margin-top:10px;word-break:break-all;font-variant-ligatures:none}
+.mx td,.mx th{text-align:center}
+.mx td:first-child,.mx th:first-child{text-align:left;font-weight:700}
+.mx td.hl{outline:3px solid var(--yellow);outline-offset:-3px;background:var(--mid-bg)}
+.yn{display:flex;gap:10px;margin-top:12px}
+.yn .opt{flex:1;text-align:center;font-weight:700}
+.perm{border-collapse:collapse;min-width:0;width:auto;margin:6px 0 14px}
+.perm th,.perm td{text-align:center;padding:8px 14px}
+.perm td:first-child,.perm th:first-child{text-align:left}
+.perm input{width:22px;height:22px;accent-color:var(--blue);cursor:pointer}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;background:var(--surface2);border-radius:6px;padding:2px 6px}
+.term{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;background:#1C2226;color:#E7EAE6;border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre;margin:1rem 0;max-width:72ch}
+.term .c{color:#A3ADB4}
+.bigperm{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;font-size:1.6rem;letter-spacing:.05em}
+@media (max-width:860px){.pwbox{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="hazard" aria-hidden="true"></div>
+<header class="top">
+  <a class="back" href="aea1_a3.html">← Tornar a A3 · Contrasenyes</a>
+  <h1>Contrasenyes i seguretat lògica: qui entra i què pot fer</h1>
+  <p>Set apartats sobre el control d'accés, les contrasenyes, l'autenticació i els permisos. Cada un té una mica de teoria i una activitat. El progrés es guarda en aquest navegador.</p>
+  <div class="scorebar">
+    <div class="meter" role="progressbar" aria-label="Apartats completats" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><span id="meterFill"></span></div>
+    <span class="scoretxt" id="scoreTxt">0 de 7 apartats · 0 punts</span>
+    <button class="reset" id="resetAll" type="button">Reinicia el progrés</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="mods" aria-label="Apartats"><ol id="navList"></ol></nav>
+  <main>
+
+<!-- 1 -->
+<section class="mod" id="m1" data-title="Seguretat lògica">
+  <h2>Seguretat lògica</h2>
+  <p class="lead">La porta del CPD protegeix les màquines. La seguretat lògica protegeix les dades que hi ha a dins.</p>
+  <p>La seguretat lògica consisteix a aplicar barreres i procediments que protegeixen l'accés a les dades i només deixen entrar-hi les persones autoritzades. Complementa la <a href="seguretat_fisica_protegir_CPD.html">seguretat física</a>: totes dues formen part de la mateixa cadena de seguretat.</p>
+  <h3>Tres passos per entrar a un sistema</h3>
+  <ol class="steps">
+    <li><b>Identificació.</b> L'usuari es dona a conèixer al sistema: «sóc maria.garcia».</li>
+    <li><b>Autenticació.</b> El sistema verifica que realment és qui diu ser: contrasenya, targeta, empremta…</li>
+    <li><b>Autorització.</b> El sistema decideix què pot fer aquest usuari: llegir, modificar, executar…</li>
+  </ol>
+  <div class="note">La identificació sola no serveix de res: qualsevol pot escriure un nom d'usuari. Sempre ha d'anar acompanyada d'una autenticació.</div>
+  <h3>Com ha de ser un identificador</h3>
+  <div class="cols">
+    <div class="fact"><b>Únic</b><p>Cada persona té un identificador propi al sistema. No es comparteixen comptes.</p></div>
+    <div class="fact"><b>No descriptiu</b><p>El nom no ha de revelar la funció del compte. Res de «admin» o «superusuari»: és el primer que proven els atacants.</p></div>
+    <div class="fact"><b>Amb un estàndard</b><p>Per exemple <span class="code">nom.cognom</span> sense accents ni enyes: maria.garcia, joan.puig.</p></div>
+  </div>
+  <h3>Single Login</h3>
+  <p>Amb l'<b>autenticació única</b> (Single Login), l'usuari s'autentica una sola vegada i pot accedir a molts recursos. Per fer-ho, es fan servir servidors d'autenticació centralitzats que guarden les credencials de tots els usuaris: <b>LDAP</b> a GNU/Linux o <b>Active Directory</b> a Windows Server.</p>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="contrasenyes_claus_biomètriques.pptx.pdf" target="_blank" rel="noopener">Presentació: Seguretat lògica</a></li>
+  </ul></div>
+  <div class="game" id="g1"></div>
+  <div class="game" id="g1b"></div>
+</section>
+
+<!-- 2 -->
+<section class="mod" id="m2" data-title="Control d'accés">
+  <h2>Control d'accés: qui, a què i com</h2>
+  <p class="lead">Tot control d'accés respon tres preguntes: qui vol entrar, a quin recurs i per fer què.</p>
+  <div class="cols">
+    <div class="fact"><b>Objecte</b><p>El recurs amb accés controlat: fitxers, directoris, registres, programes, pàgines de memòria…</p></div>
+    <div class="fact"><b>Subjecte</b><p>L'entitat que vol accedir a l'objecte: usuaris, processos, aplicacions.</p></div>
+    <div class="fact"><b>Dret d'accés</b><p>Què pot fer el subjecte amb l'objecte: lectura, escriptura, execució, esborrament, creació.</p></div>
+  </div>
+  <p>Els subjectes s'agrupen en tres classes: el <b>propietari</b> (qui ha creat el recurs), el <b>grup</b> (usuaris amb privilegis semblants) i els <b>altres</b> (la resta).</p>
+  <h3>Control d'accés discrecional (DAC)</h3>
+  <p>En el model DAC, l'accés es decideix segons la identitat de qui el demana i unes normes (autoritzacions). És <i>discrecional</i> perquè el propietari d'un recurs pot decidir qui més hi té accés i donar-li drets. Això dona flexibilitat als usuaris, però complica la gestió centralitzada.</p>
+  <h3>La matriu de control d'accés</h3>
+  <p>Una manera de representar el DAC: les <b>files</b> són els subjectes, les <b>columnes</b> els objectes i cada <b>cel·la</b> els drets. <span class="code">r</span> lectura, <span class="code">w</span> escriptura, <span class="code">x</span> execució (en un directori, poder-hi entrar).</p>
+  <div class="tablewrap"><table class="mx">
+    <thead><tr><th>Subjecte / Objecte</th><th>/home/albert</th><th>/home/berta</th><th>/home/carme</th><th>/etc/passwd</th></tr></thead>
+    <tbody>
+      <tr><td>Albert</td><td>rwx</td><td>–</td><td>–</td><td>r</td></tr>
+      <tr><td>Berta</td><td>–</td><td>rwx</td><td>–</td><td>r</td></tr>
+      <tr><td>Carme</td><td>rx</td><td>rx</td><td>rwx</td><td>rw</td></tr>
+    </tbody>
+  </table></div>
+  <p>La Carme té permisos d'administració sobre tots els directoris personals. La matriu es pot guardar de dues maneres: <b>per columnes</b>, i cada objecte té la seva llista (ACL), o <b>per files</b>, i cada usuari té les seves capacitats.</p>
+  <h3>Llistes de control d'accés (ACL)</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Windows</th><th>UNIX / Linux</th></tr></thead>
+    <tbody>
+      <tr><td>Cada objecte té una ACL incorporada.</td><td>Sistema híbrid entre ACL i capacitats.</td></tr>
+      <tr><td>Cada entrada diu usuari o grup, operació i permís.</td><td>Permisos bàsics rwx per a propietari, grup i altres.</td></tr>
+      <tr><td>Permet entrades de «permetre» i de «denegar».</td><td>ACL ampliades amb les comandes <span class="code">getfacl</span> i <span class="code">setfacl</span>.</td></tr>
+      <tr><td>Gestió centralitzada amb Active Directory.</td><td>Control més detallat que el model clàssic.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="game" id="g2"></div>
+  <div class="game" id="g2b"></div>
+</section>
+
+<!-- 3 -->
+<section class="mod" id="m3" data-title="Contrasenyes robustes">
+  <h2>Contrasenyes robustes</h2>
+  <p class="lead">Una contrasenya és com la «contrasenya» que demanava un sentinella: si l'enemic l'endevina, entra.</p>
+  <p>Les contrasenyes són el mètode més estès per impedir accessos no autoritzats: són barates i, ben fetes, molt efectives. Però el seu mal ús és una de les deu amenaces més habituals. Per això les organitzacions tenen una <b>política de contrasenyes</b>: un document que regula com es creen, es protegeixen i es renoven.</p>
+  <h3>Recomanacions</h3>
+  <div class="cols">
+    <div class="fact"><b>Llargada</b><p>Mínim 10 caràcters. Millor 14 o més. La llargada és el que més pesa.</p></div>
+    <div class="fact"><b>Barreja</b><p>Majúscules, minúscules, números i símbols.</p></div>
+    <div class="fact"><b>Res personal</b><p>Ni noms, ni dates de naixement, ni adreces, ni el nom de la mascota.</p></div>
+    <div class="fact"><b>Sense patrons</b><p>Res de qwerty, 12345 ni seqüències de lletres.</p></div>
+    <div class="fact"><b>Una per servei</b><p>Si en filtren una i la fas servir a tot arreu, cauen tots els comptes alhora.</p></div>
+  </div>
+  <h3>Tècnica mnemotècnica</h3>
+  <p>Pensa una frase que recordis fàcilment i agafa'n la primera lletra de cada paraula. Canvia les paraules que són números per xifres i afegeix-hi algun símbol.</p>
+  <p>«<b>A</b>ixò <b>é</b>s <b>u</b>na <b>m</b>anera <b>d</b>e <b>r</b>ecordar <b>u</b>na <b>c</b>ontrasenya» → <span class="code">Ae1MdR1c!</span></p>
+  <div class="game free" id="pw"></div>
+  <div class="game free" id="mn"></div>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="https://www.xataka.com/seguridad/trucos-para-crear-recordar-buena-contrasena" target="_blank" rel="noopener">Article: Trucos para crear y recordar una buena contraseña</a></li>
+    <li><a href="https://www.youtube.com/watch?v=CZfitnL_r98" target="_blank" rel="noopener">Vídeo: Cómo utilizar la nemotecnia para crear y recordar contraseñas complejas y seguras</a></li>
+    <li><a href="contrasenyes_claus_biomètriques.pptx.pdf" target="_blank" rel="noopener">Presentació: Seguretat lògica</a></li>
+  </ul></div>
+  <div class="game" id="g3"></div>
+</section>
+
+<!-- 4 -->
+<section class="mod" id="m4" data-title="Protegir les contrasenyes">
+  <h2>Protegir les contrasenyes</h2>
+  <p class="lead">La millor contrasenya del món no serveix de res si està enganxada al monitor.</p>
+  <p>La majoria de bretxes de seguretat no són atacs tècnics complicats: són credencials que s'han filtrat. Per això la política de contrasenyes també diu com s'han de protegir.</p>
+  <div class="cols">
+    <div class="fact"><b>Ni per correu ni per missatge</b><p>Mai no s'escriu una contrasenya en un correu electrònic ni en un xat.</p></div>
+    <div class="fact"><b>Ni per telèfon</b><p>No es diu a ningú, tampoc als superiors directes ni a «suport tècnic».</p></div>
+    <div class="fact"><b>Ni en paper</b><p>Res d'adhesius al monitor ni de llibretes al calaix.</p></div>
+    <div class="fact"><b>Ni en veu alta</b><p>No se'n parla davant d'altres persones ni es revela a la família.</p></div>
+    <div class="fact"><b>Sense pistes</b><p>Una pista per recordar-la també ajuda l'atacant a endevinar-la.</p></div>
+    <div class="fact"><b>Gestor de contrasenyes</b><p>Un programa segur que les guarda xifrades. Només n'has de recordar una.</p></div>
+  </div>
+  <div class="note">Canviar la contrasenya regularment (com a mínim cada 6 mesos) ajuda a mantenir segurs els accessos. I quan la canviïs, que sigui nova de debò: passar d'<span class="code">Estiu2024</span> a <span class="code">Estiu2025</span> no compta.</div>
+  <div class="game" id="g4"></div>
+</section>
+
+<!-- 5 -->
+<section class="mod" id="m5" data-title="Factors i MFA">
+  <h2>Factors d'autenticació</h2>
+  <p class="lead">Per demostrar qui ets, pots fer servir el que saps, el que tens o el que ets.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Coneixement</th><th>Possessió</th><th>Inherència</th></tr></thead>
+    <tbody>
+      <tr><td><i>Alguna cosa que saps</i></td><td><i>Alguna cosa que tens</i></td><td><i>Alguna cosa que ets</i></td></tr>
+      <tr><td>Contrasenya, PIN, pregunta secreta, patró de desbloqueig</td><td>Targeta intel·ligent, token de seguretat, mòbil, clau física USB</td><td>Empremta, reconeixement facial, iris, veu</td></tr>
+    </tbody>
+  </table></div>
+  <p>També es poden tenir en compte la <b>ubicació</b> (des d'on es connecta l'usuari) i el <b>comportament</b> (com actua).</p>
+  <h3>Autenticació multifactor (MFA)</h3>
+  <p>L'MFA combina <b>dos o més factors de tipus diferent</b>. Si un atacant aconsegueix la teva contrasenya, encara li falta el mòbil o l'empremta. Normalment es fa amb dos factors (2FA).</p>
+  <ol class="steps">
+    <li>Escrius la contrasenya (coneixement).</li>
+    <li>Escrius el codi que t'arriba per SMS (possessió).</li>
+    <li>Accés segur.</li>
+  </ol>
+  <div class="note">Dues coses del mateix tipus no són multifactor. Contrasenya i pregunta secreta són totes dues «coses que saps»: qui t'hagi robat una, potser també té l'altra.</div>
+  <h3>Una pinzellada de biometria</h3>
+  <p>Els <b>sistemes biomètrics</b> verifiquen la identitat amb un tret físic (empremta, cara, iris…) o de comportament (signatura, veu…). Primer cal donar-se d'alta perquè el sistema guardi el teu patró. Després, cada vegada que entres, compara la mostra nova amb la guardada. Són molt robustos però no infal·libles: hi pot haver falsos positius i falsos negatius.</p>
+  <div class="note">Els sistemes biomètrics els treballarem a fons a <a href="aea1_a4.html">A4 · Sistemes biomètrics</a>.</div>
+  <div class="game" id="g5"></div>
+  <div class="game" id="g5b"></div>
+</section>
+
+<!-- 6 -->
+<section class="mod" id="m6" data-title="Autorització i registres">
+  <h2>Autorització, permisos i registres</h2>
+  <p class="lead">Ja saps qui és. Ara cal decidir què pot fer i deixar-ne constància.</p>
+  <p>L'autorització determina què pot fer un usuari un cop identificat i autenticat. L'administrador pot fer servir diversos criteris:</p>
+  <div class="cols">
+    <div class="fact"><b>Rols</b><p>Segons la funció: auditor, administrador, editor…</p></div>
+    <div class="fact"><b>Grups</b><p>Els mateixos permisos per a un conjunt d'usuaris: professorat, alumnat…</p></div>
+    <div class="fact"><b>Localització</b><p>Física (només des d'un lloc concret) o lògica (per adreça IP).</p></div>
+    <div class="fact"><b>Hora d'accés</b><p>Restricció per franja horària, per exemple l'horari laboral.</p></div>
+    <div class="fact"><b>Tipus de transacció</b><p>Segons l'operació: consultar sí, modificar no.</p></div>
+  </div>
+  <div class="note">Exemple: en un institut, el professorat té accés de lectura i escriptura a les carpetes de les assignatures, l'alumnat només de lectura, i el servidor només accepta connexions en horari lectiu.</div>
+  <h3>Permisos i drets</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Permisos</th><th>Drets d'usuari</th></tr></thead>
+    <tbody>
+      <tr><td>Controlen l'accés a un <b>recurs</b>: fitxers, directoris, registres.</td><td>Controlen quines <b>tasques del sistema</b> pot fer l'usuari.</td></tr>
+      <tr><td>Lectura, escriptura, execució</td><td>Reiniciar el sistema, canviar la data i l'hora, gestionar usuaris</td></tr>
+    </tbody>
+  </table></div>
+  <p>Tant els uns com els altres es poden assignar a usuaris individuals o a grups.</p>
+  <div class="note"><b>Principi del mínim privilegi:</b> cada usuari ha de tenir només els permisos mínims per fer la seva feina. Redueix els riscos i evita errors amb conseqüències greus.</div>
+  <h3>Registres (logs)</h3>
+  <p>Els registres permeten detectar incidents, fer auditories i complir la normativa. Però guardar registres que ningú no revisa és tan inútil com no guardar-los.</p>
+  <div class="cols">
+    <div class="fact"><b>On</b><p>Sistema operatiu, programari de seguretat (antivirus, tallafocs, IDS), aplicacions crítiques i accessos remots.</p></div>
+    <div class="fact"><b>Què</b><p>Intents d'accés reeixits i fallits, data i hora, identitat de l'usuari, dispositiu i canvis de configuració.</p></div>
+    <div class="fact"><b>Com</b><p>Centralitzats, amb els rellotges sincronitzats, protegits criptogràficament i amb còpies en un lloc segur.</p></div>
+  </div>
+  <div class="game" id="g6"></div>
+  <div class="game" id="g6b"></div>
+</section>
+
+<!-- 7 -->
+<section class="mod" id="m7" data-title="Permisos UNIX">
+  <h2>Permisos en sistemes UNIX</h2>
+  <p class="lead">Nou lletres decideixen qui pot fer què amb cada fitxer.</p>
+  <p>UNIX i Linux fan servir tres categories d'usuaris (<b>propietari</b>, <b>grup</b> i <b>altres</b>) i tres permisos (<b>lectura</b>, <b>escriptura</b> i <b>execució</b>).</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Permís</th><th>Símbol</th><th class="n">Valor</th></tr></thead>
+    <tbody>
+      <tr><td>Lectura</td><td>r</td><td class="n">4</td></tr>
+      <tr><td>Escriptura</td><td>w</td><td class="n">2</td></tr>
+      <tr><td>Execució</td><td>x</td><td class="n">1</td></tr>
+    </tbody>
+  </table></div>
+  <p>Per a cada categoria se sumen els valors: <span class="code">rwx</span> = 4+2+1 = 7, <span class="code">r-x</span> = 4+1 = 5, <span class="code">r--</span> = 4. Per tant, <span class="code">rwxr-xr--</span> = <b>754</b>. El primer caràcter indica el tipus: <span class="code">-</span> fitxer, <span class="code">d</span> directori, <span class="code">l</span> enllaç simbòlic.</p>
+  <h3>Comandes bàsiques</h3>
+  <div class="cols">
+    <div class="fact"><b>chmod</b><p>Canvia els permisos d'un fitxer o directori.</p></div>
+    <div class="fact"><b>chown</b><p>Canvia el propietari (i, si vols, el grup).</p></div>
+    <div class="fact"><b>chgrp</b><p>Canvia el grup.</p></div>
+  </div>
+<div class="term">$ ls -l
+-rw-rw-r-- 1 joan profes 31744 Feb 21 seguretat.doc
+$ chmod u+x seguretat.doc        <span class="c"># afegeix execució al propietari</span>
+$ ls -l
+-rwxrw-r-- 1 joan profes 31744 Feb 21 seguretat.doc
+$ chmod u=rwx,g=rx,o=r arxiu.txt <span class="c"># el mateix que chmod 754 arxiu.txt</span>
+$ chown maria:estudiants projecte.pdf
+$ chgrp professors document.txt</div>
+  <div class="game free" id="calc"></div>
+  <div class="game" id="g7"></div>
+</section>
+
+  </main>
+</div>
+<script>
+(function(){
+const MODS=[...document.querySelectorAll('section.mod')];
+const TOTAL=MODS.length;
+let store={};
+try{store=JSON.parse(localStorage.getItem('contrasenyes')||'{}')||{};}catch(e){store={};}
+function save(){try{localStorage.setItem('contrasenyes',JSON.stringify(store));}catch(e){}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}kids.flat().forEach(c=>c!=null&&e.append(c));return e;};
+
+/* ---------- navigation & progress ---------- */
+const nav=document.getElementById('navList');
+function show(i){
+  MODS.forEach((m,k)=>m.classList.toggle('active',k===i));
+  [...nav.querySelectorAll('button')].forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'));
+  try{history.replaceState(null,'','#'+MODS[i].id);}catch(e){}
+}
+MODS.forEach((m,i)=>{
+  nav.append(h('li',{},h('button',{type:'button',onclick:()=>{show(i);window.scrollTo({top:0});}},
+    h('span',{class:'n'},String(i+1)),h('span',{},m.dataset.title),h('span',{class:'done','data-done':m.id}))));
+  const pager=h('div',{class:'pager'});
+  pager.append(i>0?h('button',{class:'btn ghost',type:'button',onclick:()=>{show(i-1);window.scrollTo({top:0});}},'Apartat anterior'):h('span'));
+  if(i<MODS.length-1)pager.append(h('button',{class:'btn',type:'button',onclick:()=>{show(i+1);window.scrollTo({top:0});}},'Següent apartat'));
+  m.append(pager);
+});
+const MODGAMES={};
+MODS.forEach(m=>{MODGAMES[m.id]=[...m.querySelectorAll('.game:not(.free)')].map(g=>g.id);});
+function refresh(){
+  let n=0,pts=0;
+  Object.values(MODGAMES).flat().forEach(k=>{if(store[k])pts+=store[k].s;});
+  for(const[m,gs]of Object.entries(MODGAMES)){
+    const d=gs.every(g=>store[g]);if(d)n++;
+    const el=nav.querySelector(`[data-done="${m}"]`);el.textContent=d?'✓':'';el.setAttribute('aria-label',d?'completat':'');
+  }
+  document.getElementById('meterFill').style.width=(n/TOTAL*100)+'%';
+  document.querySelector('.meter').setAttribute('aria-valuenow',n);
+  document.getElementById('scoreTxt').textContent=`${n} de ${TOTAL} apartats · ${pts} punts`;
+}
+function finish(id,s,t){if(!store[id]||s>=store[id].s)store[id]={s,t};save();refresh();}
+document.getElementById('resetAll').onclick=()=>{store={};save();refresh();};
+
+function shell(id,title){
+  const g=document.getElementById(id);g.innerHTML='';
+  const sc=h('span',{class:'gs'});
+  g.append(h('div',{class:'gh'},h('h3',{},title),sc));
+  const body=h('div',{class:'gb'});g.append(body);
+  return {body,sc};
+}
+
+/* ---------- sorting game ---------- */
+function sortGame(id,title,hint,buckets,items){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(items),sel=null,score=0;
+  const pl=h('div',{class:'pool','aria-label':'Targetes per classificar'});
+  const bk=h('div',{class:'buckets'});
+  const fb=h('div',{class:'fb','aria-live':'polite'});
+  const upd=()=>sc.textContent=`${score} / ${items.length}`;
+  const bEls={};
+  buckets.forEach(b=>{
+    const el=h('button',{class:'bucket',type:'button',onclick:()=>place(b.id)},h('strong',{},b.label));
+    if(b.sub)el.append(h('span',{class:'hint',style:'margin:0'},b.sub));
+    bEls[b.id]=el;bk.append(el);
+  });
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach((it,i)=>pl.append(h('button',{class:'chip',type:'button','aria-pressed':sel===i?'true':'false',onclick:()=>{sel=sel===i?null:i;drawPool();}},it.t)));
+    Object.values(bEls).forEach(e=>e.classList.toggle('armed',sel!==null));
+  }
+  function place(bid){
+    if(sel===null){fb.className='fb mid';fb.textContent='Primer tria una targeta de dalt.';return;}
+    const it=pool[sel];const ok=it.b===bid;
+    if(ok)score++;
+    bEls[bid].append(h('span',{class:'placed '+(ok?'ok':'bad')},it.t));
+    if(!ok)bEls[it.b].append(h('span',{class:'placed ok'},it.t));
+    fb.className='fb '+(ok?'ok':'bad');
+    fb.innerHTML=(ok?'<b>Correcte.</b> ':'<b>No.</b> Va a «'+buckets.find(b=>b.id===it.b).label+'». ')+(it.why||'');
+    pool.splice(sel,1);sel=null;drawPool();upd();
+    if(!pool.length){
+      finish(id,score,items.length);
+      body.append(h('div',{class:'row'},h('span',{},`Has encertat ${score} de ${items.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>sortGame(id,title,hint,buckets,items)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,bk,fb);drawPool();upd();
+}
+
+/* ---------- multiple-choice rounds ---------- */
+function choiceGame(id,title,rounds){
+  const {body,sc}=shell(id,title);
+  let r=0,score=0;
+  const upd=()=>sc.textContent=`${score} / ${rounds.length}`;
+  function draw(){
+    body.innerHTML='';upd();
+    if(r>=rounds.length){
+      finish(id,score,rounds.length);
+      body.append(h('p',{},`Has encertat ${score} de ${rounds.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{r=0;score=0;draw();}},'Torna-hi'));return;
+    }
+    const R=rounds[r];
+    body.append(h('p',{class:'hint'},`Pregunta ${r+1} de ${rounds.length}`),h('p',{class:'q'},R.q));
+    if(R.ctx)body.append(h('p',{},R.ctx));
+    const box=h('div',{class:'opts'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    const btns=R.o.map(o=>{
+      const b=h('button',{class:'opt',type:'button',html:o.t});
+      b.onclick=()=>{
+        btns.forEach((x,k)=>{x.disabled=true;const oo=R.o[k];if(oo.ok)x.classList.add('ok');x.append(h('small',{},oo.why));});
+        if(!o.ok)b.classList.add('bad');else score++;
+        fb.className='fb '+(o.ok?'ok':'bad');fb.innerHTML=o.ok?'<b>Correcte.</b> Llegeix també per què les altres no.':"<b>No és la millor opció.</b> Mira l'explicació de cada resposta.";
+        upd();body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<rounds.length?'Següent pregunta':'Veure resultat')));
+      };
+      box.append(b);return b;
+    });
+    body.append(box,fb);
+  }
+  draw();
+}
+
+/* ---------- 1: seguretat lògica ---------- */
+sortGame('g1','Identificació, autenticació o autorització?','Tria una situació i després el pas on encaixa.',
+ [{id:'id',label:'Identificació',sub:'Qui dius que ets'},{id:'au',label:'Autenticació',sub:'Demostra-ho'},{id:'az',label:'Autorització',sub:'Què pots fer'}],
+ [
+  {t:'Escrius el nom d’usuari maria.garcia',b:'id',why:"T'estàs donant a conèixer al sistema."},
+  {t:'Tries el teu compte a la pantalla d’inici de Windows',b:'id',why:'Encara només has dit qui ets.'},
+  {t:'Dius al sentinella a quin bàndol pertanys',b:'id',why:'És una declaració, encara sense prova.'},
+  {t:'Escrius la contrasenya',b:'au',why:'Demostres que ets qui dius ser amb una cosa que saps.'},
+  {t:'Poses el dit al lector d’empremtes',b:'au',why:'Ho demostres amb una cosa que ets.'},
+  {t:'Introdueixes el codi que t’ha arribat per SMS',b:'au',why:'Ho demostres amb una cosa que tens.'},
+  {t:'Pots llegir la carpeta de l’assignatura però no modificar-la',b:'az',why:'El sistema decideix què pots fer.'},
+  {t:'Fora de l’horari lectiu el servidor et denega l’accés',b:'az',why:"És un criteri d'autorització per hora."},
+  {t:'Només l’administrador pot canviar l’hora del sistema',b:'az',why:"És un dret d'usuari que s'assigna a qui toca."}
+ ]);
+
+choiceGame('g1b','Identificadors i Single Login',[
+ {q:"L'institut fa servir l'estàndard nom.cognom. Quin identificador és correcte per a María García?",
+  o:[
+   {t:'maria.garcia',ok:true,why:"Segueix l'estàndard i no té accents."},
+   {t:'María.García',ok:false,why:"L'estàndard diu sense caràcters especials: res d'accents ni enyes."},
+   {t:'admin.maria',ok:false,why:'És descriptiu: revela la funció del compte.'}
+  ]},
+ {q:'Per què no és bona idea que el compte d’administració es digui «admin»?',
+  o:[
+   {t:'Perquè és massa curt',ok:false,why:'La llargada del nom no és el problema.'},
+   {t:'Perquè revela la finalitat del compte i és el primer que proven els atacants',ok:true,why:"L'identificador no ha de ser descriptiu: si l'atacant ja sap el nom d'usuari, només li falta la contrasenya."},
+   {t:'Perquè Windows no ho permet',ok:false,why:'Ho permet. Precisament per això és tan conegut.'}
+  ]},
+ {q:"Un institut vol que l'alumnat entri un sol cop i pugui fer servir el correu, el Moodle i les carpetes de xarxa. Què cal?",
+  o:[
+   {t:'Una contrasenya diferent per a cada servei',ok:false,why:'Això és el contrari del Single Login: tres autenticacions.'},
+   {t:'Copiar la mateixa contrasenya a mà a cada servidor',ok:false,why:"No és centralitzat: cada canvi de contrasenya s'hauria de repetir a tot arreu."},
+   {t:'Un servidor d’autenticació centralitzat com LDAP o Active Directory',ok:true,why:'Guarda les credencials de tothom i permet el Single Login.'}
+  ]}
+]);
+
+/* ---------- 2: control d'accés ---------- */
+sortGame('g2','Objecte, subjecte o dret?','Classifica cada element.',
+ [{id:'ob',label:'Objecte',sub:'El recurs'},{id:'su',label:'Subjecte',sub:'Qui hi accedeix'},{id:'dr',label:"Dret d'accés",sub:'Què hi pot fer'}],
+ [
+  {t:'El fitxer de configuració del servidor web',b:'ob'},
+  {t:'El directori /home/berta',b:'ob'},
+  {t:'Una pàgina de memòria',b:'ob',why:'També és un recurs amb accés controlat.'},
+  {t:'Un registre de la base de dades',b:'ob'},
+  {t:'L’usuari Albert',b:'su'},
+  {t:'El procés del servidor web',b:'su',why:'Els processos també accedeixen a recursos.'},
+  {t:'L’aplicació de comptabilitat',b:'su',why:'Les aplicacions són subjectes quan accedeixen a dades.'},
+  {t:'Lectura',b:'dr'},
+  {t:'Execució',b:'dr'},
+  {t:'Esborrament',b:'dr'},
+  {t:'Creació',b:'dr'}
+ ]);
+
+(function(){
+  const id='g2b',ROUNDS=6;
+  const SUB=['Albert','Berta','Carme'],OBJ=['/home/albert','/home/berta','/home/carme','/etc/passwd'];
+  const MX={Albert:['rwx','','','r'],Berta:['','rwx','','r'],Carme:['rx','rx','rwx','rw']};
+  const VERB={r:'llegir',w:'escriure a',x:'executar (entrar a)'};
+  const VERBF={r:'llegir',w:'escriure a',x:'entrar a'};
+  const {body,sc}=shell(id,'Llegeix la matriu');
+  let qs,r,score;
+  function build(){
+    const all=[];
+    SUB.forEach(s=>OBJ.forEach((o,k)=>['r','w','x'].forEach(p=>{if(o==='/etc/passwd'&&p==='x')return;all.push({s,o,k,p,yes:MX[s][k].includes(p)});})));
+    const y=shuffle(all.filter(q=>q.yes)).slice(0,ROUNDS/2),n=shuffle(all.filter(q=>!q.yes)).slice(0,ROUNDS/2);
+    return shuffle(y.concat(n));
+  }
+  function table(hl){
+    const t=h('table',{class:'mx'});
+    t.append(h('thead',{},h('tr',{},h('th',{},''),OBJ.map(o=>h('th',{},o)))));
+    const tb=h('tbody');
+    SUB.forEach(s=>tb.append(h('tr',{},h('td',{},s),OBJ.map((o,k)=>h('td',{class:hl&&hl.s===s&&hl.k===k?'hl':''},MX[s][k]||'–')))));
+    t.append(tb);return h('div',{class:'tablewrap'},t);
+  }
+  function draw(){
+    body.innerHTML='';sc.textContent=`${score} / ${ROUNDS}`;
+    if(r>=ROUNDS){finish(id,score,ROUNDS);
+      body.append(h('p',{},`Has encertat ${score} de ${ROUNDS}.`),h('button',{class:'btn ghost',type:'button',onclick:start},'Torna-hi'));return;}
+    const Q=qs[r];
+    body.append(h('p',{class:'hint'},`Pregunta ${r+1} de ${ROUNDS}. Fes servir la matriu de dalt de l'apartat.`),
+      h('p',{class:'q'},`Pot ${Q.s} ${VERB[Q.p]} ${Q.o}?`));
+    const fb=h('div',{class:'fb','aria-live':'polite'});const tw=h('div');
+    const yn=h('div',{class:'yn'});
+    const bs=[true,false].map(v=>{
+      const b=h('button',{class:'opt',type:'button'},v?'Sí':'No');
+      b.onclick=()=>{
+        bs.forEach(x=>x.disabled=true);
+        const ok=v===Q.yes;if(ok)score++;sc.textContent=`${score} / ${ROUNDS}`;
+        b.classList.add(ok?'ok':'bad');
+        const cell=MX[Q.s][Q.k]||'cap dret';
+        fb.className='fb '+(ok?'ok':'bad');
+        fb.innerHTML=(ok?'<b>Correcte.</b> ':'<b>No.</b> ')+`La cel·la ${Q.s} / ${Q.o} diu <b>${cell}</b>: ${Q.yes?'hi ha':'no hi ha'} la <b>${Q.p}</b>, així que ${Q.yes?'sí que':'no'} pot ${VERBF[Q.p]} ${Q.o}.`;
+        tw.append(table(Q));
+        body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<ROUNDS?'Següent pregunta':'Veure resultat')));
+      };
+      yn.append(b);return b;
+    });
+    body.append(yn,fb,tw);
+  }
+  function start(){qs=build();r=0;score=0;draw();}
+  start();
+})();
+
+/* ---------- 3: analitzador de contrasenyes ---------- */
+const LEET={'@':'a','4':'a','3':'e','0':'o','1':'i','!':'i','$':'s','5':'s','7':'t'};
+const COMMON=['password','contrasenya','contrasena','qwerty','admin','administrador','usuari','usuario','login','welcome','benvingut','hola','adeu','secret','secreto','iloveyou','teestimo','tequiero','amor','love','dragon','monkey','letmein','master','sunshine','princess','football','futbol','barca','barcelona','madrid','catalunya','estiu','hivern','tardor','primavera','gener','febrer','juliol','agost','maria','jordi','joan','marc','laura','anna','david','pere','marta','sergi','pau','gos','gat','perro','gato'];
+const SEQS=['qwertyuiop','asdfghjkl','zxcvbnm','1234567890','abcdefghijklmnopqrstuvwxyz'];
+function analyze(pw){
+  const len=[...pw].length;
+  const has={lo:/[a-z]/.test(pw),up:/[A-Z]/.test(pw),di:/[0-9]/.test(pw),sy:/[^A-Za-z0-9]/.test(pw)};
+  const pool=(has.lo?26:0)+(has.up?26:0)+(has.di?10:0)+(has.sy?33:0)||1;
+  const per=Math.log2(pool);
+  const chars=[...pw];const low=chars.map(c=>c.toLowerCase());const norm=low.map(c=>LEET[c]||c);
+  const cov=new Array(len).fill(false);let bits=0;const found={word:false,seq:false,year:false,rep:false};
+  const mark=(i,l)=>{for(let k=i;k<i+l;k++)cov[k]=true;};
+  const free=(i,l)=>{for(let k=i;k<i+l;k++)if(cov[k])return false;return true;};
+  const ns=norm.join(''),ls=low.join('');
+  COMMON.slice().sort((a,b)=>b.length-a.length).forEach(w=>{
+    [ns,ls].forEach(s=>{let i=s.indexOf(w);while(i>=0){if(free(i,w.length)){mark(i,w.length);bits+=16;found.word=true;}i=s.indexOf(w,i+1);}});
+  });
+  for(let i=0;i<len;i++){
+    if(cov[i])continue;let best=0;
+    for(const s of SEQS){for(const t of [s,[...s].reverse().join('')]){for(let l=len-i;l>=4;l--){if(l<=best)break;if(t.includes(ls.substr(i,l))&&free(i,l)){best=l;break;}}}}
+    if(best>=4){mark(i,best);bits+=8;found.seq=true;i+=best-1;}
+  }
+  const yr=/(19|20)\d\d/g;let m;
+  while((m=yr.exec(pw))){if(free(m.index,4)){mark(m.index,4);bits+=10;found.year=true;}}
+  const rp=/(.)\1{2,}/g;
+  while((m=rp.exec(pw))){if(free(m.index,m[0].length)){mark(m.index,m[0].length);bits+=per+2;found.rep=true;}}
+  cov.forEach(c=>{if(!c)bits+=per;});
+  if(!len)bits=0;
+  let L=bits<22?0:bits<32?1:bits<55?2:bits<75?3:4;
+  L=Math.min(L,len<8?1:len<10?2:len<14?3:4); // la llargada mana: curta no pot ser robusta
+  return {len,has,bits,L,found,secs:Math.pow(2,bits)/2/1e10};
+}
+function fmtTime(s){
+  if(s<1)return "a l'instant";
+  if(s<60)return Math.round(s)+' segons';
+  if(s<3600)return Math.round(s/60)+' minuts';
+  if(s<86400)return Math.round(s/3600)+' hores';
+  const y=s/31536000;
+  if(y<1)return Math.round(s/86400)+' dies';
+  if(y<1000)return Math.round(y)+' anys';
+  if(y<1e6)return "milers d'anys";
+  return "milions d'anys o més";
+}
+const LEVELS=[{n:'Molt dèbil',c:'var(--red)'},{n:'Dèbil',c:'var(--red)'},{n:'Mitjana',c:'var(--yellow)'},{n:'Robusta',c:'var(--green)'},{n:'Molt robusta',c:'var(--green)'}];
+
+(function(){
+  const {body,sc}=shell('pw','Analitzador de contrasenyes');
+  sc.textContent='Explora';
+  const inp=h('input',{id:'pwin',type:'text',autocomplete:'off',autocapitalize:'off',spellcheck:'false',placeholder:'Escriu una contrasenya inventada'});
+  const bar=h('span');const lvl=h('div',{class:'level'});const time=h('p',{class:'hint',style:'margin:4px 0 0'});
+  const list=h('ul',{class:'checks'});
+  function draw(){
+    const pw=inp.value;const A=analyze(pw);
+    if(!pw){bar.style.width='0';lvl.textContent='—';time.textContent='Escriu alguna cosa per veure-la analitzada.';list.innerHTML='';return;}
+    const Lv=LEVELS[A.L];
+    bar.style.width=Math.min(100,Math.max(4,A.bits/90*100))+'%';bar.style.background=Lv.c;
+    lvl.textContent=Lv.n;
+    time.textContent=`Temps estimat per trencar-la (10.000 milions d'intents per segon): ${fmtTime(A.secs)}`;
+    const C=[
+      [A.len>=10,A.len>=14?`${A.len} caràcters: molt bé`:A.len>=10?`${A.len} caràcters: correcte (millor 14)`:`Només ${A.len} caràcters (mínim 10)`],
+      [A.has.up,'Majúscules'],[A.has.lo,'Minúscules'],[A.has.di,'Números'],[A.has.sy,'Símbols'],
+      [!A.found.word,A.found.word?'Conté una paraula o un nom molt comuns (encara que canviïs lletres per números)':'Sense paraules comunes'],
+      [!A.found.seq,A.found.seq?'Conté una seqüència o un patró de teclat':'Sense seqüències ni patrons de teclat'],
+      [!A.found.year,A.found.year?'Conté un any: sovint és una data personal':'Sense anys'],
+      [!A.found.rep,A.found.rep?'Repeteix el mateix caràcter':'Sense repeticions']
+    ];
+    list.innerHTML='';C.forEach(([ok,t])=>list.append(h('li',{class:ok?'ok':'bad'},t)));
+  }
+  inp.addEventListener('input',draw);
+  const ex=h('div',{class:'typesel',style:'margin-top:12px'},h('span',{class:'hint',style:'margin:0;align-self:center'},'Prova:'),
+    ['12345678','qwertyui','P@$$w0rd2024!','Maria1998','Lm4%Fi3pS@z9K','tren-lluna-cactus-violí-47'].map(p=>h('button',{class:'chip',type:'button',onclick:()=>{inp.value=p;draw();}},p)));
+  body.append(h('p',{class:'warn'},"No hi escriguis cap contrasenya que facis servir de veritat. L'anàlisi es fa només en aquest navegador i no s'envia enlloc, però una contrasenya real no s'escriu mai en una web que no toca."),
+    h('div',{class:'pwbox'},
+      h('div',{class:'pwfield'},h('label',{for:'pwin'},'Contrasenya de prova'),inp,ex,h('div',{class:'strength'},bar),lvl,time),
+      list));
+  draw();
+})();
+
+(function(){
+  const {body,sc}=shell('mn','Generador mnemotècnic');
+  sc.textContent='Explora';
+  const NUMS={un:'1',una:'1',dos:'2',dues:'2',tres:'3',quatre:'4',cinc:'5',sis:'6',vuit:'8',deu:'10'};
+  const inp=h('input',{id:'mnin',type:'text',autocomplete:'off',value:'Això és una manera de recordar una contrasenya'});
+  const out=h('div',{class:'mnemo','aria-live':'polite'});const info=h('p',{class:'hint',style:'margin:8px 0 0'});
+  function draw(){
+    const words=inp.value.trim().split(/\s+/).filter(Boolean);
+    let res='';
+    words.forEach(w=>{
+      const clean=w.replace(/[.,;:!?¡¿«»"()]/g,'');
+      if(!clean)return;
+      if(/^\d+$/.test(clean)){res+=clean;return;}
+      const n=NUMS[clean.toLowerCase()];
+      if(n){res+=n;return;}
+      res+=clean[0].normalize('NFD').replace(/[̀-ͯ]/g,'');
+    });
+    if(res&&!/[^A-Za-z0-9]/.test(res)){const end=inp.value.trim().slice(-1);res+=/[!?.]/.test(end)?end:'!';}
+    out.textContent=res||'—';
+    if(!res){info.textContent='Escriu una frase.';return;}
+    const A=analyze(res);
+    info.textContent=`${[...res].length} caràcters · ${LEVELS[A.L].n}.`+([...res].length<10?' Fes la frase més llarga: necessites almenys 10 paraules.':' Ara posa alguna lletra en majúscula i ja la tens.');
+  }
+  inp.addEventListener('input',draw);
+  body.append(h('p',{class:'hint'},"Escriu una frase que recordis. Les paraules «un», «una», «dos», «tres»… es converteixen en xifres i s'afegeix un símbol al final."),
+    h('div',{class:'pwfield'},h('label',{for:'mnin'},'La teva frase'),inp),out,info);
+  draw();
+})();
+
+sortGame('g3','Dèbil, mitjana o robusta?','Classifica cada contrasenya. Pots provar-les abans a l’analitzador.',
+ [{id:'de',label:'Dèbil'},{id:'mi',label:'Mitjana'},{id:'ro',label:'Robusta'}],
+ [
+  {t:'12345678',b:'de',why:'Una seqüència de números: és de les primeres que es proven.'},
+  {t:'password',b:'de',why:'La contrasenya més famosa del món.'},
+  {t:'qwertyui',b:'de',why:'Un patró de teclat.'},
+  {t:'Maria1998',b:'de',why:"Un nom i un any de naixement: dades personals fàcils d'endevinar."},
+  {t:'Barcelona2024',b:'de',why:'Una paraula de diccionari i un any.'},
+  {t:'P@$$w0rd2024!',b:'mi',why:'Té de tot, però és «password» amb substitucions que els atacants ja coneixen.'},
+  {t:'Estiu#2025',b:'mi',why:'Té 10 caràcters i un símbol, però és una paraula comuna i un any.'},
+  {t:'Gat!Verd7',b:'mi',why:'Barreja tipus de caràcters, però només té 9 caràcters.'},
+  {t:'Lm4%Fi3pS@z9K',b:'ro',why:'13 caràcters aleatoris de tots els tipus.'},
+  {t:'tren-lluna-cactus-violí-47',b:'ro',why:'Una frase de pas llarga amb paraules sense relació: molt llarga i fàcil de recordar.'},
+  {t:'R7#kq2Vz!pW9e',b:'ro',why:'Llarga, aleatòria i amb tots els tipus de caràcters.'}
+ ]);
+
+/* ---------- 4: protegir ---------- */
+choiceGame('g4','Què faries?',[
+ {q:"Et truca algú que diu ser del departament d'informàtica i et demana la contrasenya per «revisar el teu compte».",
+  o:[
+   {t:'Li dono: és del departament d’informàtica',ok:false,why:"Informàtica no necessita la teva contrasenya. És un engany clàssic."},
+   {t:'No la dono i aviso informàtica pel canal oficial',ok:true,why:'La contrasenya no es diu per telèfon a ningú.'},
+   {t:'Li dono només la meitat',ok:false,why:'Mitja contrasenya fa la feina de l’atacant molt més fàcil.'}
+  ]},
+ {q:'Tens més de vint comptes i no recordes les contrasenyes. Què fas?',
+  o:[
+   {t:'Les apunto en un post-it enganxat al monitor',ok:false,why:'Qualsevol que passi per davant les veu.'},
+   {t:'Faig servir la mateixa per a tot',ok:false,why:'Si en filtren una, cauen tots els comptes.'},
+   {t:'Faig servir un gestor de contrasenyes',ok:true,why:'Les guarda xifrades i només n’has de recordar una.'}
+  ]},
+ {q:"La teva cap t'envia un correu: «Passa'm la teva contrasenya, necessito un fitxer de la teva carpeta urgentment».",
+  o:[
+   {t:'Li envio: és la meva cap',ok:false,why:'La contrasenya no es dona ni als superiors directes, i menys per correu.'},
+   {t:'No la dono i li proposo que l’administrador li doni permís a la carpeta o que li passi jo el fitxer',ok:true,why:'Ella obté el que necessita sense que ningú conegui la teva contrasenya.'},
+   {t:'Li dic per telèfon en lloc de per correu',ok:false,why:'El canal no hi fa res: no es diu a ningú.'}
+  ]},
+ {q:'Un servei et deixa posar una pista per recordar la contrasenya. Què hi poses?',
+  o:[
+   {t:'«El nom del meu gos»',ok:false,why:"Les xarxes socials estan plenes de fotos de gossos amb el seu nom."},
+   {t:'Res: faig servir una frase mnemotècnica per recordar-la',ok:true,why:'Les pistes ajuden més a l’atacant que a tu.'},
+   {t:'Les tres primeres lletres de la contrasenya',ok:false,why:'Estàs regalant part de la contrasenya.'}
+  ]},
+ {q:'Dinant, uns companys comparen quines contrasenyes fan servir. Et pregunten la teva.',
+  o:[
+   {t:'Els la dic: són de confiança',ok:false,why:'No se’n parla davant d’altres persones, encara que siguin de confiança.'},
+   {t:'Canvio de tema i no la dic',ok:true,why:"Les contrasenyes no es comenten amb ningú, ni amb la família."},
+   {t:'Els en dic una de semblant',ok:false,why:'Una pista sobre com són les teves contrasenyes també és informació per a un atacant.'}
+  ]},
+ {q:'Fa un any que fas servir Estiu2024 al correu de la feina. Què diu la política de contrasenyes?',
+  o:[
+   {t:'Canviar-la per Estiu2025',ok:false,why:"Una variant previsible no és una contrasenya nova."},
+   {t:'Si ningú no l’ha descoberta, no cal canviar-la',ok:false,why:'La política demana canviar-la com a mínim cada 6 mesos.'},
+   {t:'Canviar-la per una de nova i robusta, i tornar-ho a fer d’aquí a 6 mesos com a màxim',ok:true,why:'Renovació periòdica i contrasenya realment nova.'}
+  ]}
+]);
+
+/* ---------- 5: factors ---------- */
+sortGame('g5','Saps, tens o ets?','Classifica cada element segons el factor d’autenticació.',
+ [{id:'co',label:'Coneixement',sub:'Alguna cosa que saps'},{id:'po',label:'Possessió',sub:'Alguna cosa que tens'},{id:'in',label:'Inherència',sub:'Alguna cosa que ets'}],
+ [
+  {t:'Contrasenya',b:'co'},
+  {t:'PIN de la targeta',b:'co',why:'La targeta és possessió, però el PIN el saps.'},
+  {t:'Pregunta secreta',b:'co'},
+  {t:'Patró de desbloqueig del mòbil',b:'co',why:'És un dibuix que recordes.'},
+  {t:'Targeta intel·ligent',b:'po'},
+  {t:'Token de seguretat',b:'po'},
+  {t:'Mòbil que rep un codi per SMS',b:'po',why:'El codi demostra que tens el mòbil.'},
+  {t:'Clau física USB',b:'po'},
+  {t:'Empremta dactilar',b:'in'},
+  {t:'Reconeixement facial',b:'in'},
+  {t:'Reconeixement de veu',b:'in'}
+ ]);
+
+const MFA=(q,yes,whyYes,whyNo)=>({q,o:[{t:'Sí, és multifactor',ok:yes,why:yes?whyYes:whyNo},{t:'No, només hi ha un tipus de factor',ok:!yes,why:yes?whyYes:whyNo}]});
+choiceGame('g5b','És autenticació multifactor?',[
+ MFA('Per entrar a la plataforma demanen la contrasenya i la resposta a una pregunta secreta.',false,'','Totes dues són coses que saps: un sol factor (coneixement).'),
+ MFA('Per treure diners del caixer poses la targeta i escrius el PIN.',true,'Targeta (possessió) i PIN (coneixement).',''),
+ MFA('Entres al banc amb la contrasenya i el codi que t’arriba per SMS.',true,'Contrasenya (coneixement) i mòbil (possessió): és el 2FA més habitual.',''),
+ MFA('Una porta demana l’empremta i després reconeix la cara.',false,'','Totes dues són coses que ets: un sol factor (inherència).'),
+ MFA('Per entrar a la sala de servidors cal una clau USB, l’empremta i una contrasenya.',true,'Possessió, inherència i coneixement: tres factors.','')
+]);
+
+/* ---------- 6: autorització ---------- */
+sortGame('g6','Quin criteri d’accés és?','Classifica cada norma segons el criteri que fa servir.',
+ [{id:'ro',label:'Rols'},{id:'gr',label:'Grups'},{id:'lo',label:'Localització'},{id:'ho',label:"Hora d'accés"},{id:'tr',label:'Tipus de transacció'}],
+ [
+  {t:'L’auditor pot veure els registres però no modificar-los',b:'ro',why:"Depèn de la funció de l'usuari."},
+  {t:'Només qui té el rol d’editor pot publicar al web',b:'ro'},
+  {t:'Tot el professorat pot escriure a la carpeta d’assignatures',b:'gr',why:"Permís per a un conjunt d'usuaris."},
+  {t:'L’alumnat de 2n SMX té accés a la carpeta del curs',b:'gr'},
+  {t:'Al servidor només s’hi pot entrar des de les IP de l’institut',b:'lo',why:'Localització lògica.'},
+  {t:'El programa de nòmines només funciona des de l’ordinador de secretaria',b:'lo',why:'Localització física.'},
+  {t:'El servidor només accepta connexions en horari lectiu',b:'ho'},
+  {t:'Fora de l’horari laboral no es pot entrar a la comptabilitat',b:'ho'},
+  {t:'Tothom pot consultar la base de dades, però les modificacions es bloquegen',b:'tr',why:"Depèn de l'operació."},
+  {t:'Pots consultar el saldo, però no fer transferències',b:'tr'}
+ ]);
+
+choiceGame('g6b','Permisos, drets i registres',[
+ {q:'Un becari només ha de consultar les fitxes de clients. Quins permisos li dones?',
+  o:[
+   {t:'Lectura i escriptura, per si de cas',ok:false,why:'«Per si de cas» és just el que el mínim privilegi vol evitar.'},
+   {t:'Només lectura',ok:true,why:'Principi del mínim privilegi: el mínim per fer la seva feina.'},
+   {t:"Administrador, així no t'ha de demanar res",ok:false,why:'Un error seu, o un atac al seu compte, podria afectar tot el sistema.'}
+  ]},
+ {q:'Poder reiniciar el sistema és…',
+  o:[
+   {t:'Un permís',ok:false,why:'Els permisos controlen l’accés a recursos com fitxers i directoris.'},
+   {t:"Un dret d'usuari",ok:true,why:'És una tasca del sistema, com canviar la data o gestionar usuaris.'}
+  ]},
+ {q:'Poder modificar el fitxer notes.ods és…',
+  o:[
+   {t:'Un permís',ok:true,why:"Controla l'accés a un recurs concret."},
+   {t:"Un dret d'usuari",ok:false,why:'Els drets són tasques del sistema, no l’accés a un fitxer.'}
+  ]},
+ {q:'Quins intents d’accés cal registrar?',
+  o:[
+   {t:'Només els fallits',ok:false,why:'Un accés correcte a una hora estranya també pot ser un atac amb una contrasenya robada.'},
+   {t:'Només els reeixits',ok:false,why:'Molts intents fallits seguits són el senyal típic d’un atac.'},
+   {t:'Els reeixits i els fallits, amb data, hora, usuari i dispositiu',ok:true,why:'Amb tota aquesta informació es pot reconstruir què ha passat.'}
+  ]},
+ {q:'L’empresa guarda els registres de tots els servidors, però ningú no els mira mai. Què en penses?',
+  o:[
+   {t:'És suficient: si passa alguna cosa, hi seran',ok:false,why:'Si ningú no els analitza, l’incident no es detecta fins que és massa tard.'},
+   {t:'És tan inútil com no guardar-los: cal una política per analitzar-los',ok:true,why:'Els registres serveixen per detectar incidents, i això només passa si algú els revisa.'}
+  ]},
+ {q:'Per què cal sincronitzar els rellotges de tots els sistemes que generen registres?',
+  o:[
+   {t:'Per poder ordenar i relacionar els esdeveniments de diferents màquines',ok:true,why:'Si cada servidor té una hora diferent, és impossible reconstruir què ha passat i en quin ordre.'},
+   {t:'Perquè els registres ocupin menys espai',ok:false,why:"L'hora no canvia la mida dels registres."}
+  ]}
+]);
+
+/* ---------- 7: permisos UNIX ---------- */
+const WHO=['Propietari','Grup','Altres'],PR=[['r',4,'Lectura'],['w',2,'Escriptura'],['x',1,'Execució']];
+const toSym=o=>String(o).split('').map(d=>PR.map(([c,v])=>(+d&v)?c:'-').join('')).join('');
+const toOct=s=>[0,3,6].map(i=>PR.reduce((a,[c,v],k)=>a+(s[i+k]===c?v:0),0)).join('');
+
+(function(){
+  const {body,sc}=shell('calc','Calculadora de permisos');
+  sc.textContent='Explora';
+  const st=[[true,true,true],[true,false,true],[true,false,false]];
+  let type='-';
+  const cbs=[];
+  const tbl=h('table',{class:'perm'});
+  tbl.append(h('thead',{},h('tr',{},h('th',{},''),PR.map(([c,v,n])=>h('th',{},`${n} (${c} = ${v})`)))));
+  const tb=h('tbody');
+  WHO.forEach((w,i)=>{
+    const row=h('tr',{},h('td',{},w));
+    PR.forEach(([c,v,n],k)=>{
+      const cb=h('input',{type:'checkbox','aria-label':`${w}: ${n}`});
+      cb.checked=st[i][k];cb.addEventListener('change',()=>{st[i][k]=cb.checked;draw();});
+      cbs.push(cb);row.append(h('td',{},cb));
+    });
+    tb.append(row);
+  });
+  tbl.append(tb);
+  const tsel=h('select',{id:'ftype'},h('option',{value:'-'},'- fitxer'),h('option',{value:'d'},'d directori'));
+  tsel.addEventListener('change',()=>{type=tsel.value;draw();});
+  const oin=h('input',{id:'octin',type:'text',inputmode:'numeric',maxlength:'3',autocomplete:'off'});
+  oin.addEventListener('input',()=>{
+    if(/^[0-7]{3}$/.test(oin.value)){const s=toSym(oin.value);WHO.forEach((w,i)=>PR.forEach((p,k)=>{st[i][k]=s[i*3+k]!=='-';}));draw(true);}
+  });
+  const ro=h('div',{class:'readout','aria-live':'polite'});
+  function draw(fromOct){
+    st.forEach((r,i)=>r.forEach((v,k)=>cbs[i*3+k].checked=v));
+    const sym=st.map(r=>r.map((v,k)=>v?PR[k][0]:'-').join('')).join('');
+    const oct=toOct(sym);
+    if(!fromOct)oin.value=oct;
+    const ugo=['u','g','o'].map((u,i)=>u+'='+st[i].map((v,k)=>v?PR[k][0]:'').join('')).join(',');
+    const name=type==='d'?'carpeta':'fitxer.txt';
+    ro.innerHTML='';
+    ro.append(
+      h('div',{},h('span',{},'Notació simbòlica'),h('div',{class:'bigperm'},type+sym)),
+      h('div',{},h('span',{},'Notació numèrica'),h('div',{class:'bigperm'},oct)),
+      h('div',{},h('span',{},'Comanda'),h('p',{},h('span',{class:'code'},`chmod ${oct} ${name}`)),h('p',{},h('span',{class:'code'},`chmod ${ugo} ${name}`))));
+  }
+  body.append(h('p',{class:'hint'},'Marca i desmarca permisos, o escriu un número de tres xifres, i mira com canvia cada notació.'),
+    tbl,h('div',{class:'row',style:'margin:0 0 12px'},
+      h('div',{class:'field',style:'margin:0'},h('label',{for:'octin'},'Número'),oin),
+      h('div',{class:'field',style:'margin:0'},h('label',{for:'ftype'},'Tipus'),tsel)),ro);
+  draw();
+})();
+
+(function(){
+  const id='g7',ROUNDS=6;
+  const OCTS=['755','644','640','600','700','750','754','775','664','711','444','760','705','551'];
+  const {body,sc}=shell(id,'Tradueix els permisos');
+  let r=0,score=0,qs;
+  function build(){return shuffle(OCTS).slice(0,ROUNDS).map((o,i)=>({o,s:toSym(o),dir:i%2===0}));}
+  function draw(){
+    body.innerHTML='';sc.textContent=`${score} / ${ROUNDS}`;
+    if(r>=ROUNDS){finish(id,score,ROUNDS);
+      body.append(h('p',{},`Has encertat a la primera ${score} de ${ROUNDS}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{r=0;score=0;qs=build();draw();}},'Torna-hi'));return;}
+    const Q=qs[r];let first=true;
+    body.append(h('p',{class:'hint'},`Exercici ${r+1} de ${ROUNDS}. `+(Q.dir?'Passa la notació simbòlica a numèrica.':'Passa la notació numèrica a simbòlica (nou caràcters, amb guions on no hi ha permís).')),
+      h('div',{class:'bigperm',style:'margin:6px 0'},Q.dir?'-'+Q.s:Q.o));
+    const inp=h('input',{id:'tr',type:'text',autocomplete:'off',autocapitalize:'off',spellcheck:'false',maxlength:Q.dir?'3':'10'});
+    const f=h('div',{class:'field'},h('label',{for:'tr'},Q.dir?'Número':'Permisos'),inp);
+    const fb=h('div',{class:'fb','aria-live':'polite'});const next=h('div',{class:'row'});
+    const goNext=()=>{if(!next.childNodes.length)next.append(h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<ROUNDS?'Següent exercici':'Veure resultat'));};
+    const explain=()=>[0,1,2].map(i=>`${Q.s.substr(i*3,3)} = ${Q.o[i]}`).join(' · ');
+    const chk=h('button',{class:'btn',type:'button'},'Comprova');
+    chk.onclick=()=>{
+      let v=inp.value.trim();if(!Q.dir&&v.length===10)v=v.slice(1);
+      const ok=Q.dir?v===Q.o:v===Q.s;
+      f.classList.toggle('ok',ok);f.classList.toggle('bad',!ok);
+      if(first){first=false;if(ok)score++;sc.textContent=`${score} / ${ROUNDS}`;}
+      if(ok){fb.className='fb ok';fb.innerHTML='<b>Correcte.</b> '+explain();goNext();}
+      else{fb.className='fb bad';fb.innerHTML='<b>No.</b> Recorda: r = 4, w = 2, x = 1, i es fa per grups de tres (propietari, grup, altres).';}
+    };
+    const reveal=h('button',{class:'btn ghost',type:'button',onclick:()=>{first=false;fb.className='fb mid';fb.innerHTML=`<b>Solució:</b> ${Q.dir?Q.o:Q.s} (${explain()})`;goNext();}},'Mostra la solució');
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk.click();});
+    body.append(f,h('div',{class:'row'},chk,reveal),fb,next);
+  }
+  qs=build();draw();
+})();
+
+/* ---------- start ---------- */
+refresh();
+const start=Math.max(0,MODS.findIndex(m=>'#'+m.id===location.hash));show(start);
+})();
+</script>
+</body>
+</html>
