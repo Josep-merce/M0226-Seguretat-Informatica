@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sistemes biomètrics · AEA1 · M0226</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E6E2; --surface:#F6F7F4; --surface2:#ECEEEA; --ink:#1C2226; --muted:#56616A; --line:#C7CCC6;
+  --yellow:#F2C200; --yellow-ink:#3A2E00; --red:#C8281E; --green:#0E7F49; --blue:#2F5671;
+  --ok-bg:#DDF0E5; --bad-bg:#F8DEDB; --mid-bg:#FBF0C6; --focus:#2F5671;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+    --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+    --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+  --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+  --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variation-settings:"wdth" 100;font-size:17px;line-height:1.55}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+img,svg{max-width:100%}
+
+.hazard{height:10px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 14px,#1C2226 14px 28px)}
+header.top{padding:28px 24px 22px;max-width:1180px;margin:0 auto}
+header.top h1{margin:0;font-weight:800;font-variation-settings:"wdth" 70;font-size:clamp(2.1rem,6vw,3.6rem);line-height:1;letter-spacing:-.01em}
+header.top p{margin:.6rem 0 0;color:var(--muted);max-width:60ch}
+.scorebar{display:flex;gap:16px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.meter{flex:1 1 220px;max-width:360px;height:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--green);width:0;transition:width .4s}
+.scoretxt{font-weight:700;font-variant-numeric:tabular-nums}
+.reset{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:.85rem;color:var(--muted)}
+
+.layout{max-width:1180px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+nav.mods{position:sticky;top:env(safe-area-inset-top,0px);padding-top:8px}
+nav.mods ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+nav.mods button{width:100%;text-align:left;background:none;border:0;border-left:4px solid transparent;padding:9px 12px;border-radius:0 6px 6px 0;display:flex;gap:10px;align-items:baseline}
+nav.mods button:hover{background:var(--surface2)}
+nav.mods button[aria-current="true"]{background:var(--surface);border-left-color:var(--yellow);font-weight:700}
+nav.mods .n{font-variation-settings:"wdth" 70;font-weight:800;color:var(--muted);min-width:1.2em}
+nav.mods .done{margin-left:auto;color:var(--green);font-weight:800}
+
+main{min-width:0}
+section.mod{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px clamp(18px,4vw,40px) 34px}
+section.mod.active{display:block}
+.mod h2{margin:0 0 .2rem;font-weight:800;font-variation-settings:"wdth" 75;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
+.mod .lead{color:var(--muted);margin:0 0 1.4rem;max-width:68ch}
+.mod h3{font-variation-settings:"wdth" 85;font-weight:750;font-size:1.25rem;margin:2rem 0 .6rem}
+.mod p{max-width:70ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:1rem 0}
+.fact{background:var(--surface2);border-radius:8px;padding:14px 16px;border-top:4px solid var(--blue)}
+.fact b{display:block;margin-bottom:4px}
+.fact p{margin:0;font-size:.95rem}
+.note{border-left:4px solid var(--yellow);background:var(--mid-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:1.2rem 0;max-width:72ch}
+.steps{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface2);border-radius:8px;padding:12px 14px 12px 50px;position:relative;font-size:.95rem}
+.steps li::before{content:counter(s);position:absolute;left:12px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-weight:800}
+.tablewrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-variation-settings:"wdth" 85;background:var(--surface2)}
+
+.game{margin-top:2.2rem;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.game>.gh{background:var(--ink);color:var(--surface);padding:12px 18px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.game>.gh h3{margin:0;color:inherit;font-size:1.15rem}
+.game>.gh .gs{font-weight:700;font-variant-numeric:tabular-nums}
+.game>.gb{padding:18px}
+.hint{color:var(--muted);font-size:.92rem;margin:0 0 12px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:44px}
+.chip{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:7px 14px;font-size:.95rem}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--yellow);color:var(--yellow-ink);font-weight:700}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bucket{background:var(--surface2);border:2px dashed var(--line);border-radius:8px;padding:10px;text-align:left;min-height:110px;display:flex;flex-direction:column;gap:6px}
+.bucket.armed{border-color:var(--ink);border-style:solid}
+.bucket>strong{font-variation-settings:"wdth" 85}
+.placed{font-size:.85rem;border-radius:5px;padding:3px 8px}
+.placed.ok{background:var(--ok-bg)} .placed.bad{background:var(--bad-bg);text-decoration:line-through}
+.fb{margin-top:14px;padding:12px 14px;border-radius:8px;min-height:1em}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg)} .fb.bad{background:var(--bad-bg)} .fb.mid{background:var(--mid-bg)}
+.btn{background:var(--ink);color:var(--surface);border:0;border-radius:6px;padding:9px 16px;font-weight:700}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:11px 14px}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.opt.bad{background:var(--bad-bg);border-color:var(--red)}
+.opt.mid{background:var(--mid-bg);border-color:var(--yellow)}
+.opt small{display:block;color:var(--muted);margin-top:4px}
+.q{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.site{display:block}
+.site ul{margin:6px 0 0;padding-left:18px;font-size:.92rem;color:var(--muted);font-weight:400}
+
+.layers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center}
+.layers svg{width:100%;height:auto}
+.layers svg .ly{cursor:pointer}
+.layers svg .ly rect{stroke:var(--ink);stroke-width:2;transition:fill .2s}
+.layers svg .ly:hover rect,.layers svg .ly.sel rect{fill:var(--yellow)}
+.layers svg text{fill:var(--ink);font-family:inherit;font-size:13px;font-weight:700;pointer-events:none}
+.layerinfo{background:var(--surface2);border-radius:8px;padding:16px;min-height:150px}
+.layerinfo h4{margin:0 0 6px;font-size:1.1rem}
+
+.sim{display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:24px}
+.slider label{display:flex;justify-content:space-between;font-weight:700}
+.slider output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.slider input{width:100%;accent-color:var(--blue);margin:8px 0 18px}
+.eq{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;padding:9px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border-left:6px solid var(--green)}
+.eq.bad{border-left-color:var(--red)} .eq b{font-variation-settings:"wdth" 85}
+.eq .st{font-size:.88rem;color:var(--muted);grid-column:1/-1}
+
+.classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0}
+.cls{border-radius:8px;padding:12px;background:var(--surface2);display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center}
+.cls .L{grid-row:span 2;width:44px;height:44px;border-radius:6px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.5rem;font-variation-settings:"wdth" 70}
+.cls span{font-size:.88rem;color:var(--muted)}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.scen{background:var(--surface2);border-radius:8px;padding:14px 16px;font-size:1.05rem}
+.scen .num{color:var(--muted);font-size:.85rem}
+
+.ordlist{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px;counter-reset:o}
+.ordlist li{counter-increment:o;background:var(--ok-bg);padding:9px 12px 9px 44px;border-radius:6px;position:relative}
+.ordlist li::before{content:counter(o);position:absolute;left:12px;font-weight:800}
+
+.audit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
+.plan{width:100%;height:auto;background:var(--surface2);border-radius:8px}
+.plan .wall{fill:none;stroke:var(--ink);stroke-width:3}
+.plan .room{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.plan .rack{fill:var(--muted)}
+.plan .lbl{fill:var(--muted);font-size:12px;font-family:inherit}
+.plan .hs{cursor:pointer}
+.plan .hs circle{fill:var(--yellow);stroke:#1C2226;stroke-width:2}
+.plan .hs text{fill:#1C2226;font-weight:800;font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-family:inherit}
+.plan .hs.ok circle{fill:#4CC98A}.plan .hs.bad circle{fill:#F0675C}
+.plan .hs.sel circle{stroke-width:4}
+.panel{background:var(--surface2);border-radius:8px;padding:16px;min-height:200px}
+.panel h4{margin:0 0 8px}
+
+.pager{display:flex;justify-content:space-between;margin-top:28px;gap:10px}
+.final{background:var(--ink);color:var(--surface);border-radius:8px;padding:16px 18px;margin-top:16px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  nav.mods{position:static;min-width:0}
+  nav.mods ol{flex-direction:row;overflow-x:auto;padding-bottom:6px}
+  nav.mods button{white-space:nowrap;border-left:0;border-bottom:4px solid transparent;border-radius:6px 6px 0 0}
+  nav.mods button[aria-current="true"]{border-bottom-color:var(--yellow)}
+  .layers,.sim,.audit{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.back{display:inline-block;color:var(--muted);font-size:.9rem;text-decoration:none;margin-bottom:10px}
+.back:hover{color:var(--ink);text-decoration:underline}
+.res{margin:1.6rem 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);max-width:72ch}
+.res b{display:block;margin-bottom:6px}
+.res ul{margin:0;padding-left:20px}
+.res li{margin:3px 0}
+.res a{color:var(--blue);font-weight:600}
+.formula{font-variation-settings:"wdth" 80;font-weight:800;font-size:1.15rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;margin:4px 0;font-variant-numeric:tabular-nums}
+.typesel{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.circuit,.wave{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block}
+.wave{margin-top:10px}
+.circuit .blk rect{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.circuit .blk text{fill:var(--ink);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:inherit}
+.circuit .blk.dead rect{fill:var(--surface2);stroke:var(--muted);stroke-dasharray:5 4}
+.circuit .blk.dead text{fill:var(--muted)}
+.circuit .w{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.circuit .w.by{stroke-dasharray:3 7}
+.circuit .w.on{stroke:var(--yellow);stroke-width:6;stroke-dasharray:12 8;animation:flow .7s linear infinite}
+.circuit .lever{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+.circuit .dot{fill:var(--ink)}
+.circuit .tag{fill:var(--muted);font-size:12px;font-family:inherit}
+.circuit .cut{fill:var(--red);font-size:13px;font-weight:800;font-family:inherit;text-anchor:middle}
+@keyframes flow{to{stroke-dashoffset:-20}}
+.wave .sig{fill:none;stroke:var(--blue);stroke-width:3;stroke-linejoin:round}
+.wave .gap{fill:var(--bad-bg)}
+.wave .axis{stroke:var(--line);stroke-width:1}
+.wave .mk{stroke:var(--red);stroke-width:2;stroke-dasharray:4 3}
+.wave text{fill:var(--muted);font-size:12px;font-family:inherit}
+.wave text.hot{fill:var(--red);font-weight:800}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.readout div{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.readout span{display:block;color:var(--muted);font-size:.85rem}
+.readout b{font-variation-settings:"wdth" 80;font-size:1.2rem;line-height:1.2}
+.readout p{margin:2px 0 0;font-size:.93rem}
+.ups{display:grid;grid-template-columns:minmax(0,280px) 1fr;gap:22px;align-items:start}
+.ups svg{width:100%;height:auto;display:block}
+.ups .led{cursor:pointer}
+.ups .led .l{stroke:#0d1012;stroke-width:2}
+.ups .led .ring{fill:none;stroke-width:3}
+.ups .led text{fill:#E7EAE6;font-size:14px;font-family:inherit;font-weight:600;pointer-events:none}
+.ups .led:hover .hit{fill:rgba(255,255,255,.08)}
+.ups .led:focus{outline:none}
+.ups .led:focus-visible .hit{stroke:#8DB6D3;stroke-width:3}
+.field{display:grid;gap:4px;margin:12px 0}
+.field label{font-weight:700}
+.field input,.field select{font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:min(240px,100%)}
+.field.ok input,.field.ok select{border-color:var(--green);background:var(--ok-bg)}
+.field.bad input,.field.bad select{border-color:var(--red);background:var(--bad-bg)}
+.data{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0 4px}
+.data div{background:var(--surface2);border-radius:8px;padding:8px 12px}
+.data span{display:block;font-size:.82rem;color:var(--muted)}
+.data b{font-variation-settings:"wdth" 80;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.sol{margin-top:12px;background:var(--surface2);border-radius:8px;padding:12px 14px;font-variant-numeric:tabular-nums}
+.sol p{margin:.2rem 0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:860px){.ups{grid-template-columns:1fr}.ups svg{max-width:300px}}
+@media (prefers-reduced-motion:reduce){.circuit .w.on{animation:none}}
+/* ---- específic d'aquesta pàgina ---- */
+.extra{display:inline-block;font-size:.78rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:middle}
+.flow{list-style:none;padding:0;margin:1rem 0;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.flow li{background:var(--surface2);border-radius:8px;padding:10px 14px;flex:1 1 140px;font-size:.95rem;position:relative}
+.flow li b{display:block}
+.ordlist li.bad{background:var(--bad-bg)}
+.thr{width:100%;accent-color:var(--blue);margin:6px 0 4px}
+.thrlab{display:flex;justify-content:space-between;align-items:baseline;font-weight:700}
+.thrlab output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.dist{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block;margin-top:10px}
+.dist .gen{fill:none;stroke:var(--green);stroke-width:3}
+.dist .imp{fill:none;stroke:var(--red);stroke-width:3}
+.dist .far{fill:var(--red);opacity:.28}
+.dist .frr{fill:var(--yellow);opacity:.45}
+.dist .axis{stroke:var(--line);stroke-width:1}
+.dist .thl{stroke:var(--ink);stroke-width:2;stroke-dasharray:5 4}
+.dist text{fill:var(--muted);font-size:12px;font-family:inherit}
+.dist text.k{font-weight:800;font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.88rem;color:var(--muted);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+</style>
+</head>
+<body>
+<div class="hazard" aria-hidden="true"></div>
+<header class="top">
+  <a class="back" href="aea1_a4.html">← Tornar a A4 · Sistemes biomètrics</a>
+  <h1>Sistemes biomètrics: la clau ets tu</h1>
+  <p>Set apartats sobre com un sistema et reconeix per la teva empremta, la cara, els ulls o la veu, quan s'equivoca i què passa amb aquestes dades. Cada un té una mica de teoria i una activitat. El progrés es guarda en aquest navegador.</p>
+  <p style="font-size:.9rem">Les parts marcades amb <span class="extra">fora de la presentació</span> amplien el que hi ha a la presentació de Seguretat lògica.</p>
+  <div class="scorebar">
+    <div class="meter" role="progressbar" aria-label="Apartats completats" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><span id="meterFill"></span></div>
+    <span class="scoretxt" id="scoreTxt">0 de 7 apartats · 0 punts</span>
+    <button class="reset" id="resetAll" type="button">Reinicia el progrés</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="mods" aria-label="Apartats"><ol id="navList"></ol></nav>
+  <main>
+
+<!-- 1 -->
+<section class="mod" id="m1" data-title="Què és la biometria">
+  <h2>Què és la biometria</h2>
+  <p class="lead">Una contrasenya la pots oblidar o deixar. La teva empremta la portes sempre a sobre.</p>
+  <p>Els sistemes biomètrics verifiquen la identitat d'una persona analitzant algun dels seus <b>atributs físics</b> o del seu <b>comportament</b>. Es basen en «alguna cosa que l'usuari <b>és</b>» o «alguna cosa que l'usuari <b>fa</b>»: el factor d'inherència que vas veure a l'<a href="contrasenyes_interactiu.html#m5">A3</a>. S'utilitzen quan les contrasenyes no són prou segures.</p>
+  <div class="cols">
+    <div class="fact"><b>No s'oblida</b><p>No has de recordar res: el tret el portes sempre a sobre.</p></div>
+    <div class="fact"><b>No es deixa</b><p>No pots prestar la cara a un company com prestes una targeta.</p></div>
+    <div class="fact"><b>Difícil de robar</b><p>Copiar un iris o una retina és molt més complicat que endevinar una contrasenya.</p></div>
+    <div class="fact"><b>Però no es pot canviar</b><p>Si et roben la contrasenya, en fas una altra. Si et copien l'empremta, la tens per sempre.</p></div>
+  </div>
+  <h3>Què fa que un tret serveixi <span class="extra">fora de la presentació</span></h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Característica</th><th>Què vol dir</th></tr></thead>
+    <tbody>
+      <tr><td><b>Universal</b></td><td>Tothom el té.</td></tr>
+      <tr><td><b>Únic</b></td><td>No n'hi ha dos d'iguals entre persones diferents.</td></tr>
+      <tr><td><b>Permanent</b></td><td>No canvia gaire amb el temps.</td></tr>
+      <tr><td><b>Mesurable</b></td><td>Es pot capturar i comparar amb un sensor.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="https://www.youtube.com/watch?v=FU-ZcZ4Y8Sw" target="_blank" rel="noopener">Vídeo: Biometria, la pròxima revolució</a></li>
+    <li><a href="contrasenyes_claus_biomètriques.pptx.pdf" target="_blank" rel="noopener">Presentació: Seguretat lògica (diapositives de sistemes biomètrics)</a></li>
+  </ul></div>
+  <div class="game" id="g1"></div>
+</section>
+
+<!-- 2 -->
+<section class="mod" id="m2" data-title="Com funciona">
+  <h2>Com funciona</h2>
+  <p class="lead">El sistema no guarda una foto del teu dit: guarda un patró i hi compara cada mostra nova.</p>
+  <p>Abans de poder fer servir un sistema biomètric cal un <b>procés d'alta</b>: el sistema escaneja el tret i n'enregistra un <b>patró de referència</b>. A partir de llavors, cada vegada que vols entrar fa un escaneig nou i el compara amb el patró guardat. Si les dues mostres es consideren iguals, l'autenticació és correcta i et deixa entrar.</p>
+  <ol class="flow">
+    <li><b>1. Alta</b>Es registra el patró de referència.</li>
+    <li><b>2. Captura</b>El sensor escaneja el tret de nou.</li>
+    <li><b>3. Extracció</b>Se'n treuen els punts característics.</li>
+    <li><b>4. Comparació</b>Es compara amb el patró guardat.</li>
+    <li><b>5. Decisió</b>Si s'assemblen prou, accés permès.</li>
+  </ol>
+  <h3>Verificar o identificar <span class="extra">fora de la presentació</span></h3>
+  <div class="cols">
+    <div class="fact"><b>Verificació (1 a 1)</b><p>Dius qui ets i el sistema comprova si el teu tret coincideix amb el teu patró. Ex.: desbloquejar el mòbil.</p></div>
+    <div class="fact"><b>Identificació (1 a molts)</b><p>No dius qui ets: el sistema busca el teu tret entre tots els patrons que té. Ex.: una càmera que reconeix qui passa per la porta.</p></div>
+  </div>
+  <div class="note">La identificació és més lenta i s'equivoca més, perquè ha de comparar amb molts patrons. També planteja més problemes de privacitat: per identificar-te, el sistema ha de tenir les dades de tothom.</div>
+  <div class="game" id="g2"></div>
+  <div class="game" id="g2b"></div>
+</section>
+
+<!-- 3 -->
+<section class="mod" id="m3" data-title="Estàtics i dinàmics">
+  <h2>Sistemes estàtics i dinàmics</h2>
+  <p class="lead">El que ets o el que fas.</p>
+  <div class="cols">
+    <div class="fact"><b>Estàtics (atributs físics)</b><p>Mesuren una part del cos: empremta, cara, iris, retina, geometria de la mà, ADN.</p></div>
+    <div class="fact"><b>Dinàmics (comportament)</b><p>Mesuren com fas una cosa: com signes, com parles, com escrius al teclat, com camines.</p></div>
+  </div>
+  <p>Els dinàmics solen ser més fàcils d'implementar, perquè sovint no necessiten un sensor especial: n'hi ha prou amb un micròfon o un teclat. En canvi, varien més: un refredat et canvia la veu i el cansament et canvia la signatura.</p>
+  <div class="game" id="g3"></div>
+</section>
+
+<!-- 4 -->
+<section class="mod" id="m4" data-title="Tipus de sistemes">
+  <h2>Tipus de sistemes biomètrics</h2>
+  <p class="lead">Cada tret té els seus avantatges. No hi ha un sistema millor per a tot.</p>
+  <div class="cols">
+    <div class="fact"><b>Empremta digital</b><p>El més comú. Captura els punts característics del relleu dels dits (minúcies). És precís, fàcil d'implementar i barat. El més estès en mòbils i controls d'accés.</p></div>
+    <div class="fact"><b>Reconeixement facial</b><p>Analitza la distància entre els ulls, l'estructura òssia, la forma de la barbeta… Fa servir càmeres normals o infraroges i no necessita contacte. Molt utilitzat en vigilància i accessos d'alta seguretat.</p></div>
+    <div class="fact"><b>Iris</b><p>Captura la part acolorida de l'ull: anells, taques i colors. Extremadament precís. Necessita una càmera infraroja especial, però no cal tocar res.</p></div>
+    <div class="fact"><b>Retina</b><p>Analitza el patró dels vasos sanguinis del fons de l'ull amb llum infraroja. Gairebé impossible de falsificar. Típic d'instal·lacions militars i governamentals.</p></div>
+  </div>
+  <p>Altres sistemes: <b>reconeixement de veu</b>, <b>geometria de la mà</b>, <b>reconeixement de signatura</b>, <b>patrons de pulsació del teclat</b> i <b>anàlisi de l'ADN</b>.</p>
+  <h3>Comparació <span class="extra">fora de la presentació</span></h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Sistema</th><th>Contacte</th><th>Precisió</th><th>Cost</th><th>Acceptació</th></tr></thead>
+    <tbody>
+      <tr><td>Empremta</td><td>Sí</td><td>Alta</td><td>Baix</td><td>Alta</td></tr>
+      <tr><td>Facial</td><td>No</td><td>Mitjana-alta</td><td>Baix-mitjà</td><td>Alta</td></tr>
+      <tr><td>Iris</td><td>No</td><td>Molt alta</td><td>Alt</td><td>Mitjana</td></tr>
+      <tr><td>Retina</td><td>Molt a prop</td><td>Molt alta</td><td>Molt alt</td><td>Baixa: a molta gent no li agrada</td></tr>
+      <tr><td>Veu</td><td>No</td><td>Mitjana</td><td>Baix</td><td>Alta</td></tr>
+      <tr><td>Signatura</td><td>Sí (tauleta)</td><td>Mitjana</td><td>Baix</td><td>Alta</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">Els sistemes biomètrics es poden fer servir sols o combinats amb altres factors en una autenticació multifactor: per exemple, targeta i empremta.</div>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="https://www.youtube.com/watch?v=9yC_C945nwY" target="_blank" rel="noopener">Vídeo: Sistemes biomètrics al cinema</a></li>
+  </ul></div>
+  <div class="game" id="g4"></div>
+</section>
+
+<!-- 5 -->
+<section class="mod" id="m5" data-title="Quan s'equivoca">
+  <h2>Quan el sistema s'equivoca</h2>
+  <p class="lead">Dues mostres del mateix dit mai no són idèntiques. El sistema ha de decidir quan s'assemblen prou.</p>
+  <p>Els sistemes biomètrics són molt robustos, però no són infal·libles. Poden fallar de dues maneres:</p>
+  <div class="cols">
+    <div class="fact"><b>Fals positiu</b><p>Accepta algú que <em>no</em> és l'usuari. Un intrús entra. És l'error més perillós.</p></div>
+    <div class="fact"><b>Fals negatiu</b><p>Rebutja l'usuari legítim. No és perillós, però és molest: has de tornar-ho a provar.</p></div>
+  </div>
+  <h3>El llindar <span class="extra">fora de la presentació</span></h3>
+  <p>Cada comparació dona una <b>puntuació de semblança</b>. Si supera el <b>llindar</b>, el sistema accepta. Com més alt és el llindar, menys intrusos entren però més vegades et rebutja a tu. Les taxes es diuen <b>FAR</b> (taxa de falsa acceptació) i <b>FRR</b> (taxa de fals rebuig).</p>
+  <div class="game free" id="sim"></div>
+  <div class="game" id="g5"></div>
+</section>
+
+<!-- 6 -->
+<section class="mod" id="m6" data-title="Aplicacions">
+  <h2>Aplicacions: quin sistema triaries?</h2>
+  <p class="lead">La pregunta no és quin és el millor sistema, sinó quin encaixa en cada lloc.</p>
+  <div class="cols">
+    <div class="fact"><b>Seguretat necessària</b><p>Un mòbil i un búnquer militar no necessiten el mateix nivell.</p></div>
+    <div class="fact"><b>Cost</b><p>Un lector d'empremtes és barat; un escàner de retina, no.</p></div>
+    <div class="fact"><b>Entorn</b><p>Guants, mascaretes, soroll, brutícia, molta gent fent cua…</p></div>
+    <div class="fact"><b>Acceptació</b><p>Si als usuaris els incomoda, buscaran com saltar-se'l.</p></div>
+  </div>
+  <div class="game" id="g6"></div>
+</section>
+
+<!-- 7 -->
+<section class="mod" id="m7" data-title="Privacitat i ètica">
+  <h2>Privacitat i ètica</h2>
+  <p class="lead">La teva cara és la teva cara per sempre. Qui la guarda, i per a què?</p>
+  <div class="cols">
+    <div class="fact"><b>Dades especialment protegides</b><p>El RGPD considera les dades biomètriques que serveixen per identificar una persona una <em>categoria especial de dades</em>, com les de salut. Per tractar-les calen garanties reforçades.</p></div>
+    <div class="fact"><b>No es poden canviar</b><p>Si una base de dades d'empremtes es filtra, els afectats no poden «canviar-se» el dit.</p></div>
+    <div class="fact"><b>Proporcionalitat</b><p>Només s'haurien de fer servir quan no hi ha cap altra manera menys invasiva d'aconseguir el mateix objectiu.</p></div>
+    <div class="fact"><b>Guardar el mínim</b><p>Millor guardar el patró xifrat, millor encara dins del dispositiu mateix, que no pas imatges en un servidor central.</p></div>
+  </div>
+  <h3>Càmeres a les aules</h3>
+  <p>La notícia de l'A4 explica el cas d'un institut de la Xina que va instal·lar càmeres amb reconeixement facial per analitzar els gestos i les expressions de l'alumnat i saber si estava atent a classe. Llegeix-la i pensa: és una mesura proporcionada? Qui hi surt guanyant i qui hi perd?</p>
+  <div class="note">La normativa de protecció de dades la treballem a fons a l'<a href="aea5.html">AEA5 · Legislació i normes de seguretat</a>.</div>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="https://www.elespanol.com/omicrono/software/20180517/reconocimiento-facial-alumnos-prestando-atencion-nuevo-china/307970644_0.html" target="_blank" rel="noopener">Notícia: detecció gestual a les aules</a></li>
+  </ul></div>
+  <div class="game" id="g7"></div>
+</section>
+
+  </main>
+</div>
+<script>
+(function(){
+const MODS=[...document.querySelectorAll('section.mod')];
+const TOTAL=MODS.length;
+let store={};
+try{store=JSON.parse(localStorage.getItem('biometria')||'{}')||{};}catch(e){store={};}
+function save(){try{localStorage.setItem('biometria',JSON.stringify(store));}catch(e){}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}kids.flat().forEach(c=>c!=null&&e.append(c));return e;};
+const fmt=(n,d=1)=>{const r=Math.round(n*Math.pow(10,d))/Math.pow(10,d);return r.toLocaleString('ca-ES',{maximumFractionDigits:d});};
+
+/* ---------- navigation & progress ---------- */
+const nav=document.getElementById('navList');
+function show(i){
+  MODS.forEach((m,k)=>m.classList.toggle('active',k===i));
+  [...nav.querySelectorAll('button')].forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'));
+  try{history.replaceState(null,'','#'+MODS[i].id);}catch(e){}
+}
+MODS.forEach((m,i)=>{
+  nav.append(h('li',{},h('button',{type:'button',onclick:()=>{show(i);window.scrollTo({top:0});}},
+    h('span',{class:'n'},String(i+1)),h('span',{},m.dataset.title),h('span',{class:'done','data-done':m.id}))));
+  const pager=h('div',{class:'pager'});
+  pager.append(i>0?h('button',{class:'btn ghost',type:'button',onclick:()=>{show(i-1);window.scrollTo({top:0});}},'Apartat anterior'):h('span'));
+  if(i<MODS.length-1)pager.append(h('button',{class:'btn',type:'button',onclick:()=>{show(i+1);window.scrollTo({top:0});}},'Següent apartat'));
+  m.append(pager);
+});
+const MODGAMES={};
+MODS.forEach(m=>{MODGAMES[m.id]=[...m.querySelectorAll('.game:not(.free)')].map(g=>g.id);});
+function refresh(){
+  let n=0,pts=0;
+  Object.values(MODGAMES).flat().forEach(k=>{if(store[k])pts+=store[k].s;});
+  for(const[m,gs]of Object.entries(MODGAMES)){
+    const d=gs.every(g=>store[g]);if(d)n++;
+    const el=nav.querySelector(`[data-done="${m}"]`);el.textContent=d?'✓':'';el.setAttribute('aria-label',d?'completat':'');
+  }
+  document.getElementById('meterFill').style.width=(n/TOTAL*100)+'%';
+  document.querySelector('.meter').setAttribute('aria-valuenow',n);
+  document.getElementById('scoreTxt').textContent=`${n} de ${TOTAL} apartats · ${pts} punts`;
+}
+function finish(id,s,t){if(!store[id]||s>=store[id].s)store[id]={s,t};save();refresh();}
+document.getElementById('resetAll').onclick=()=>{store={};save();refresh();};
+
+function shell(id,title){
+  const g=document.getElementById(id);g.innerHTML='';
+  const sc=h('span',{class:'gs'});
+  g.append(h('div',{class:'gh'},h('h3',{},title),sc));
+  const body=h('div',{class:'gb'});g.append(body);
+  return {body,sc};
+}
+
+/* ---------- sorting game ---------- */
+function sortGame(id,title,hint,buckets,items){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(items),sel=null,score=0;
+  const pl=h('div',{class:'pool','aria-label':'Targetes per classificar'});
+  const bk=h('div',{class:'buckets'});
+  const fb=h('div',{class:'fb','aria-live':'polite'});
+  const upd=()=>sc.textContent=`${score} / ${items.length}`;
+  const bEls={};
+  buckets.forEach(b=>{
+    const el=h('button',{class:'bucket',type:'button',onclick:()=>place(b.id)},h('strong',{},b.label));
+    if(b.sub)el.append(h('span',{class:'hint',style:'margin:0'},b.sub));
+    bEls[b.id]=el;bk.append(el);
+  });
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach((it,i)=>pl.append(h('button',{class:'chip',type:'button','aria-pressed':sel===i?'true':'false',onclick:()=>{sel=sel===i?null:i;drawPool();}},it.t)));
+    Object.values(bEls).forEach(e=>e.classList.toggle('armed',sel!==null));
+  }
+  function place(bid){
+    if(sel===null){fb.className='fb mid';fb.textContent='Primer tria una targeta de dalt.';return;}
+    const it=pool[sel];const ok=it.b===bid;
+    if(ok)score++;
+    bEls[bid].append(h('span',{class:'placed '+(ok?'ok':'bad')},it.t));
+    if(!ok)bEls[it.b].append(h('span',{class:'placed ok'},it.t));
+    fb.className='fb '+(ok?'ok':'bad');
+    fb.innerHTML=(ok?'<b>Correcte.</b> ':'<b>No.</b> Va a «'+buckets.find(b=>b.id===it.b).label+'». ')+(it.why||'');
+    pool.splice(sel,1);sel=null;drawPool();upd();
+    if(!pool.length){
+      finish(id,score,items.length);
+      body.append(h('div',{class:'row'},h('span',{},`Has encertat ${score} de ${items.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>sortGame(id,title,hint,buckets,items)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,bk,fb);drawPool();upd();
+}
+
+/* ---------- multiple-choice rounds ---------- */
+function choiceGame(id,title,rounds){
+  const {body,sc}=shell(id,title);
+  let r=0,score=0;
+  const upd=()=>sc.textContent=`${score} / ${rounds.length}`;
+  function draw(){
+    body.innerHTML='';upd();
+    if(r>=rounds.length){
+      finish(id,score,rounds.length);
+      body.append(h('p',{},`Has encertat ${score} de ${rounds.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{r=0;score=0;draw();}},'Torna-hi'));return;
+    }
+    const R=rounds[r];
+    body.append(h('p',{class:'hint'},`Pregunta ${r+1} de ${rounds.length}`),h('p',{class:'q'},R.q));
+    if(R.ctx)body.append(h('p',{},R.ctx));
+    const box=h('div',{class:'opts'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    const btns=R.o.map(o=>{
+      const b=h('button',{class:'opt',type:'button',html:o.t});
+      b.onclick=()=>{
+        btns.forEach((x,k)=>{x.disabled=true;const oo=R.o[k];if(oo.ok)x.classList.add('ok');x.append(h('small',{},oo.why));});
+        if(!o.ok)b.classList.add('bad');else score++;
+        fb.className='fb '+(o.ok?'ok':'bad');fb.innerHTML=o.ok?'<b>Correcte.</b> Llegeix també per què les altres no.':"<b>No és la millor opció.</b> Mira l'explicació de cada resposta.";
+        upd();body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<rounds.length?'Següent pregunta':'Veure resultat')));
+      };
+      box.append(b);return b;
+    });
+    body.append(box,fb);
+  }
+  draw();
+}
+
+/* ---------- ordering game ---------- */
+function orderGame(id,title,hint,steps){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(steps.map((t,i)=>({t,i}))),next=0,errors=0;
+  const pl=h('div',{class:'pool'});const ol=h('ol',{class:'ordlist'});const fb=h('div',{class:'fb','aria-live':'polite'});
+  const score=()=>Math.max(0,steps.length-errors);
+  const upd=()=>sc.textContent=`${next} / ${steps.length}`;
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach(it=>pl.append(h('button',{class:'chip',type:'button',onclick:()=>choose(it)},it.t)));
+  }
+  function choose(it){
+    if(it.i===next){
+      ol.append(h('li',{},it.t));pool=pool.filter(x=>x!==it);next++;
+      fb.className='fb ok';fb.innerHTML='<b>Correcte.</b>';
+    }else{
+      errors++;fb.className='fb bad';fb.innerHTML=`<b>Encara no.</b> «${it.t}» no és el pas ${next+1}.`;
+    }
+    drawPool();upd();
+    if(next===steps.length){
+      finish(id,score(),steps.length);
+      fb.className='fb ok';fb.innerHTML=`<b>Ordre complet.</b> Errors: ${errors}. Puntuació: ${score()} de ${steps.length}.`;
+      body.append(h('div',{class:'row'},h('button',{class:'btn ghost',type:'button',onclick:()=>orderGame(id,title,hint,steps)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,ol,fb);drawPool();upd();
+}
+
+/* ---------- 1 ---------- */
+sortGame('g1','És biometria?','Classifica cada mètode d’autenticació.',
+ [{id:'si',label:'Biometria',sub:'Alguna cosa que ets o que fas'},{id:'no',label:'No és biometria',sub:'Alguna cosa que saps o que tens'}],
+ [
+  {t:'Empremta dactilar',b:'si'},
+  {t:'Forma de caminar',b:'si',why:'És un tret de comportament: biometria dinàmica.'},
+  {t:'Reconeixement de veu',b:'si'},
+  {t:'Geometria de la mà',b:'si'},
+  {t:'Ritme en què escrius al teclat',b:'si',why:'Els patrons de pulsació del teclat són biometria de comportament.'},
+  {t:'Escaneig de l’iris',b:'si'},
+  {t:'Contrasenya',b:'no',why:'És una cosa que saps.'},
+  {t:'PIN',b:'no',why:'És una cosa que saps.'},
+  {t:'Targeta d’accés',b:'no',why:'És una cosa que tens.'},
+  {t:'Clau física USB',b:'no',why:'És una cosa que tens.'},
+  {t:'Pregunta secreta',b:'no',why:'És una cosa que saps, encara que parli de tu.'}
+ ]);
+
+/* ---------- 2 ---------- */
+orderGame('g2','Ordena el procés','Clica els passos en l’ordre en què passen. Cada error resta un punt.',
+ ["L'usuari es dona d'alta i el sistema escaneja el seu tret",
+  'El sistema guarda el patró de referència',
+  "Dies després, l'usuari posa el dit al lector",
+  'El sistema extreu els punts característics de la mostra nova',
+  'Compara la mostra nova amb el patró guardat',
+  "Com que s'assemblen prou, permet l'accés"]);
+
+sortGame('g2b','Verificació o identificació?','Classifica cada situació.',
+ [{id:'ve',label:'Verificació (1 a 1)',sub:'Comprova que ets qui dius'},{id:'id',label:'Identificació (1 a molts)',sub:'Esbrina qui ets'}],
+ [
+  {t:'Desbloqueges el teu mòbil amb l’empremta',b:'ve',why:'El mòbil només compara amb el teu patró.'},
+  {t:'Passes la targeta i després poses el dit al lector',b:'ve',why:'La targeta diu qui ets; el dit ho confirma.'},
+  {t:'A la frontera, la màquina compara la teva cara amb la foto del passaport',b:'ve',why:'Compara amb una sola foto, la del teu passaport.'},
+  {t:'Entres al banc del teu mòbil amb la cara',b:'ve'},
+  {t:'Una càmera a l’entrada reconeix qui passa sense que ningú s’identifiqui',b:'id',why:'Ha de buscar la cara entre tots els patrons.'},
+  {t:'La policia busca a qui pertany una empremta trobada en un robatori',b:'id',why:'Compara amb tota la base de dades.'},
+  {t:'Una app de fotos agrupa les imatges segons qui hi surt',b:'id'},
+  {t:'Fitxes a la feina posant només el dit, sense dir qui ets',b:'id',why:'El sistema ha de trobar de qui és el dit entre tots els treballadors.'}
+ ]);
+
+/* ---------- 3 ---------- */
+sortGame('g3','Estàtic o dinàmic?','Classifica cada tret biomètric.',
+ [{id:'es',label:'Estàtic',sub:'Atribut físic'},{id:'di',label:'Dinàmic',sub:'Comportament'}],
+ [
+  {t:'Empremta digital',b:'es'},
+  {t:'Iris',b:'es'},
+  {t:'Retina',b:'es'},
+  {t:'Forma de la cara',b:'es'},
+  {t:'Geometria de la mà',b:'es'},
+  {t:'ADN',b:'es'},
+  {t:'Signatura (pressió i velocitat)',b:'di',why:'No mira només el dibuix, sinó com el fas.'},
+  {t:'Veu',b:'di',why:'Depèn de com parles: un refredat la canvia.'},
+  {t:'Ritme de pulsació del teclat',b:'di'},
+  {t:'Forma de caminar',b:'di'}
+ ]);
+
+/* ---------- 4 ---------- */
+sortGame('g4','Quin sistema és?','Relaciona cada descripció amb el seu sistema.',
+ [{id:'em',label:'Empremta'},{id:'fa',label:'Facial'},{id:'ir',label:'Iris'},{id:'re',label:'Retina'},{id:'ve',label:'Veu'}],
+ [
+  {t:'Captura les minúcies del relleu dels dits',b:'em'},
+  {t:'El més estès en mòbils: precís i barat',b:'em'},
+  {t:'Mesura la distància entre els ulls i la forma de la barbeta',b:'fa'},
+  {t:'Funciona a distància i es fa servir en vigilància',b:'fa'},
+  {t:'Analitza anells, taques i colors de la part acolorida de l’ull',b:'ir'},
+  {t:'Càmera infraroja especial, però sense tocar res',b:'ir',why:'La retina també fa servir infrarojos, però cal acostar molt l’ull.'},
+  {t:'Analitza els vasos sanguinis del fons de l’ull',b:'re'},
+  {t:'Gairebé impossible de falsificar, típic d’instal·lacions militars',b:'re'},
+  {t:'Funciona per telèfon, sense cap sensor especial',b:'ve'},
+  {t:'Un refredat o el soroll de fons el poden fer fallar',b:'ve'}
+ ]);
+
+/* ---------- 5: simulador ---------- */
+const erf=x=>{const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x));};
+const cdf=(x,m,sd)=>0.5*(1+erf((x-m)/(sd*Math.SQRT2)));
+(function(){
+  const {body,sc}=shell('sim','Simulador: mou el llindar');
+  sc.textContent='Explora';
+  const GM=72,IM=38,SD=10;
+  const inp=h('input',{class:'thr',type:'range',min:'20',max:'95',value:'55',id:'thr','aria-label':'Llindar'});
+  const out=h('output',{for:'thr'});
+  const svgBox=h('div');const ro=h('div',{class:'readout','aria-live':'polite'});
+  const X=v=>20+v*6,Y=d=>200-d*4200;
+  const pdf=(x,m)=>Math.exp(-((x-m)**2)/(2*SD*SD))/(SD*Math.sqrt(2*Math.PI));
+  function curve(m,from,to,closed){
+    let d='';for(let v=from;v<=to+0.001;v+=0.5)d+=(d?'L':'M')+X(v).toFixed(1)+' '+Y(pdf(v,m)).toFixed(1)+' ';
+    return closed?`M${X(from)} 200 `+d.replace(/^M/,'L')+`L${X(to)} 200 Z`:d;
+  }
+  function draw(){
+    const t=+inp.value;out.textContent=t;
+    const FAR=1-cdf(t,IM,SD),FRR=cdf(t,GM,SD);
+    let s=`<line class="axis" x1="20" y1="200" x2="620" y2="200"/>`;
+    s+=`<path class="far" d="${curve(IM,t,100,true)}"/><path class="frr" d="${curve(GM,0,t,true)}"/>`;
+    s+=`<path class="imp" d="${curve(IM,0,100)}"/><path class="gen" d="${curve(GM,0,100)}"/>`;
+    s+=`<line class="thl" x1="${X(t)}" y1="14" x2="${X(t)}" y2="200"/>`;
+    s+=`<text class="k" x="${X(t)}" y="11" text-anchor="middle">Llindar ${t}</text>`;
+    s+=`<text x="${X(IM)}" y="${Y(pdf(IM,IM))-8}" text-anchor="middle">Intrusos</text><text x="${X(GM)}" y="${Y(pdf(GM,GM))-8}" text-anchor="middle">Tu</text>`;
+    s+=`<text x="20" y="216">0 · gens semblant</text><text x="620" y="216" text-anchor="end">100 · idèntic</text>`;
+    svgBox.innerHTML=`<svg class="dist" viewBox="0 0 640 224" role="img" aria-label="Distribucions de puntuació d'intrusos i de l'usuari, amb el llindar a ${t}">${s}</svg>`;
+    const verdict=FAR>0.25?"Massa permissiu: hi entra massa gent que no toca.":FAR>0.05?"Còmode però poc segur: només val per a llocs de risc baix.":FRR>0.25?"Molt segur, però tan estricte que et rebutjarà sovint.":"Un equilibri raonable entre seguretat i comoditat.";
+    ro.innerHTML=`<div><span>Falsos positius (FAR)</span><b>${fmt(FAR*100)} %</b><p>De 1.000 intents d'intrusos, n'entren ${Math.round(FAR*1000)}.</p></div><div><span>Falsos negatius (FRR)</span><b>${fmt(FRR*100)} %</b><p>De 1.000 intents teus, et rebutja ${Math.round(FRR*1000)} vegades.</p></div><div><span>Valoració</span><p>${verdict}</p></div>`;
+  }
+  inp.addEventListener('input',draw);
+  const pre=(l,v)=>h('button',{class:'chip',type:'button',onclick:()=>{inp.value=v;draw();}},l);
+  body.append(h('p',{class:'hint'},"La corba verda són les puntuacions quan ets tu; la vermella, quan prova d'entrar un altre. Allà on es trepitgen, el sistema no pot estar segur."),
+    h('div',{class:'thrlab'},h('label',{for:'thr'},'Llindar'),out),inp,
+    h('div',{class:'typesel'},pre('Gimnàs (còmode)',48),pre('Mòbil (equilibrat)',58),pre('Sala de servidors (estricte)',70)),
+    svgBox,h('div',{class:'legend'},h('span',{style:'--c:var(--red)'},'Àrea vermella: intrusos acceptats'),h('span',{style:'--c:var(--yellow)'},'Àrea groga: tu, rebutjat')),ro);
+  draw();
+})();
+
+choiceGame('g5','Fals positiu o fals negatiu?',[
+ {q:'Tens els dits mullats i el mòbil no reconeix la teva empremta.',
+  o:[{t:'Fals positiu',ok:false,why:'Un fals positiu seria deixar entrar algú altre.'},{t:'Fals negatiu',ok:true,why:"Ets l'usuari legítim i el sistema t'ha rebutjat."}]},
+ {q:'El teu germà bessó desbloqueja el teu mòbil amb la seva cara.',
+  o:[{t:'Fals positiu',ok:true,why:"El sistema ha acceptat algú que no és l'usuari."},{t:'Fals negatiu',ok:false,why:'Un fals negatiu seria rebutjar-te a tu.'}]},
+ {q:'A la sala de servidors d’un banc, quin error és més greu?',
+  o:[{t:'El fals positiu: pot entrar un intrús',ok:true,why:'Un intrús a la sala de servidors pot causar un desastre.'},{t:'El fals negatiu: l’administrador ho ha de tornar a provar',ok:false,why:'És molest, però no posa en perill les dades.'}]},
+ {q:'Vols reduir els falsos positius. Què fas amb el llindar?',
+  o:[{t:'El puges: el sistema serà més exigent',ok:true,why:'Entraran menys intrusos, a canvi de més falsos negatius.'},{t:'L’abaixes: el sistema serà més permissiu',ok:false,why:'Això faria entrar més intrusos.'}]},
+ {q:'En un gimnàs amb molta gent fent cua a l’entrada, què prioritzaries?',
+  o:[{t:'Pocs falsos negatius, encara que sigui una mica més permissiu',ok:true,why:"Aquí el risc és baix i la comoditat importa: no vols cues perquè el lector rebutja els socis."},{t:'Zero falsos positius, encara que rebutgi molts socis',ok:false,why:'Seria un llindar desproporcionat per a un gimnàs.'}]}
+]);
+
+/* ---------- 6 ---------- */
+choiceGame('g6','Tria el sistema',[
+ {q:'Un fabricant vol desbloquejar mòbils de gamma mitjana de manera ràpida i barata.',
+  o:[
+   {t:'Lector d’empremtes',ok:true,why:'Precís, barat i fàcil d’integrar: el més estès en mòbils.'},
+   {t:'Escàner de retina',ok:false,why:'Car, voluminós i incòmode per desbloquejar el mòbil cinquanta vegades al dia.'},
+   {t:'Anàlisi d’ADN',ok:false,why:'Lent i carríssim: impossible en un mòbil.'}
+  ]},
+ {q:'Una instal·lació militar vol protegir la sala de màxima seguretat.',
+  o:[
+   {t:'Reconeixement de veu',ok:false,why:'Es pot enregistrar i reproduir, i el soroll el fa fallar.'},
+   {t:'Escàner de retina, combinat amb una targeta',ok:true,why:'La retina és gairebé impossible de falsificar, i amb la targeta tens dos factors.'},
+   {t:'Reconeixement facial amb una càmera web',ok:false,why:'Massa fàcil d’enganyar per a aquest nivell de seguretat.'}
+  ]},
+ {q:'Un banc vol verificar els clients que truquen per telèfon.',
+  o:[
+   {t:'Reconeixement de veu',ok:true,why:'És l’únic tret que arriba per telèfon.'},
+   {t:'Empremta dactilar',ok:false,why:'Per telèfon no hi ha cap lector.'},
+   {t:'Iris',ok:false,why:'Cal una càmera infraroja davant de l’ull.'}
+  ]},
+ {q:'Un aeroport vol agilitzar el control de passaports.',
+  o:[
+   {t:'Reconeixement facial comparat amb la foto del passaport',ok:true,why:'Sense contacte, ràpid, i el passaport ja porta la foto.'},
+   {t:'Signatura en una tauleta',ok:false,why:'Lenta i poc precisa per a milers de passatgers.'},
+   {t:'Retina',ok:false,why:'Massa lent i incòmode per a cues de passatgers.'}
+  ]},
+ {q:'En un quiròfan, el personal porta guants i mascareta. Com controles l’accés al sistema informàtic?',
+  o:[
+   {t:'Empremta dactilar',ok:false,why:'Amb guants no funciona, i treure-se’ls trenca l’esterilitat.'},
+   {t:'Reconeixement facial',ok:false,why:'La mascareta tapa bona part de la cara.'},
+   {t:'Iris',ok:true,why:'Els ulls queden a la vista i no cal tocar res.'}
+  ]}
+]);
+
+/* ---------- 7 ---------- */
+choiceGame('g7','Privacitat a debat',[
+ {q:'Per què és més greu que es filtri una base de dades d’empremtes que una de contrasenyes?',
+  o:[
+   {t:'Perquè les empremtes ocupen més espai',ok:false,why:'La mida no té res a veure amb el risc.'},
+   {t:'Perquè una empremta no es pot canviar',ok:true,why:'Una contrasenya filtrada es canvia; una empremta filtrada ho és per sempre.'},
+   {t:'No és més greu: és el mateix',ok:false,why:'La diferència és que la contrasenya es pot substituir.'}
+  ]},
+ {q:'Com considera el RGPD les dades biomètriques que serveixen per identificar una persona?',
+  o:[
+   {t:'Dades normals, com el nom o l’adreça',ok:false,why:'Tenen una protecció més forta.'},
+   {t:'Una categoria especial de dades, que necessita garanties reforçades',ok:true,why:'Igual que les dades de salut.'},
+   {t:'Dades públiques, perquè la cara la veu tothom',ok:false,why:'Que es vegi la teva cara no vol dir que la puguin processar i guardar lliurement.'}
+  ]},
+ {q:'Un institut vol passar llista amb reconeixement facial a l’entrada. Què en dius?',
+  o:[
+   {t:'Perfecte: és més modern',ok:false,why:'Ser modern no justifica tractar dades especialment protegides.'},
+   {t:'Només si no hi ha cap altra manera menys invasiva de fer-ho, i aquí n’hi ha',ok:true,why:'Passar llista a mà o amb una targeta aconsegueix el mateix sense dades biomètriques: principi de proporcionalitat.'},
+   {t:'Sí, si ho anuncien amb un cartell',ok:false,why:'Informar és necessari, però no fa proporcionat un tractament que no ho és.'}
+  ]},
+ {q:'Al cas de la notícia, les càmeres analitzaven les expressions de l’alumnat per saber si estava atent. Quin és el problema principal?',
+  o:[
+   {t:'Que les càmeres són cares',ok:false,why:'El cost no és el problema ètic.'},
+   {t:'Vigilància constant de menors i de les seves emocions, desproporcionada per a l’objectiu',ok:true,why:'Hi ha maneres molt menys invasives de saber si una classe funciona.'},
+   {t:'Cap: si no fas res dolent, no has de patir',ok:false,why:'La privacitat no és només per a qui té alguna cosa a amagar.'}
+  ]},
+ {q:'Quina és la manera més segura de guardar el patró de l’empremta en un mòbil?',
+  o:[
+   {t:'Una foto de l’empremta en un servidor de l’empresa',ok:false,why:'Una base de dades central és un objectiu molt atractiu per als atacants.'},
+   {t:'El patró xifrat dins del mateix mòbil, sense sortir-ne',ok:true,why:'Guardar el mínim, xifrat i a prop de l’usuari redueix molt el risc.'},
+   {t:'Una còpia a cada aplicació que el faci servir',ok:false,why:'Com més còpies, més punts per on es pot filtrar.'}
+  ]}
+]);
+
+/* ---------- start ---------- */
+refresh();
+const start=Math.max(0,MODS.findIndex(m=>'#'+m.id===location.hash));show(start);
+})();
+</script>
+</body>
+</html>
