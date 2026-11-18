@@ -55,6 +55,7 @@ nav.mods .n{font-variation-settings:"wdth" 70;font-weight:800;color:var(--muted)
 nav.mods .done{margin-left:auto;color:var(--green);font-weight:800}
 
 main{min-width:0}
+nav.mods{min-width:0}
 section.mod{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px clamp(18px,4vw,40px) 34px}
 section.mod.active{display:block}
 .mod h2{margin:0 0 .2rem;font-weight:800;font-variation-settings:"wdth" 75;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
@@ -156,7 +157,7 @@ th{font-variation-settings:"wdth" 85;background:var(--surface2)}
 
 @media (max-width:860px){
   .layout{grid-template-columns:1fr}
-  nav.mods{position:static;min-width:0}
+  nav.mods{position:static}
   nav.mods ol{flex-direction:row;overflow-x:auto;padding-bottom:6px}
   nav.mods button{white-space:nowrap;border-left:0;border-bottom:4px solid transparent;border-radius:6px 6px 0 0}
   nav.mods button[aria-current="true"]{border-bottom-color:var(--yellow)}
