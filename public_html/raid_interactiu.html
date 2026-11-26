@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RAID · AEA2 · M0226</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E6E2; --surface:#F6F7F4; --surface2:#ECEEEA; --ink:#1C2226; --muted:#56616A; --line:#C7CCC6;
+  --yellow:#F2C200; --yellow-ink:#3A2E00; --red:#C8281E; --green:#0E7F49; --blue:#2F5671;
+  --ok-bg:#DDF0E5; --bad-bg:#F8DEDB; --mid-bg:#FBF0C6; --focus:#2F5671;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+    --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+    --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+  --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+  --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variation-settings:"wdth" 100;font-size:17px;line-height:1.55}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+img,svg{max-width:100%}
+
+.hazard{height:10px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 14px,#1C2226 14px 28px)}
+header.top{padding:28px 24px 22px;max-width:1180px;margin:0 auto}
+header.top h1{margin:0;font-weight:800;font-variation-settings:"wdth" 70;font-size:clamp(2.1rem,6vw,3.6rem);line-height:1;letter-spacing:-.01em}
+header.top p{margin:.6rem 0 0;color:var(--muted);max-width:60ch}
+.scorebar{display:flex;gap:16px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.meter{flex:1 1 220px;max-width:360px;height:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--green);width:0;transition:width .4s}
+.scoretxt{font-weight:700;font-variant-numeric:tabular-nums}
+.reset{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:.85rem;color:var(--muted)}
+
+.layout{max-width:1180px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+nav.mods{position:sticky;top:env(safe-area-inset-top,0px);padding-top:8px}
+nav.mods ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+nav.mods button{width:100%;text-align:left;background:none;border:0;border-left:4px solid transparent;padding:9px 12px;border-radius:0 6px 6px 0;display:flex;gap:10px;align-items:baseline}
+nav.mods button:hover{background:var(--surface2)}
+nav.mods button[aria-current="true"]{background:var(--surface);border-left-color:var(--yellow);font-weight:700}
+nav.mods .n{font-variation-settings:"wdth" 70;font-weight:800;color:var(--muted);min-width:1.2em}
+nav.mods .done{margin-left:auto;color:var(--green);font-weight:800}
+
+main{min-width:0}
+section.mod{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px clamp(18px,4vw,40px) 34px}
+section.mod.active{display:block}
+.mod h2{margin:0 0 .2rem;font-weight:800;font-variation-settings:"wdth" 75;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
+.mod .lead{color:var(--muted);margin:0 0 1.4rem;max-width:68ch}
+.mod h3{font-variation-settings:"wdth" 85;font-weight:750;font-size:1.25rem;margin:2rem 0 .6rem}
+.mod p{max-width:70ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:1rem 0}
+.fact{background:var(--surface2);border-radius:8px;padding:14px 16px;border-top:4px solid var(--blue)}
+.fact b{display:block;margin-bottom:4px}
+.fact p{margin:0;font-size:.95rem}
+.note{border-left:4px solid var(--yellow);background:var(--mid-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:1.2rem 0;max-width:72ch}
+.steps{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface2);border-radius:8px;padding:12px 14px 12px 50px;position:relative;font-size:.95rem}
+.steps li::before{content:counter(s);position:absolute;left:12px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-weight:800}
+.tablewrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-variation-settings:"wdth" 85;background:var(--surface2)}
+
+.game{margin-top:2.2rem;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.game>.gh{background:var(--ink);color:var(--surface);padding:12px 18px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.game>.gh h3{margin:0;color:inherit;font-size:1.15rem}
+.game>.gh .gs{font-weight:700;font-variant-numeric:tabular-nums}
+.game>.gb{padding:18px}
+.hint{color:var(--muted);font-size:.92rem;margin:0 0 12px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:44px}
+.chip{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:7px 14px;font-size:.95rem}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--yellow);color:var(--yellow-ink);font-weight:700}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bucket{background:var(--surface2);border:2px dashed var(--line);border-radius:8px;padding:10px;text-align:left;min-height:110px;display:flex;flex-direction:column;gap:6px}
+.bucket.armed{border-color:var(--ink);border-style:solid}
+.bucket>strong{font-variation-settings:"wdth" 85}
+.placed{font-size:.85rem;border-radius:5px;padding:3px 8px}
+.placed.ok{background:var(--ok-bg)} .placed.bad{background:var(--bad-bg);text-decoration:line-through}
+.fb{margin-top:14px;padding:12px 14px;border-radius:8px;min-height:1em}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg)} .fb.bad{background:var(--bad-bg)} .fb.mid{background:var(--mid-bg)}
+.btn{background:var(--ink);color:var(--surface);border:0;border-radius:6px;padding:9px 16px;font-weight:700}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:11px 14px}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.opt.bad{background:var(--bad-bg);border-color:var(--red)}
+.opt.mid{background:var(--mid-bg);border-color:var(--yellow)}
+.opt small{display:block;color:var(--muted);margin-top:4px}
+.q{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.site{display:block}
+.site ul{margin:6px 0 0;padding-left:18px;font-size:.92rem;color:var(--muted);font-weight:400}
+
+.layers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center}
+.layers svg{width:100%;height:auto}
+.layers svg .ly{cursor:pointer}
+.layers svg .ly rect{stroke:var(--ink);stroke-width:2;transition:fill .2s}
+.layers svg .ly:hover rect,.layers svg .ly.sel rect{fill:var(--yellow)}
+.layers svg text{fill:var(--ink);font-family:inherit;font-size:13px;font-weight:700;pointer-events:none}
+.layerinfo{background:var(--surface2);border-radius:8px;padding:16px;min-height:150px}
+.layerinfo h4{margin:0 0 6px;font-size:1.1rem}
+
+.sim{display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:24px}
+.slider label{display:flex;justify-content:space-between;font-weight:700}
+.slider output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.slider input{width:100%;accent-color:var(--blue);margin:8px 0 18px}
+.eq{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;padding:9px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border-left:6px solid var(--green)}
+.eq.bad{border-left-color:var(--red)} .eq b{font-variation-settings:"wdth" 85}
+.eq .st{font-size:.88rem;color:var(--muted);grid-column:1/-1}
+
+.classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0}
+.cls{border-radius:8px;padding:12px;background:var(--surface2);display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center}
+.cls .L{grid-row:span 2;width:44px;height:44px;border-radius:6px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.5rem;font-variation-settings:"wdth" 70}
+.cls span{font-size:.88rem;color:var(--muted)}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.scen{background:var(--surface2);border-radius:8px;padding:14px 16px;font-size:1.05rem}
+.scen .num{color:var(--muted);font-size:.85rem}
+
+.ordlist{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px;counter-reset:o}
+.ordlist li{counter-increment:o;background:var(--ok-bg);padding:9px 12px 9px 44px;border-radius:6px;position:relative}
+.ordlist li::before{content:counter(o);position:absolute;left:12px;font-weight:800}
+
+.audit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
+.plan{width:100%;height:auto;background:var(--surface2);border-radius:8px}
+.plan .wall{fill:none;stroke:var(--ink);stroke-width:3}
+.plan .room{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.plan .rack{fill:var(--muted)}
+.plan .lbl{fill:var(--muted);font-size:12px;font-family:inherit}
+.plan .hs{cursor:pointer}
+.plan .hs circle{fill:var(--yellow);stroke:#1C2226;stroke-width:2}
+.plan .hs text{fill:#1C2226;font-weight:800;font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-family:inherit}
+.plan .hs.ok circle{fill:#4CC98A}.plan .hs.bad circle{fill:#F0675C}
+.plan .hs.sel circle{stroke-width:4}
+.panel{background:var(--surface2);border-radius:8px;padding:16px;min-height:200px}
+.panel h4{margin:0 0 8px}
+
+.pager{display:flex;justify-content:space-between;margin-top:28px;gap:10px}
+.final{background:var(--ink);color:var(--surface);border-radius:8px;padding:16px 18px;margin-top:16px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  nav.mods{position:static;min-width:0}
+  nav.mods ol{flex-direction:row;overflow-x:auto;padding-bottom:6px}
+  nav.mods button{white-space:nowrap;border-left:0;border-bottom:4px solid transparent;border-radius:6px 6px 0 0}
+  nav.mods button[aria-current="true"]{border-bottom-color:var(--yellow)}
+  .layers,.sim,.audit{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.back{display:inline-block;color:var(--muted);font-size:.9rem;text-decoration:none;margin-bottom:10px}
+.back:hover{color:var(--ink);text-decoration:underline}
+.res{margin:1.6rem 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);max-width:72ch}
+.res b{display:block;margin-bottom:6px}
+.res ul{margin:0;padding-left:20px}
+.res li{margin:3px 0}
+.res a{color:var(--blue);font-weight:600}
+.formula{font-variation-settings:"wdth" 80;font-weight:800;font-size:1.15rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;margin:4px 0;font-variant-numeric:tabular-nums}
+.typesel{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.circuit,.wave{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block}
+.wave{margin-top:10px}
+.circuit .blk rect{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.circuit .blk text{fill:var(--ink);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:inherit}
+.circuit .blk.dead rect{fill:var(--surface2);stroke:var(--muted);stroke-dasharray:5 4}
+.circuit .blk.dead text{fill:var(--muted)}
+.circuit .w{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.circuit .w.by{stroke-dasharray:3 7}
+.circuit .w.on{stroke:var(--yellow);stroke-width:6;stroke-dasharray:12 8;animation:flow .7s linear infinite}
+.circuit .lever{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+.circuit .dot{fill:var(--ink)}
+.circuit .tag{fill:var(--muted);font-size:12px;font-family:inherit}
+.circuit .cut{fill:var(--red);font-size:13px;font-weight:800;font-family:inherit;text-anchor:middle}
+@keyframes flow{to{stroke-dashoffset:-20}}
+.wave .sig{fill:none;stroke:var(--blue);stroke-width:3;stroke-linejoin:round}
+.wave .gap{fill:var(--bad-bg)}
+.wave .axis{stroke:var(--line);stroke-width:1}
+.wave .mk{stroke:var(--red);stroke-width:2;stroke-dasharray:4 3}
+.wave text{fill:var(--muted);font-size:12px;font-family:inherit}
+.wave text.hot{fill:var(--red);font-weight:800}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.readout div{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.readout span{display:block;color:var(--muted);font-size:.85rem}
+.readout b{font-variation-settings:"wdth" 80;font-size:1.2rem;line-height:1.2}
+.readout p{margin:2px 0 0;font-size:.93rem}
+.ups{display:grid;grid-template-columns:minmax(0,280px) 1fr;gap:22px;align-items:start}
+.ups svg{width:100%;height:auto;display:block}
+.ups .led{cursor:pointer}
+.ups .led .l{stroke:#0d1012;stroke-width:2}
+.ups .led .ring{fill:none;stroke-width:3}
+.ups .led text{fill:#E7EAE6;font-size:14px;font-family:inherit;font-weight:600;pointer-events:none}
+.ups .led:hover .hit{fill:rgba(255,255,255,.08)}
+.ups .led:focus{outline:none}
+.ups .led:focus-visible .hit{stroke:#8DB6D3;stroke-width:3}
+.field{display:grid;gap:4px;margin:12px 0}
+.field label{font-weight:700}
+.field input,.field select{font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:min(240px,100%)}
+.field.ok input,.field.ok select{border-color:var(--green);background:var(--ok-bg)}
+.field.bad input,.field.bad select{border-color:var(--red);background:var(--bad-bg)}
+.data{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0 4px}
+.data div{background:var(--surface2);border-radius:8px;padding:8px 12px}
+.data span{display:block;font-size:.82rem;color:var(--muted)}
+.data b{font-variation-settings:"wdth" 80;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.sol{margin-top:12px;background:var(--surface2);border-radius:8px;padding:12px 14px;font-variant-numeric:tabular-nums}
+.sol p{margin:.2rem 0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:860px){.ups{grid-template-columns:1fr}.ups svg{max-width:300px}}
+@media (prefers-reduced-motion:reduce){.circuit .w.on{animation:none}}
+/* ---- específic d'aquesta pàgina ---- */
+.extra{display:inline-block;font-size:.78rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:middle}
+.flow{list-style:none;padding:0;margin:1rem 0;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.flow li{background:var(--surface2);border-radius:8px;padding:10px 14px;flex:1 1 140px;font-size:.95rem;position:relative}
+.flow li b{display:block}
+.ordlist li.bad{background:var(--bad-bg)}
+.thr{width:100%;accent-color:var(--blue);margin:6px 0 4px}
+.thrlab{display:flex;justify-content:space-between;align-items:baseline;font-weight:700}
+.thrlab output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.dist{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block;margin-top:10px}
+.dist .gen{fill:none;stroke:var(--green);stroke-width:3}
+.dist .imp{fill:none;stroke:var(--red);stroke-width:3}
+.dist .far{fill:var(--red);opacity:.28}
+.dist .frr{fill:var(--yellow);opacity:.45}
+.dist .axis{stroke:var(--line);stroke-width:1}
+.dist .thl{stroke:var(--ink);stroke-width:2;stroke-dasharray:5 4}
+.dist text{fill:var(--muted);font-size:12px;font-family:inherit}
+.dist text.k{font-weight:800;font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.88rem;color:var(--muted);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+
+/* ---- AEA2: elements comuns ---- */
+.extra{display:inline-block;font-size:.78rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:middle}
+.game.free>.gh{background:var(--blue)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:0;border:2px solid var(--ink);border-radius:8px;overflow:hidden}
+.seg button{background:var(--surface);border:0;border-right:1px solid var(--line);padding:7px 14px;font-weight:700}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.status{display:inline-flex;align-items:center;gap:8px;font-weight:800;padding:6px 12px;border-radius:6px}
+.status.ok{background:var(--ok-bg);color:var(--green)}
+.status.mid{background:var(--mid-bg)}
+.status.bad{background:var(--bad-bg);color:var(--red)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:12px 0}
+.kv div{background:var(--surface2);border-radius:8px;padding:8px 12px}
+.kv span{display:block;font-size:.82rem;color:var(--muted)}
+.kv b{font-variation-settings:"wdth" 80;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.sel{font:inherit;padding:7px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+
+/* ---- RAID lab ---- */
+.labtop{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.array{display:flex;gap:10px;align-items:flex-end;overflow-x:auto;padding:6px 2px 10px}
+.pair{display:flex;gap:6px;padding:8px 8px 4px;border:2px dashed var(--line);border-radius:10px;position:relative}
+.pair>.plabel{position:absolute;top:-11px;left:10px;background:var(--surface);padding:0 6px;font-size:.78rem;font-weight:700;color:var(--muted)}
+.disk{width:78px;flex:0 0 auto;background:var(--surface2);border:2px solid var(--ink);border-radius:10px 10px 6px 6px;padding:8px 6px 6px;display:flex;flex-direction:column;gap:4px;text-align:center;min-height:210px;position:relative}
+.disk::before{content:"";display:block;height:8px;border-radius:50%;border:2px solid var(--ink);background:var(--surface);margin:-2px 4px 4px}
+.disk .dname{font-size:.78rem;font-weight:700;color:var(--muted);margin-top:auto;padding-top:4px}
+.disk .blocks{display:flex;flex-direction:column;gap:3px}
+.blk{font-variant-numeric:tabular-nums;font-weight:800;font-size:.86rem;border-radius:4px;padding:4px 0;background:var(--surface);border:1px solid var(--line)}
+.blk.p{background:var(--mid-bg);border-color:var(--yellow)}
+.blk.q{background:#E7D9F5;border-color:#8E6BB8}
+.blk.new{animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.disk.dead{border-color:var(--red);background:var(--bad-bg)}
+.disk.dead .blk{opacity:.35;text-decoration:line-through}
+.disk.dead::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;font-size:3.4rem;font-weight:800;color:var(--red);pointer-events:none;opacity:.8}
+.disk.rebuilt{border-color:var(--green)}
+.diskbtn{background:none;border:0;padding:0;border-radius:12px}
+.diskbtn:hover .disk{box-shadow:0 0 0 3px var(--line)}
+.legend2{display:flex;flex-wrap:wrap;gap:12px;font-size:.85rem;color:var(--muted);margin-top:6px}
+.legend2 i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .blk.q{background:#3A2C4C;border-color:#A58BD0}}
+:root[data-theme="dark"] .blk.q{background:#3A2C4C;border-color:#A58BD0}
+
+/* ---- XOR ---- */
+.xor{display:grid;gap:8px;margin:12px 0}
+.xrow{display:grid;grid-template-columns:120px repeat(4,44px);gap:6px;align-items:center}
+.xrow .lab{font-weight:700;font-size:.92rem}
+.bit{width:44px;height:44px;border-radius:6px;border:2px solid var(--line);background:var(--surface);font-weight:800;font-size:1.2rem;font-variant-numeric:tabular-nums;display:grid;place-items:center}
+button.bit{border-color:var(--ink);cursor:pointer}
+button.bit:hover{background:var(--mid-bg)}
+.bit.hidden{background:var(--bad-bg);border-color:var(--red);color:var(--red)}
+.bit.ok{background:var(--ok-bg);border-color:var(--green)}
+.bit.bad{background:var(--bad-bg);border-color:var(--red)}
+.xrow.par .lab{color:var(--muted)}
+
+/* ---- mini array for survival game ---- */
+.mini{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;align-items:center}
+.mini .md{width:46px;height:58px;border:2px solid var(--ink);border-radius:8px 8px 4px 4px;display:grid;place-items:center;font-weight:800;background:var(--surface2);position:relative}
+.mini .md.dead{border-color:var(--red);background:var(--bad-bg);color:var(--red)}
+.mini .grp{display:flex;gap:4px;padding:4px;border:2px dashed var(--line);border-radius:8px}
+</style>
+</head>
+<body>
+<div class="hazard" aria-hidden="true"></div>
+<header class="top">
+  <a class="back" href="aea2_a1.html">← Tornar a A1 · Raids</a>
+  <h1>RAID: quants discos pots perdre?</h1>
+  <p>Set apartats per entendre com un RAID reparteix, copia o calcula les dades entre diversos discos. Al laboratori pots escriure fitxers i trencar discos per veure què sobreviu. Cada apartat té una mica de teoria i una activitat. El progrés es guarda en aquest navegador.</p>
+  <p style="font-size:.9rem">Les parts marcades amb <span class="extra">fora de la presentació</span> amplien el que hi ha a les presentacions de RAID i de Gestió de dispositius d'emmagatzematge.</p>
+  <div class="scorebar">
+    <div class="meter" role="progressbar" aria-label="Apartats completats" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><span id="meterFill"></span></div>
+    <span class="scoretxt" id="scoreTxt">0 de 7 apartats · 0 punts</span>
+    <button class="reset" id="resetAll" type="button">Reinicia el progrés</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="mods" aria-label="Apartats"><ol id="navList"></ol></nav>
+  <main>
+
+<!-- 1 -->
+<section class="mod" id="m1" data-title="Què és un RAID">
+  <h2>Què és un RAID</h2>
+  <p class="lead">Diversos discos físics que el sistema operatiu veu com un de sol.</p>
+  <p>RAID vol dir <b>Redundant Array of Independent Disks</b>: un conjunt de discos independents redundants. Les dades es <b>reparteixen</b> o es <b>repliquen</b> entre els discos. Segons la configuració (el <b>nivell</b>) guanyes capacitat, fiabilitat, velocitat o una combinació d'aquestes coses.</p>
+  <div class="cols">
+    <div class="fact"><b>Repartir (stripping)</b><p>Cada fitxer es trossa en blocs i cada bloc va a un disc diferent. Es llegeix i s'escriu de diversos discos alhora: més velocitat.</p></div>
+    <div class="fact"><b>Replicar (mirall)</b><p>Les mateixes dades s'escriuen a més d'un disc. Si un falla, l'altre té una còpia exacta.</p></div>
+    <div class="fact"><b>Paritat</b><p>Un bloc extra calculat a partir dels altres. Si en falta un, es pot tornar a calcular.</p></div>
+  </div>
+  <h3>Per maquinari o per programari</h3>
+  <div class="cols">
+    <div class="fact"><b>RAID per maquinari</b><p>Una controladora dedicada gestiona els discos. El sistema operatiu només veu el volum final.</p></div>
+    <div class="fact"><b>RAID per programari</b><p>El gestiona el sistema operatiu: Espais d'emmagatzematge a Windows, <code>mdadm</code> a Linux. Més barat, però gasta CPU.</p></div>
+  </div>
+  <div class="game free" id="calc"></div>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="RAID 0,1,5,10.pptx.pdf" target="_blank" rel="noopener">Presentació: RAID</a></li>
+    <li><a href="Gestió de dispositius d'emmagatematge.pptx.pdf" target="_blank" rel="noopener">Presentació: Gestió de dispositius d'emmagatzematge (diapositives 5 i 6)</a></li>
+  </ul></div>
+  <div class="game" id="g1"></div>
+</section>
+
+<!-- 2 -->
+<section class="mod" id="m2" data-title="RAID 0">
+  <h2>RAID 0: tot velocitat, cap xarxa de seguretat</h2>
+  <p class="lead">El més ràpid i el més arriscat.</p>
+  <p>El RAID 0, conegut com a <b>stripping</b>, distribueix les dades equitativament entre dos o més discos. Com que cada disc fa una part de la feina, es guanya velocitat i no es perd capacitat: dos discos d'1 TB donen 2 TB útils.</p>
+  <p>El preu és alt: no hi ha cap redundància. Si <b>un sol disc</b> falla, es perden <b>totes</b> les dades, perquè cada fitxer té trossos a tots els discos. Per això en un RAID 0 és molt important fer còpies de seguretat.</p>
+  <div class="note">Amb RAID 0 el risc creix amb cada disc que afegeixes: amb 4 discos, n'hi ha prou que en falli qualsevol dels quatre.</div>
+  <div class="game free" id="lab0"></div>
+  <div class="game" id="g2"></div>
+</section>
+
+<!-- 3 -->
+<section class="mod" id="m3" data-title="RAID 1">
+  <h2>RAID 1: el mirall</h2>
+  <p class="lead">Dos discos que diuen exactament el mateix.</p>
+  <p>Un RAID 1 crea una <b>còpia exacta</b> (mirall) d'un conjunt de dades en dos o més discos. Per tal que el conjunt falli, han de fallar <b>tots</b> els discos.</p>
+  <p>La capacitat útil és la del disc <b>més petit</b>: dos discos d'1 TB en mirall donen 1 TB. Les lectures poden ser més ràpides, perquè es pot llegir de qualsevol dels dos discos; les escriptures van igual que amb un sol disc, perquè cal escriure-ho tot dues vegades.</p>
+  <h3>Reconstrucció <span class="extra">fora de la presentació</span></h3>
+  <p>Quan un disc falla, el sistema continua funcionant en <b>mode degradat</b>. Canvies el disc espatllat per un de nou i el RAID copia les dades del disc bo al nou: és la <b>reconstrucció</b> (<i>rebuild</i>). Mentre dura, si falla el disc que queda, ho perds tot. Molts servidors tenen un <b>disc de reserva</b> (<i>hot spare</i>) que entra automàticament.</p>
+  <div class="game free" id="lab1"></div>
+  <div class="game" id="g3"></div>
+</section>
+
+<!-- 4 -->
+<section class="mod" id="m4" data-title="RAID 5 i la paritat">
+  <h2>RAID 5: la paritat fa màgia</h2>
+  <p class="lead">Perds un disc i les dades es tornen a calcular.</p>
+  <p>El RAID 5, conegut com a <b>stripping amb paritat</b>, combina <b>tres o més</b> discos. A cada fila, els blocs de dades van a tots els discos menys un, i en aquell es guarda un <b>bloc de paritat</b>. El bloc de paritat canvia de disc a cada fila: el de la fila A (Ap) és al disc 3, el de la fila B (Bp) al disc 2, i així successivament.</p>
+  <p>La capacitat útil és la suma de tots els discos <b>menys un</b>. Suporta la fallada d'<b>un</b> disc. Si en fallen dos alhora, la informació és irrecuperable, i com més discos té el conjunt, més probable és.</p>
+  <div class="cols">
+    <div class="fact"><b>Avantatges</b><p>L'esquema de protecció més usat: bon rendiment de lectura amb una pèrdua de capacitat mínima i prou redundància per tolerar errades.</p></div>
+    <div class="fact"><b>Inconvenients</b><p>Escriure és més lent, perquè cada canvi obliga a recalcular la paritat. No resisteix dues fallades simultànies.</p></div>
+  </div>
+  <h3>Com es calcula la paritat <span class="extra">fora de la presentació</span></h3>
+  <p>La paritat es calcula amb l'operació <b>XOR</b> (o exclusiva), bit a bit: el resultat és 1 si hi ha un nombre <b>senar</b> d'uns, i 0 si n'hi ha un nombre parell.</p>
+  <div class="tablewrap"><table style="min-width:0;max-width:420px">
+    <thead><tr><th>Disc 0</th><th>Disc 1</th><th>Disc 2</th><th>Paritat</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">1</td><td class="mono">0</td><td class="mono">1</td><td class="mono"><b>0</b></td></tr>
+      <tr><td class="mono">1</td><td class="mono">1</td><td class="mono">1</td><td class="mono"><b>1</b></td></tr>
+      <tr><td class="mono">0</td><td class="mono">0</td><td class="mono">1</td><td class="mono"><b>1</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>El truc: si perds qualsevol bloc, el XOR de tots els que queden (paritat inclosa) et torna el bloc perdut.</p>
+  <div class="game free" id="lab5"></div>
+  <div class="game" id="g4"></div>
+</section>
+
+<!-- 5 -->
+<section class="mod" id="m5" data-title="RAID 6">
+  <h2>RAID 6: paritat doble</h2>
+  <p class="lead">Com el RAID 5, però aguanta que en fallin dos.</p>
+  <p>El RAID 6, conegut com a <b>stripping amb paritat doble</b>, guarda <b>dos</b> blocs de paritat a cada fila (P i Q), en dos discos diferents. Pot perdre <b>dos discos alhora</b> sense que el sistema deixi de funcionar.</p>
+  <p>Necessita com a mínim <b>4 discos</b> i la capacitat útil és la suma de tots menys <b>dos</b>. Escriure és encara més lent que en un RAID 5, perquè s'han de calcular dues paritats.</p>
+  <div class="note">Per què val la pena? Amb discos grans, la reconstrucció d'un RAID 5 pot durar molt temps. Si durant aquelles hores falla un segon disc, ho perds tot. El RAID 6 et dona marge. <span class="extra">fora de la presentació</span></div>
+  <div class="game free" id="lab6"></div>
+  <div class="game" id="g5"></div>
+</section>
+
+<!-- 6 -->
+<section class="mod" id="m6" data-title="RAID 10">
+  <h2>RAID 10: miralls repartits</h2>
+  <p class="lead">Un RAID 0 fet de parelles en RAID 1.</p>
+  <p>En un RAID 10 totes les dades es guarden per duplicat. Normalment es fan servir <b>4 discos</b>: es combinen per parelles en <b>RAID 1</b> (mirall) i les parelles s'uneixen en un <b>RAID 0</b> (repartiment). Per cada GB de dades se'n gasta un altre per duplicar-les: la capacitat útil és el <b>50 %</b>.</p>
+  <p>És ràpid llegint i escrivint, perquè no calcula paritat, i es reconstrueix ràpid, perquè només copia un disc del seu mirall. Es fa servir en bases de dades i servidors amb molta escriptura.</p>
+  <h3>Quins discos pots perdre? <span class="extra">fora de la presentació</span></h3>
+  <p>Està garantit que sobreviu a la pèrdua d'<b>un</b> disc. Pot sobreviure a la pèrdua de dos si són de <b>parelles diferents</b>. Si es perden els dos discos de la mateixa parella, es perd tot.</p>
+  <div class="game free" id="lab10"></div>
+  <div class="game" id="g6"></div>
+</section>
+
+<!-- 7 -->
+<section class="mod" id="m7" data-title="RAID no és còpia de seguretat">
+  <h2>RAID no és una còpia de seguretat</h2>
+  <p class="lead">Un RAID protegeix contra discos que s'espatllen. Contra res més.</p>
+  <p>Un RAID copia a l'instant tot el que passa als discos, també el que no volies que passés. Si esborres un fitxer, s'esborra a tots els discos. Si un ransomware xifra les dades, el RAID les guarda xifrades amb molta redundància.</p>
+  <div class="cols">
+    <div class="fact"><b>Disponibilitat</b><p>El RAID fa que el servidor <b>continuï funcionant</b> quan un disc s'espatlla.</p></div>
+    <div class="fact"><b>Recuperació</b><p>La còpia de seguretat et permet <b>tornar enrere</b> a un moment anterior. Aquesta és la feina de l'A2 i l'A3.</p></div>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Nivell</th><th>Mín. discos</th><th>Capacitat útil</th><th>Discos que pot perdre</th><th>Ús típic</th></tr></thead>
+    <tbody>
+      <tr><td><b>RAID 0</b></td><td>2</td><td>100 %</td><td>Cap</td><td>Rendiment, dades no crítiques</td></tr>
+      <tr><td><b>RAID 1</b></td><td>2</td><td>50 % (el disc més petit)</td><td>Tots menys un</td><td>Sistemes crítics, disc d'arrencada</td></tr>
+      <tr><td><b>RAID 5</b></td><td>3</td><td>n − 1 discos</td><td>1</td><td>Servidors amb moltes lectures</td></tr>
+      <tr><td><b>RAID 6</b></td><td>4</td><td>n − 2 discos</td><td>2</td><td>Conjunts grans, arxius</td></tr>
+      <tr><td><b>RAID 10</b></td><td>4</td><td>50 %</td><td>1 segur, fins a un per parella</td><td>Bases de dades, molta escriptura</td></tr>
+    </tbody>
+  </table></div>
+  <div class="game" id="g7a"></div>
+  <div class="game" id="g7b"></div>
+</section>
+
+  </main>
+</div>
+<script>
+(function(){
+const STORE_KEY='aea2_raid';
+
+const MODS=[...document.querySelectorAll('section.mod')];
+const TOTAL=MODS.length;
+let store={};
+try{store=JSON.parse(localStorage.getItem(STORE_KEY)||'{}')||{};}catch(e){store={};}
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(store));}catch(e){}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}kids.flat().forEach(c=>c!=null&&e.append(c));return e;};
+const fmt=(n,d=1)=>{const r=Math.round(n*Math.pow(10,d))/Math.pow(10,d);return r.toLocaleString('ca-ES',{maximumFractionDigits:d});};
+
+/* ---------- navigation & progress ---------- */
+const nav=document.getElementById('navList');
+function show(i){
+  MODS.forEach((m,k)=>m.classList.toggle('active',k===i));
+  [...nav.querySelectorAll('button')].forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'));
+  try{history.replaceState(null,'','#'+MODS[i].id);}catch(e){}
+}
+MODS.forEach((m,i)=>{
+  nav.append(h('li',{},h('button',{type:'button',onclick:()=>{show(i);window.scrollTo({top:0});}},
+    h('span',{class:'n'},String(i+1)),h('span',{},m.dataset.title),h('span',{class:'done','data-done':m.id}))));
+  const pager=h('div',{class:'pager'});
+  pager.append(i>0?h('button',{class:'btn ghost',type:'button',onclick:()=>{show(i-1);window.scrollTo({top:0});}},'Apartat anterior'):h('span'));
+  if(i<MODS.length-1)pager.append(h('button',{class:'btn',type:'button',onclick:()=>{show(i+1);window.scrollTo({top:0});}},'Següent apartat'));
+  m.append(pager);
+});
+const MODGAMES={};
+MODS.forEach(m=>{MODGAMES[m.id]=[...m.querySelectorAll('.game:not(.free)')].map(g=>g.id);});
+function refresh(){
+  let n=0,pts=0;
+  Object.values(MODGAMES).flat().forEach(k=>{if(store[k])pts+=store[k].s;});
+  for(const[m,gs]of Object.entries(MODGAMES)){
+    const d=gs.every(g=>store[g]);if(d)n++;
+    const el=nav.querySelector(`[data-done="${m}"]`);el.textContent=d?'✓':'';el.setAttribute('aria-label',d?'completat':'');
+  }
+  document.getElementById('meterFill').style.width=(n/TOTAL*100)+'%';
+  document.querySelector('.meter').setAttribute('aria-valuenow',n);
+  document.getElementById('scoreTxt').textContent=`${n} de ${TOTAL} apartats · ${pts} punts`;
+}
+function finish(id,s,t){if(!store[id]||s>=store[id].s)store[id]={s,t};save();refresh();}
+document.getElementById('resetAll').onclick=()=>{store={};save();refresh();};
+
+function shell(id,title){
+  const g=document.getElementById(id);g.innerHTML='';
+  const sc=h('span',{class:'gs'});
+  g.append(h('div',{class:'gh'},h('h3',{},title),sc));
+  const body=h('div',{class:'gb'});g.append(body);
+  return {body,sc};
+}
+
+/* ---------- sorting game ---------- */
+function sortGame(id,title,hint,buckets,items){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(items),sel=null,score=0;
+  const pl=h('div',{class:'pool','aria-label':'Targetes per classificar'});
+  const bk=h('div',{class:'buckets'});
+  const fb=h('div',{class:'fb','aria-live':'polite'});
+  const upd=()=>sc.textContent=`${score} / ${items.length}`;
+  const bEls={};
+  buckets.forEach(b=>{
+    const el=h('button',{class:'bucket',type:'button',onclick:()=>place(b.id)},h('strong',{},b.label));
+    if(b.sub)el.append(h('span',{class:'hint',style:'margin:0'},b.sub));
+    bEls[b.id]=el;bk.append(el);
+  });
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach((it,i)=>pl.append(h('button',{class:'chip',type:'button','aria-pressed':sel===i?'true':'false',onclick:()=>{sel=sel===i?null:i;drawPool();}},it.t)));
+    Object.values(bEls).forEach(e=>e.classList.toggle('armed',sel!==null));
+  }
+  function place(bid){
+    if(sel===null){fb.className='fb mid';fb.textContent='Primer tria una targeta de dalt.';return;}
+    const it=pool[sel];const ok=it.b===bid;
+    if(ok)score++;
+    bEls[bid].append(h('span',{class:'placed '+(ok?'ok':'bad')},it.t));
+    if(!ok)bEls[it.b].append(h('span',{class:'placed ok'},it.t));
+    fb.className='fb '+(ok?'ok':'bad');
+    fb.innerHTML=(ok?'<b>Correcte.</b> ':'<b>No.</b> Va a «'+buckets.find(b=>b.id===it.b).label+'». ')+(it.why||'');
+    pool.splice(sel,1);sel=null;drawPool();upd();
+    if(!pool.length){
+      finish(id,score,items.length);
+      body.append(h('div',{class:'row'},h('span',{},`Has encertat ${score} de ${items.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>sortGame(id,title,hint,buckets,items)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,bk,fb);drawPool();upd();
+}
+
+/* ---------- multiple-choice rounds ---------- */
+function choiceGame(id,title,rounds){
+  const {body,sc}=shell(id,title);
+  let r=0,score=0;
+  const upd=()=>sc.textContent=`${score} / ${rounds.length}`;
+  function draw(){
+    body.innerHTML='';upd();
+    if(r>=rounds.length){
+      finish(id,score,rounds.length);
+      body.append(h('p',{},`Has encertat ${score} de ${rounds.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{r=0;score=0;draw();}},'Torna-hi'));return;
+    }
+    const R=rounds[r];
+    body.append(h('p',{class:'hint'},`Pregunta ${r+1} de ${rounds.length}`),h('p',{class:'q'},R.q));
+    if(R.ctx)body.append(h('p',{},R.ctx));
+    const box=h('div',{class:'opts'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    const btns=R.o.map(o=>{
+      const b=h('button',{class:'opt',type:'button',html:o.t});
+      b.onclick=()=>{
+        btns.forEach((x,k)=>{x.disabled=true;const oo=R.o[k];if(oo.ok)x.classList.add('ok');x.append(h('small',{},oo.why));});
+        if(!o.ok)b.classList.add('bad');else score++;
+        fb.className='fb '+(o.ok?'ok':'bad');fb.innerHTML=o.ok?'<b>Correcte.</b> Llegeix també per què les altres no.':"<b>No és la millor opció.</b> Mira l'explicació de cada resposta.";
+        upd();body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<rounds.length?'Següent pregunta':'Veure resultat')));
+      };
+      box.append(b);return b;
+    });
+    body.append(box,fb);
+  }
+  draw();
+}
+
+/* ---------- ordering game ---------- */
+function orderGame(id,title,hint,steps){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(steps.map((t,i)=>({t,i}))),next=0,errors=0;
+  const pl=h('div',{class:'pool'});const ol=h('ol',{class:'ordlist'});const fb=h('div',{class:'fb','aria-live':'polite'});
+  const score=()=>Math.max(0,steps.length-errors);
+  const upd=()=>sc.textContent=`${next} / ${steps.length}`;
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach(it=>pl.append(h('button',{class:'chip',type:'button',onclick:()=>choose(it)},it.t)));
+  }
+  function choose(it){
+    if(it.i===next){
+      ol.append(h('li',{},it.t));pool=pool.filter(x=>x!==it);next++;
+      fb.className='fb ok';fb.innerHTML='<b>Correcte.</b>';
+    }else{
+      errors++;fb.className='fb bad';fb.innerHTML=`<b>Encara no.</b> «${it.t}» no és el pas ${next+1}.`;
+    }
+    drawPool();upd();
+    if(next===steps.length){
+      finish(id,score(),steps.length);
+      fb.className='fb ok';fb.innerHTML=`<b>Ordre complet.</b> Errors: ${errors}. Puntuació: ${score()} de ${steps.length}.`;
+      body.append(h('div',{class:'row'},h('button',{class:'btn ghost',type:'button',onclick:()=>orderGame(id,title,hint,steps)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,ol,fb);drawPool();upd();
+}
+
+
+
+/* ================= RAID model ================= */
+const LV={
+  0:{name:'RAID 0',min:2,tol:n=>0,cap:(n,s)=>n*s},
+  1:{name:'RAID 1',min:2,tol:n=>n-1,cap:(n,s)=>s},
+  5:{name:'RAID 5',min:3,tol:n=>1,cap:(n,s)=>(n-1)*s},
+  6:{name:'RAID 6',min:4,tol:n=>2,cap:(n,s)=>(n-2)*s},
+  10:{name:'RAID 10',min:4,tol:n=>1,cap:(n,s)=>n/2*s}
+};
+const LET='ABCDEFGH';
+/* returns array[disk] of block {t,kind} for row r */
+function rowLayout(lv,n,r){
+  const L=LET[r],out=new Array(n);
+  if(lv===0){for(let i=0;i<n;i++)out[i]={t:L+(i+1),k:'d'};}
+  else if(lv===1){for(let i=0;i<n;i++)out[i]={t:L+'1',k:'d'};}
+  else if(lv===5){const p=((n-1-r)%n+n)%n;let c=1;for(let i=0;i<n;i++)out[i]=i===p?{t:L+'p',k:'p'}:{t:L+(c++),k:'d'};}
+  else if(lv===6){const p=((n-2-r)%n+n)%n,q=(p+1)%n;let c=1;for(let i=0;i<n;i++)out[i]=i===p?{t:L+'p',k:'p'}:i===q?{t:L+'q',k:'q'}:{t:L+(c++),k:'d'};}
+  else if(lv===10){for(let i=0;i<n;i++)out[i]={t:L+(Math.floor(i/2)+1),k:'d'};}
+  return out;
+}
+/* can data survive with this set of dead disks? */
+function survives(lv,n,dead){
+  const d=dead.length;
+  if(lv===0)return d===0;
+  if(lv===1)return d<n;
+  if(lv===5)return d<=1;
+  if(lv===6)return d<=2;
+  if(lv===10){for(let i=0;i<n;i+=2){if(dead.includes(i)&&dead.includes(i+1))return false;}return true;}
+}
+const tolText=(lv,n)=>lv===10?'1 segur (fins a '+n/2+' si són de parelles diferents)':String(LV[lv].tol(n));
+
+/* ================= Calculator (m1) ================= */
+(function(){
+  const {body,sc}=shell('calc','Calculadora de capacitat');sc.textContent='Explora';
+  let lv=5,n=4,s=2;
+  const segL=h('div',{class:'seg',role:'group','aria-label':'Nivell RAID'});
+  [0,1,5,6,10].forEach(v=>segL.append(h('button',{type:'button','aria-pressed':String(v===lv),onclick:e=>{lv=v;[...segL.children].forEach(b=>b.setAttribute('aria-pressed','false'));e.currentTarget.setAttribute('aria-pressed','true');draw();}},LV[v].name)));
+  const nIn=h('input',{type:'range',min:'2',max:'8',value:String(n),class:'thr','aria-label':'Nombre de discos'});
+  const nOut=h('output');
+  const sSel=h('select',{class:'sel','aria-label':'Mida de cada disc'});
+  [1,2,4,8,12].forEach(v=>sSel.append(h('option',{value:String(v)},v+' TB')));sSel.value=String(s);
+  const out=h('div',{class:'kv','aria-live':'polite'});const msg=h('div',{class:'fb'});
+  nIn.oninput=()=>{n=+nIn.value;draw();};sSel.onchange=()=>{s=+sSel.value;draw();};
+  function draw(){
+    nOut.textContent=n;out.innerHTML='';msg.className='fb';msg.textContent='';
+    const L=LV[lv];
+    if(n<L.min){msg.className='fb bad';msg.innerHTML=`<b>${L.name} necessita com a mínim ${L.min} discos.</b> Afegeix-ne més amb el control lliscant.`;return;}
+    if(lv===10&&n%2){msg.className='fb bad';msg.innerHTML='<b>RAID 10 necessita un nombre parell de discos</b>, perquè van per parelles en mirall.';return;}
+    const cap=L.cap(n,s),tot=n*s;
+    [['Capacitat total comprada',tot+' TB'],['Capacitat útil',cap+' TB'],['Aprofitament',Math.round(cap/tot*100)+' %'],['Discos que pot perdre',tolText(lv,n)]].forEach(([a,b])=>out.append(h('div',{},h('span',{},a),h('b',{},b))));
+    if(lv===0){msg.className='fb mid';msg.innerHTML=`Aprofites tot l'espai, però si falla qualsevol dels ${n} discos ho perds tot.`;}
+    if(lv===1&&n>2){msg.className='fb mid';msg.innerHTML=`${n} còpies idèntiques: molt segur, però pagues ${n} discos per tenir-ne la capacitat d'un.`;}
+  }
+  body.append(h('p',{class:'hint'},'Tria un nivell, el nombre de discos i la mida de cada disc.'),segL,
+    h('div',{class:'thrlab',style:'margin-top:14px'},h('span',{},'Nombre de discos'),nOut),nIn,
+    h('label',{style:'font-weight:700;display:flex;gap:10px;align-items:center'},'Mida de cada disc',sSel),out,msg);
+  draw();
+})();
+
+choiceGame('g1','Calcula la capacitat útil',[
+  {q:'Tens 4 discos de 2 TB en RAID 5. Quanta capacitat útil tens?',o:[
+    {t:'8 TB',ok:false,why:'Seria el total comprat; el RAID 5 en gasta un disc en paritat.'},
+    {t:'6 TB',ok:true,why:'(4 − 1) × 2 TB = 6 TB.'},
+    {t:'4 TB',ok:false,why:'Això seria un RAID 1 o un RAID 10.'}]},
+  {q:'Dos discos d\'1 TB i un de 500 GB en RAID 1 (mirall de tres). Capacitat útil?',o:[
+    {t:'2,5 TB',ok:false,why:'Al mirall no se sumen: tots guarden el mateix.'},
+    {t:'1 TB',ok:false,why:'El disc de 500 GB no hi cabria.'},
+    {t:'500 GB',ok:true,why:'Un RAID 1 només pot ser tan gran com el més petit dels seus discos.'}]},
+  {q:'6 discos de 4 TB en RAID 6. Capacitat útil?',o:[
+    {t:'20 TB',ok:false,why:'Això seria un RAID 5: el RAID 6 en gasta dos.'},
+    {t:'16 TB',ok:true,why:'(6 − 2) × 4 TB = 16 TB.'},
+    {t:'12 TB',ok:false,why:'Això seria un RAID 10 amb 6 discos.'}]},
+  {q:'Vols 3 discos en RAID 10. Què passa?',o:[
+    {t:'Funciona, amb 1,5 discos útils',ok:false,why:'No es poden fer parelles amb un nombre senar de discos.'},
+    {t:'No es pot: RAID 10 necessita un nombre parell de discos, com a mínim 4',ok:true,why:'Són parelles en mirall unides en RAID 0.'},
+    {t:'Es converteix automàticament en RAID 5',ok:false,why:'Cap controladora canvia el nivell pel seu compte.'}]},
+  {q:'Quin és el sistema operatiu que veu un RAID de 4 discos?',o:[
+    {t:'Quatre discos separats',ok:false,why:'La gràcia del RAID és amagar els discos físics.'},
+    {t:'Un sol volum lògic',ok:true,why:'La controladora (o el programari) presenta un únic disc.'},
+    {t:'Dos discos: un de dades i un de paritat',ok:false,why:'La paritat és interna del RAID.'}]}
+]);
+
+/* ================= Laboratori ================= */
+function raidLab(id,lv,opts={}){
+  const counts=opts.counts||[LV[lv].min];let n=opts.n||counts[0];
+  const {body,sc}=shell(id,'Laboratori: '+LV[lv].name);
+  let rows=0,dead=[],writes=0;
+  const top=h('div',{class:'labtop'});
+  const arr=h('div',{class:'array','aria-label':'Discos del RAID'});
+  const st=h('div',{'aria-live':'polite'});
+  const fb=h('div',{class:'fb','aria-live':'polite'});
+  const kv=h('div',{class:'kv'});
+  const bWrite=h('button',{class:'btn',type:'button',onclick:()=>{if(rows<6){rows++;writes++;draw(true);}else{fb.className='fb mid';fb.textContent='Els discos són plens. Reinicia per tornar a començar.';}}},'Escriu un fitxer');
+  const bRebuild=h('button',{class:'btn ghost',type:'button',onclick:rebuild},'Canvia els discos trencats i reconstrueix');
+  const bReset=h('button',{class:'btn ghost',type:'button',onclick:()=>{rows=3;dead=[];fb.className='fb';fb.textContent='';draw();}},'Reinicia');
+  if(counts.length>1){
+    const seg=h('div',{class:'seg',role:'group','aria-label':'Nombre de discos'});
+    counts.forEach(c=>seg.append(h('button',{type:'button','aria-pressed':String(c===n),onclick:e=>{n=c;rows=3;dead=[];[...seg.children].forEach(b=>b.setAttribute('aria-pressed','false'));e.currentTarget.setAttribute('aria-pressed','true');fb.className='fb';fb.textContent='';draw();}},c+' discos')));
+    top.append(h('label',{style:'display:flex;gap:10px;align-items:center;font-weight:700'},'Discos:',seg));
+  }
+  top.append(st);
+  let lostOnce=false;
+  function rebuild(){
+    if(!dead.length){fb.className='fb mid';fb.textContent='No hi ha cap disc trencat.';return;}
+    if(!survives(lv,n,dead)){fb.className='fb bad';fb.innerHTML='<b>No hi ha res a reconstruir.</b> Amb aquests discos trencats les dades ja no es poden recuperar. Caldria restaurar una còpia de seguretat.';return;}
+    const how=lv===5||lv===6?'Les dades dels discos nous s’han <b>recalculat</b> a partir dels blocs que quedaven i de la paritat.':'Les dades dels discos nous s’han <b>copiat</b> del seu mirall.';
+    const was=dead.slice();dead=[];draw(false,was);
+    fb.className='fb ok';fb.innerHTML='<b>Reconstrucció acabada.</b> '+how;
+  }
+  function diskEl(i,newRow,rebuilt){
+    const isDead=dead.includes(i);
+    const blocks=h('div',{class:'blocks'});
+    for(let r=0;r<rows;r++){const b=rowLayout(lv,n,r)[i];blocks.append(h('div',{class:'blk'+(b.k!=='d'?' '+b.k:'')+(newRow&&r===rows-1?' new':'')},b.t));}
+    const d=h('div',{class:'disk'+(isDead?' dead':'')+(rebuilt&&rebuilt.includes(i)?' rebuilt':'')},blocks,h('span',{class:'dname'},'Disc '+i));
+    return h('button',{class:'diskbtn',type:'button','aria-pressed':String(isDead),'aria-label':'Disc '+i+(isDead?', trencat. Clica per ignorar la fallada':', funciona. Clica per trencar-lo'),onclick:()=>toggle(i)},d);
+  }
+  function toggle(i){
+    if(dead.includes(i))dead=dead.filter(x=>x!==i);else dead.push(i);
+    draw();
+    const ok=survives(lv,n,dead);
+    if(!dead.length){fb.className='fb';fb.textContent='';return;}
+    if(ok){
+      fb.className='fb mid';
+      fb.innerHTML=lv===0?'':(lv===5||lv===6)?`<b>Mode degradat.</b> Els blocs del disc trencat es calculen al vol a partir dels altres i de la paritat. Funciona, però més lent. ${LV[lv].tol(n)-dead.length>0?'Encara pots perdre un disc més.':'Si en falla un altre, es perdrà tot.'}`:
+        lv===10?'<b>Mode degradat.</b> Cada bloc encara té almenys una còpia viva a la seva parella.':`<b>Mode degradat.</b> Encara queda${n-dead.length>1?'n':''} ${n-dead.length} còpia${n-dead.length>1?'es':''} de totes les dades.`;
+    }else{
+      lostOnce=true;fb.className='fb bad';
+      fb.innerHTML=lv===0?'<b>Dades perdudes.</b> Cada fitxer tenia trossos en aquest disc. Sense aquests trossos, cap fitxer es pot llegir.':
+        lv===10?'<b>Dades perdudes.</b> Has trencat els dos discos d’una mateixa parella: hi ha blocs que ja no tenen cap còpia.':
+        lv===1?'<b>Dades perdudes.</b> Han fallat tots els miralls.':
+        `<b>Dades perdudes.</b> ${LV[lv].name} només aguanta ${LV[lv].tol(n)} disc${LV[lv].tol(n)>1?'s':''} trencat${LV[lv].tol(n)>1?'s':''}: amb ${dead.length}, falten massa blocs per poder-los recalcular.`;
+    }
+  }
+  function draw(newRow,rebuilt){
+    arr.innerHTML='';
+    if(lv===10){for(let p=0;p<n;p+=2)arr.append(h('div',{class:'pair'},h('span',{class:'plabel'},'Mirall '+(p/2+1)),diskEl(p,newRow,rebuilt),diskEl(p+1,newRow,rebuilt)));}
+    else for(let i=0;i<n;i++)arr.append(diskEl(i,newRow,rebuilt));
+    const ok=survives(lv,n,dead);
+    st.innerHTML='';st.append(h('span',{class:'status '+(!dead.length?'ok':ok?'mid':'bad')},!dead.length?'Correcte':ok?'Degradat':'Dades perdudes'));
+    kv.innerHTML='';
+    [['Discos',String(n)],['Capacitat útil',LV[lv].cap(n,1)+' de '+n+' discos'],['Discos que pot perdre',tolText(lv,n)],['Trencats ara',String(dead.length)]].forEach(([a,b])=>kv.append(h('div',{},h('span',{},a),h('b',{},b))));
+  }
+  const leg=h('div',{class:'legend2'},h('span',{},h('i',{style:'background:var(--surface)'}),'dades'));
+  if(lv===5||lv===6)leg.append(h('span',{},h('i',{style:'background:var(--mid-bg);border-color:var(--yellow)'}),'paritat P'));
+  if(lv===6)leg.append(h('span',{},h('i',{class:'',style:'background:#E7D9F5;border-color:#8E6BB8'}),'paritat Q'));
+  body.append(h('p',{class:'hint'},opts.hint||'Escriu uns quants fitxers. Després clica un disc per trencar-lo i mira què passa amb les dades.'),top,arr,leg,kv,
+    h('div',{class:'row'},bWrite,bRebuild,bReset),fb);
+  rows=3;draw();
+}
+raidLab('lab0',0,{counts:[2,3,4],hint:'Escriu fitxers i mira com es reparteixen els blocs. Després trenca un disc, només un.'});
+raidLab('lab1',1,{counts:[2,3],hint:'Trenca un disc i fes servir «Reconstrueix». Prova també de trencar-los tots.'});
+raidLab('lab5',5,{counts:[3,4,5],hint:'Fixa’t que el bloc de paritat canvia de disc a cada fila. Trenca un disc, després dos.'});
+raidLab('lab6',6,{counts:[4,5,6],hint:'Trenca dos discos qualssevol. Després prova amb tres.'});
+raidLab('lab10',10,{counts:[4,6],hint:'Trenca un disc de cada mirall. Després torna a començar i trenca els dos discos del mateix mirall.'});
+
+choiceGame('g2','RAID 0 a prova',[
+  {q:'Un RAID 0 de 3 discos. Falla el disc 2. Quins fitxers pots recuperar?',o:[
+    {t:'Els que eren als discos 0 i 1',ok:false,why:'No hi ha fitxers sencers en cap disc: cada fitxer està repartit entre tots.'},
+    {t:'Cap',ok:true,why:'Tots els fitxers tenien algun bloc al disc 2.'},
+    {t:'Tots: el RAID els reconstrueix',ok:false,why:'El RAID 0 no té ni mirall ni paritat per reconstruir res.'}]},
+  {q:'Què aporta el RAID 0?',o:[
+    {t:'Velocitat i aprofitament de tot l\'espai',ok:true,why:'Llegeix i escriu de diversos discos alhora i no reserva espai per a redundància.'},
+    {t:'Tolerància a fallades',ok:false,why:'Al contrari: com més discos, més probable que en falli un.'},
+    {t:'Una còpia de seguretat automàtica',ok:false,why:'No hi ha cap còpia de res.'}]},
+  {q:'On faries servir un RAID 0?',o:[
+    {t:'Al servidor de la comptabilitat de l\'empresa',ok:false,why:'Són dades crítiques: si falla un disc, adéu.'},
+    {t:'En un disc temporal per editar vídeo, amb els originals guardats en un altre lloc',ok:true,why:'Necessites velocitat i, si es perd, només cal tornar-ho a copiar.'},
+    {t:'Al disc on guardes les còpies de seguretat',ok:false,why:'Les còpies han de ser el lloc més segur, no el més fràgil.'}]}
+]);
+
+choiceGame('g3','RAID 1 a prova',[
+  {q:'En un RAID 1 de dos discos falla el disc 0. Què passa?',o:[
+    {t:'El servidor s\'atura fins que canvies el disc',ok:false,why:'El disc 1 té totes les dades i el sistema continua funcionant.'},
+    {t:'Continua funcionant en mode degradat amb el disc 1',ok:true,why:'Després canvies el disc i el RAID copia les dades al nou.'},
+    {t:'Es perden la meitat dels fitxers',ok:false,why:'Al mirall cada disc té tots els fitxers.'}]},
+  {q:'Per què les escriptures no són més ràpides en RAID 1?',o:[
+    {t:'Perquè s\'ha d\'escriure tot a tots els discos',ok:true,why:'Cada dada s\'escriu dues vegades (o més).'},
+    {t:'Perquè calcula paritat',ok:false,why:'El RAID 1 no fa servir paritat.'},
+    {t:'Sí que són el doble de ràpides',ok:false,why:'Les que poden anar més ràpid són les lectures.'}]},
+  {q:'Mentre un RAID 1 es reconstrueix, quin és el risc?',o:[
+    {t:'Cap: ja està protegit',ok:false,why:'Durant la reconstrucció només hi ha una còpia bona.'},
+    {t:'Que falli el disc que queda abans d\'acabar de copiar',ok:true,why:'Per això els servidors porten un disc de reserva i es vigila l\'estat dels discos.'},
+    {t:'Que es dupliquin els fitxers',ok:false,why:'La reconstrucció només copia el contingut del mirall.'}]}
+]);
+
+/* ================= XOR puzzle (m4) ================= */
+function xorGame(id,title){
+  const {body,sc}=shell(id,title);
+  const ROUNDS=2;let round=0,score=0;
+  const upd=()=>sc.textContent=`${score} / ${ROUNDS*2}`;
+  const rnd=()=>Array.from({length:4},()=>Math.random()<.5?1:0);
+  function play(){
+    body.innerHTML='';upd();
+    if(round>=ROUNDS){
+      finish(id,score,ROUNDS*2);
+      body.append(h('p',{},`Has encertat ${score} de ${ROUNDS*2} passos a la primera.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{round=0;score=0;play();}},'Torna-hi'));return;
+    }
+    const D=[rnd(),rnd(),rnd()];const P=[0,1,2,3].map(k=>D[0][k]^D[1][k]^D[2][k]);
+    let user=[0,0,0,0],step=1,first=true,lost=Math.floor(Math.random()*3),rec=[0,0,0,0];
+    const grid=h('div',{class:'xor'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    const instr=h('p',{class:'q'});const btn=h('button',{class:'btn',type:'button'},'Comprova');
+    const btnRow=h('div',{class:'row'},btn);
+    function bitBtn(arr,k,lab){return h('button',{class:'bit',type:'button','aria-label':lab+', bit '+(k+1)+': '+arr[k],onclick:()=>{arr[k]^=1;drawGrid();}},String(arr[k]));}
+    function drawGrid(){
+      grid.innerHTML='';
+      for(let d=0;d<3;d++){
+        const row=h('div',{class:'xrow'},h('span',{class:'lab'},'Disc '+d));
+        for(let k=0;k<4;k++){
+          if(step===2&&d===lost)row.append(bitBtn(rec,k,'Disc '+d+' reconstruït'));
+          else row.append(h('span',{class:'bit'},String(D[d][k])));
+        }
+        grid.append(row);
+      }
+      const pr=h('div',{class:'xrow par'},h('span',{class:'lab'},'Paritat (disc 3)'));
+      for(let k=0;k<4;k++)pr.append(step===1?bitBtn(user,k,'Paritat'):h('span',{class:'bit'},String(P[k])));
+      grid.append(pr);
+    }
+    function setStep(){
+      first=true;
+      instr.textContent=step===1?`Ronda ${round+1}. Calcula la paritat: clica els bits de la fila de paritat fins que cada columna tingui un nombre parell d’uns.`:
+        `El disc ${lost} s’ha espatllat. Reconstrueix els seus bits a partir dels altres dos discos i de la paritat.`;
+      drawGrid();
+    }
+    btn.onclick=()=>{
+      if(step===1){
+        const ok=user.every((v,k)=>v===P[k]);
+        if(ok){if(first)score++;upd();fb.className='fb ok';fb.innerHTML=`<b>Paritat correcta.</b> Ara simulem una fallada.`;step=2;setStep();}
+        else{first=false;fb.className='fb bad';fb.innerHTML='<b>Encara no.</b> Revisa les columnes on el nombre d’uns (comptant la paritat) és senar.';}
+      }else{
+        const ok=rec.every((v,k)=>v===D[lost][k]);
+        if(ok){if(first)score++;upd();fb.className='fb ok';fb.innerHTML=`<b>Dades recuperades.</b> El disc ${lost} era <span class="mono">${D[lost].join('')}</span>. Això és el que fa la controladora quan reconstrueix un RAID 5.`;
+          btnRow.innerHTML='';btnRow.append(h('button',{class:'btn',type:'button',onclick:()=>{round++;play();}},round+1<ROUNDS?'Següent ronda':'Veure resultat'));}
+        else{first=false;fb.className='fb bad';fb.innerHTML='<b>Encara no.</b> A cada columna, el bit perdut és el XOR dels altres tres valors: si entre ells hi ha un nombre senar d’uns, el perdut és 1.';}
+      }
+    };
+    body.append(h('p',{class:'hint'},'Cada bit és un tros d’un bloc. Fes clic en un bit per canviar-lo entre 0 i 1.'),instr,grid,btnRow,fb);
+    setStep();
+  }
+  play();
+}
+xorGame('g4','Repte: calcula i recupera amb XOR');
+
+choiceGame('g5','RAID 5 o RAID 6?',[
+  {q:'Un RAID 5 de 5 discos perd dos discos alhora. Què passa?',o:[
+    {t:'Funciona en mode degradat',ok:false,why:'El RAID 5 només aguanta un disc perdut.'},
+    {t:'Es perden les dades',ok:true,why:'Falten dos blocs a cada fila i amb una sola paritat només se\'n pot recalcular un.'},
+    {t:'Es converteix en RAID 0',ok:false,why:'No: les dades ja no es poden llegir.'}]},
+  {q:'Amb 5 discos de 4 TB, quanta capacitat perds en paritat amb RAID 5 i amb RAID 6?',o:[
+    {t:'4 TB i 8 TB',ok:true,why:'Un disc de paritat en RAID 5, dos en RAID 6.'},
+    {t:'8 TB i 4 TB',ok:false,why:'És al revés: el RAID 6 guarda més paritat.'},
+    {t:'Cap: la paritat ocupa molt poc',ok:false,why:'La paritat ocupa l\'equivalent a un disc (o dos) sencer.'}]},
+  {q:'Per què un servidor amb 12 discos grans sol anar en RAID 6 i no en RAID 5?',o:[
+    {t:'Perquè el RAID 6 és més ràpid escrivint',ok:false,why:'És més lent: calcula dues paritats.'},
+    {t:'Perquè amb tants discos i reconstruccions llargues, és massa probable que en falli un segon',ok:true,why:'El RAID 6 aguanta aquest segon error.'},
+    {t:'Perquè el RAID 5 no admet més de 4 discos',ok:false,why:'Sí que n\'admet; el problema és el risc.'}]},
+  {q:'On és el bloc de paritat de la fila B en un RAID 5 de 4 discos (com a la presentació)?',o:[
+    {t:'Sempre al disc 3',ok:false,why:'Això seria un RAID 4, amb un disc de paritat fix que es convertiria en coll d\'ampolla.'},
+    {t:'Al disc 2: la paritat va canviant de disc a cada fila',ok:true,why:'Ap al disc 3, Bp al disc 2, Cp al disc 1, Dp al disc 0.'},
+    {t:'A tots els discos alhora',ok:false,why:'Cada fila té un sol bloc de paritat.'}]}
+]);
+
+/* ================= Sobreviu? (m6) ================= */
+function surviveGame(id,title){
+  const {body,sc}=shell(id,title);
+  const SCN=[
+    {lv:10,n:4,d:[0,2]},{lv:10,n:4,d:[2,3]},{lv:5,n:4,d:[1]},{lv:5,n:5,d:[0,3]},
+    {lv:6,n:5,d:[1,4]},{lv:6,n:6,d:[0,2,5]},{lv:1,n:2,d:[1]},{lv:0,n:4,d:[3]},{lv:10,n:6,d:[1,3,4]},{lv:10,n:6,d:[4,5]}
+  ];
+  let list,i,score;
+  const upd=()=>sc.textContent=`${score} / ${SCN.length}`;
+  function start(){list=shuffle(SCN);i=0;score=0;draw();}
+  function draw(){
+    body.innerHTML='';upd();
+    if(i>=list.length){finish(id,score,SCN.length);body.append(h('p',{},`Has encertat ${score} de ${SCN.length}.`),h('button',{class:'btn ghost',type:'button',onclick:start},'Torna-hi'));return;}
+    const S=list[i];const mini=h('div',{class:'mini','aria-label':`Discos trencats: ${S.d.join(', ')}`});
+    const md=k=>h('div',{class:'md'+(S.d.includes(k)?' dead':'')},S.d.includes(k)?'✕':String(k));
+    if(S.lv===10){for(let p=0;p<S.n;p+=2)mini.append(h('div',{class:'grp'},md(p),md(p+1)));}else for(let k=0;k<S.n;k++)mini.append(md(k));
+    const ans=survives(S.lv,S.n,S.d);const fb=h('div',{class:'fb','aria-live':'polite'});
+    const go=v=>{
+      [yes,no].forEach(b=>b.disabled=true);
+      const ok=v===ans;if(ok)score++;upd();
+      fb.className='fb '+(ok?'ok':'bad');
+      fb.innerHTML=(ok?'<b>Correcte.</b> ':'<b>No.</b> ')+(ans?'Les dades sobreviuen. ':'Les dades es perden. ')+
+        (S.lv===10?(ans?'Cap mirall ha perdut els seus dos discos.':'Un mirall ha perdut els seus dos discos.'):`${LV[S.lv].name} aguanta ${LV[S.lv].tol(S.n)} disc${LV[S.lv].tol(S.n)===1?'':'s'} trencat${LV[S.lv].tol(S.n)===1?'':'s'} i n'hi ha ${S.d.length}.`);
+      body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{i++;draw();}},i+1<list.length?'Següent':'Veure resultat')));
+    };
+    const yes=h('button',{class:'btn',type:'button',onclick:()=>go(true)},'Sobreviu');
+    const no=h('button',{class:'btn ghost',type:'button',onclick:()=>go(false)},'Es perden les dades');
+    body.append(h('p',{class:'hint'},`Situació ${i+1} de ${list.length}`),h('p',{class:'q'},`${LV[S.lv].name} amb ${S.n} discos. Han fallat els marcats amb ✕.`),mini,h('div',{class:'row'},yes,no),fb);
+  }
+  start();
+}
+surviveGame('g6','Sobreviu o no?');
+
+/* ================= m7 ================= */
+sortGame('g7a','El RAID et salva?','Classifica cada incident.',
+ [{id:'raid',label:'El RAID ho resol',sub:'Fallada d’un disc'},{id:'bk',label:'Cal una còpia de seguretat',sub:'El RAID no hi pot fer res'}],
+ [
+  {t:'Un disc del RAID 5 deixa de funcionar',b:'raid'},
+  {t:'Un disc del mirall fa sorolls i el canvies',b:'raid'},
+  {t:'Dos discos de parelles diferents d’un RAID 10 s’espatllen',b:'raid',why:'Cada parella encara té un disc viu.'},
+  {t:'Un usuari esborra la carpeta de factures',b:'bk',why:'L’esborrat es replica a tots els discos a l’instant.'},
+  {t:'Un ransomware xifra tots els fitxers',b:'bk',why:'El RAID guarda fidelment els fitxers xifrats.'},
+  {t:'Un incendi crema el servidor sencer',b:'bk',why:'Tots els discos són a la mateixa màquina: cal una còpia fora.'},
+  {t:'Desaves un document a sobre de la versió bona',b:'bk'},
+  {t:'Roben l’ordinador amb el RAID',b:'bk'},
+  {t:'La controladora RAID s’espatlla i corromp el volum',b:'bk',why:'El RAID depèn de la controladora: si aquesta falla malament, el volum pot quedar inservible.'}
+ ]);
+
+choiceGame('g7b','Quin RAID li poses?',[
+  {q:'Un estudi de fotografia vol un disc de treball molt ràpid. Els originals ja estan copiats en un NAS.',o:[
+    {t:'RAID 0',ok:true,why:'Velocitat màxima. Si falla, es torna a copiar del NAS.'},
+    {t:'RAID 6',ok:false,why:'Perd capacitat i és lent escrivint, i aquí no cal protecció.'},
+    {t:'RAID 1',ok:false,why:'Protegeix dades que ja estan protegides i no guanya velocitat d\'escriptura.'}]},
+  {q:'Un petit despatx té un servidor amb 2 discos per al sistema operatiu. No pot estar aturat.',o:[
+    {t:'RAID 0',ok:false,why:'Si falla un disc, el servidor no arrenca.'},
+    {t:'RAID 1',ok:true,why:'El mirall és la solució clàssica per al disc d\'arrencada.'},
+    {t:'RAID 5',ok:false,why:'Necessita com a mínim 3 discos.'}]},
+  {q:'Un servidor de fitxers amb 4 discos. Es llegeix molt i es vol aprofitar bé l\'espai.',o:[
+    {t:'RAID 5',ok:true,why:'Bon rendiment de lectura i només perd un disc de capacitat.'},
+    {t:'RAID 10',ok:false,why:'Funcionaria, però perds la meitat de l\'espai.'},
+    {t:'RAID 0',ok:false,why:'Si falla un disc, es perden els fitxers de tothom.'}]},
+  {q:'La base de dades d\'una botiga en línia: moltes escriptures i ha de ser ràpida i segura.',o:[
+    {t:'RAID 5',ok:false,why:'Cada escriptura obliga a recalcular la paritat: penalitza molt les bases de dades.'},
+    {t:'RAID 10',ok:true,why:'Ràpid escrivint, sense paritat, i amb mirall.'},
+    {t:'RAID 0',ok:false,why:'Ràpid, però una fallada atura la botiga i perd les comandes.'}]},
+  {q:'Un arxiu de vídeo de 10 discos de 16 TB que no es pot perdre.',o:[
+    {t:'RAID 5',ok:false,why:'Amb discos tan grans la reconstrucció dura molt i un segon error ho perdria tot.'},
+    {t:'RAID 6',ok:true,why:'Aguanta dues fallades i només perd dos discos de capacitat.'},
+    {t:'RAID 1 amb els 10 discos',ok:false,why:'Tindries només 16 TB útils de 160 TB.'}]}
+]);
+
+/* ---------- start ---------- */
+refresh();
+const start=Math.max(0,MODS.findIndex(m=>'#'+m.id===location.hash));show(start);
+})();
+</script>
+</body>
+</html>

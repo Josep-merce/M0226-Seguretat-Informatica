@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DAS, NAS, SAN i núvol · AEA2 · M0226</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E6E2; --surface:#F6F7F4; --surface2:#ECEEEA; --ink:#1C2226; --muted:#56616A; --line:#C7CCC6;
+  --yellow:#F2C200; --yellow-ink:#3A2E00; --red:#C8281E; --green:#0E7F49; --blue:#2F5671;
+  --ok-bg:#DDF0E5; --bad-bg:#F8DEDB; --mid-bg:#FBF0C6; --focus:#2F5671;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+    --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+    --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+  --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+  --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variation-settings:"wdth" 100;font-size:17px;line-height:1.55}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+img,svg{max-width:100%}
+
+.hazard{height:10px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 14px,#1C2226 14px 28px)}
+header.top{padding:28px 24px 22px;max-width:1180px;margin:0 auto}
+header.top h1{margin:0;font-weight:800;font-variation-settings:"wdth" 70;font-size:clamp(2.1rem,6vw,3.6rem);line-height:1;letter-spacing:-.01em}
+header.top p{margin:.6rem 0 0;color:var(--muted);max-width:60ch}
+.scorebar{display:flex;gap:16px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.meter{flex:1 1 220px;max-width:360px;height:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--green);width:0;transition:width .4s}
+.scoretxt{font-weight:700;font-variant-numeric:tabular-nums}
+.reset{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:.85rem;color:var(--muted)}
+
+.layout{max-width:1180px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+nav.mods{position:sticky;top:env(safe-area-inset-top,0px);padding-top:8px}
+nav.mods ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+nav.mods button{width:100%;text-align:left;background:none;border:0;border-left:4px solid transparent;padding:9px 12px;border-radius:0 6px 6px 0;display:flex;gap:10px;align-items:baseline}
+nav.mods button:hover{background:var(--surface2)}
+nav.mods button[aria-current="true"]{background:var(--surface);border-left-color:var(--yellow);font-weight:700}
+nav.mods .n{font-variation-settings:"wdth" 70;font-weight:800;color:var(--muted);min-width:1.2em}
+nav.mods .done{margin-left:auto;color:var(--green);font-weight:800}
+
+main{min-width:0}
+section.mod{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px clamp(18px,4vw,40px) 34px}
+section.mod.active{display:block}
+.mod h2{margin:0 0 .2rem;font-weight:800;font-variation-settings:"wdth" 75;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
+.mod .lead{color:var(--muted);margin:0 0 1.4rem;max-width:68ch}
+.mod h3{font-variation-settings:"wdth" 85;font-weight:750;font-size:1.25rem;margin:2rem 0 .6rem}
+.mod p{max-width:70ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:1rem 0}
+.fact{background:var(--surface2);border-radius:8px;padding:14px 16px;border-top:4px solid var(--blue)}
+.fact b{display:block;margin-bottom:4px}
+.fact p{margin:0;font-size:.95rem}
+.note{border-left:4px solid var(--yellow);background:var(--mid-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:1.2rem 0;max-width:72ch}
+.steps{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface2);border-radius:8px;padding:12px 14px 12px 50px;position:relative;font-size:.95rem}
+.steps li::before{content:counter(s);position:absolute;left:12px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-weight:800}
+.tablewrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-variation-settings:"wdth" 85;background:var(--surface2)}
+
+.game{margin-top:2.2rem;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.game>.gh{background:var(--ink);color:var(--surface);padding:12px 18px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.game>.gh h3{margin:0;color:inherit;font-size:1.15rem}
+.game>.gh .gs{font-weight:700;font-variant-numeric:tabular-nums}
+.game>.gb{padding:18px}
+.hint{color:var(--muted);font-size:.92rem;margin:0 0 12px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:44px}
+.chip{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:7px 14px;font-size:.95rem}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--yellow);color:var(--yellow-ink);font-weight:700}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bucket{background:var(--surface2);border:2px dashed var(--line);border-radius:8px;padding:10px;text-align:left;min-height:110px;display:flex;flex-direction:column;gap:6px}
+.bucket.armed{border-color:var(--ink);border-style:solid}
+.bucket>strong{font-variation-settings:"wdth" 85}
+.placed{font-size:.85rem;border-radius:5px;padding:3px 8px}
+.placed.ok{background:var(--ok-bg)} .placed.bad{background:var(--bad-bg);text-decoration:line-through}
+.fb{margin-top:14px;padding:12px 14px;border-radius:8px;min-height:1em}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg)} .fb.bad{background:var(--bad-bg)} .fb.mid{background:var(--mid-bg)}
+.btn{background:var(--ink);color:var(--surface);border:0;border-radius:6px;padding:9px 16px;font-weight:700}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:11px 14px}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.opt.bad{background:var(--bad-bg);border-color:var(--red)}
+.opt.mid{background:var(--mid-bg);border-color:var(--yellow)}
+.opt small{display:block;color:var(--muted);margin-top:4px}
+.q{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.site{display:block}
+.site ul{margin:6px 0 0;padding-left:18px;font-size:.92rem;color:var(--muted);font-weight:400}
+
+.layers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center}
+.layers svg{width:100%;height:auto}
+.layers svg .ly{cursor:pointer}
+.layers svg .ly rect{stroke:var(--ink);stroke-width:2;transition:fill .2s}
+.layers svg .ly:hover rect,.layers svg .ly.sel rect{fill:var(--yellow)}
+.layers svg text{fill:var(--ink);font-family:inherit;font-size:13px;font-weight:700;pointer-events:none}
+.layerinfo{background:var(--surface2);border-radius:8px;padding:16px;min-height:150px}
+.layerinfo h4{margin:0 0 6px;font-size:1.1rem}
+
+.sim{display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:24px}
+.slider label{display:flex;justify-content:space-between;font-weight:700}
+.slider output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.slider input{width:100%;accent-color:var(--blue);margin:8px 0 18px}
+.eq{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;padding:9px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border-left:6px solid var(--green)}
+.eq.bad{border-left-color:var(--red)} .eq b{font-variation-settings:"wdth" 85}
+.eq .st{font-size:.88rem;color:var(--muted);grid-column:1/-1}
+
+.classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0}
+.cls{border-radius:8px;padding:12px;background:var(--surface2);display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center}
+.cls .L{grid-row:span 2;width:44px;height:44px;border-radius:6px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.5rem;font-variation-settings:"wdth" 70}
+.cls span{font-size:.88rem;color:var(--muted)}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.scen{background:var(--surface2);border-radius:8px;padding:14px 16px;font-size:1.05rem}
+.scen .num{color:var(--muted);font-size:.85rem}
+
+.ordlist{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px;counter-reset:o}
+.ordlist li{counter-increment:o;background:var(--ok-bg);padding:9px 12px 9px 44px;border-radius:6px;position:relative}
+.ordlist li::before{content:counter(o);position:absolute;left:12px;font-weight:800}
+
+.audit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
+.plan{width:100%;height:auto;background:var(--surface2);border-radius:8px}
+.plan .wall{fill:none;stroke:var(--ink);stroke-width:3}
+.plan .room{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.plan .rack{fill:var(--muted)}
+.plan .lbl{fill:var(--muted);font-size:12px;font-family:inherit}
+.plan .hs{cursor:pointer}
+.plan .hs circle{fill:var(--yellow);stroke:#1C2226;stroke-width:2}
+.plan .hs text{fill:#1C2226;font-weight:800;font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-family:inherit}
+.plan .hs.ok circle{fill:#4CC98A}.plan .hs.bad circle{fill:#F0675C}
+.plan .hs.sel circle{stroke-width:4}
+.panel{background:var(--surface2);border-radius:8px;padding:16px;min-height:200px}
+.panel h4{margin:0 0 8px}
+
+.pager{display:flex;justify-content:space-between;margin-top:28px;gap:10px}
+.final{background:var(--ink);color:var(--surface);border-radius:8px;padding:16px 18px;margin-top:16px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  nav.mods{position:static;min-width:0}
+  nav.mods ol{flex-direction:row;overflow-x:auto;padding-bottom:6px}
+  nav.mods button{white-space:nowrap;border-left:0;border-bottom:4px solid transparent;border-radius:6px 6px 0 0}
+  nav.mods button[aria-current="true"]{border-bottom-color:var(--yellow)}
+  .layers,.sim,.audit{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.back{display:inline-block;color:var(--muted);font-size:.9rem;text-decoration:none;margin-bottom:10px}
+.back:hover{color:var(--ink);text-decoration:underline}
+.res{margin:1.6rem 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);max-width:72ch}
+.res b{display:block;margin-bottom:6px}
+.res ul{margin:0;padding-left:20px}
+.res li{margin:3px 0}
+.res a{color:var(--blue);font-weight:600}
+.formula{font-variation-settings:"wdth" 80;font-weight:800;font-size:1.15rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;margin:4px 0;font-variant-numeric:tabular-nums}
+.typesel{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.circuit,.wave{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block}
+.wave{margin-top:10px}
+.circuit .blk rect{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.circuit .blk text{fill:var(--ink);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:inherit}
+.circuit .blk.dead rect{fill:var(--surface2);stroke:var(--muted);stroke-dasharray:5 4}
+.circuit .blk.dead text{fill:var(--muted)}
+.circuit .w{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.circuit .w.by{stroke-dasharray:3 7}
+.circuit .w.on{stroke:var(--yellow);stroke-width:6;stroke-dasharray:12 8;animation:flow .7s linear infinite}
+.circuit .lever{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+.circuit .dot{fill:var(--ink)}
+.circuit .tag{fill:var(--muted);font-size:12px;font-family:inherit}
+.circuit .cut{fill:var(--red);font-size:13px;font-weight:800;font-family:inherit;text-anchor:middle}
+@keyframes flow{to{stroke-dashoffset:-20}}
+.wave .sig{fill:none;stroke:var(--blue);stroke-width:3;stroke-linejoin:round}
+.wave .gap{fill:var(--bad-bg)}
+.wave .axis{stroke:var(--line);stroke-width:1}
+.wave .mk{stroke:var(--red);stroke-width:2;stroke-dasharray:4 3}
+.wave text{fill:var(--muted);font-size:12px;font-family:inherit}
+.wave text.hot{fill:var(--red);font-weight:800}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.readout div{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.readout span{display:block;color:var(--muted);font-size:.85rem}
+.readout b{font-variation-settings:"wdth" 80;font-size:1.2rem;line-height:1.2}
+.readout p{margin:2px 0 0;font-size:.93rem}
+.ups{display:grid;grid-template-columns:minmax(0,280px) 1fr;gap:22px;align-items:start}
+.ups svg{width:100%;height:auto;display:block}
+.ups .led{cursor:pointer}
+.ups .led .l{stroke:#0d1012;stroke-width:2}
+.ups .led .ring{fill:none;stroke-width:3}
+.ups .led text{fill:#E7EAE6;font-size:14px;font-family:inherit;font-weight:600;pointer-events:none}
+.ups .led:hover .hit{fill:rgba(255,255,255,.08)}
+.ups .led:focus{outline:none}
+.ups .led:focus-visible .hit{stroke:#8DB6D3;stroke-width:3}
+.field{display:grid;gap:4px;margin:12px 0}
+.field label{font-weight:700}
+.field input,.field select{font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:min(240px,100%)}
+.field.ok input,.field.ok select{border-color:var(--green);background:var(--ok-bg)}
+.field.bad input,.field.bad select{border-color:var(--red);background:var(--bad-bg)}
+.data{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0 4px}
+.data div{background:var(--surface2);border-radius:8px;padding:8px 12px}
+.data span{display:block;font-size:.82rem;color:var(--muted)}
+.data b{font-variation-settings:"wdth" 80;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.sol{margin-top:12px;background:var(--surface2);border-radius:8px;padding:12px 14px;font-variant-numeric:tabular-nums}
+.sol p{margin:.2rem 0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:860px){.ups{grid-template-columns:1fr}.ups svg{max-width:300px}}
+@media (prefers-reduced-motion:reduce){.circuit .w.on{animation:none}}
+/* ---- específic d'aquesta pàgina ---- */
+.extra{display:inline-block;font-size:.78rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:middle}
+.flow{list-style:none;padding:0;margin:1rem 0;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.flow li{background:var(--surface2);border-radius:8px;padding:10px 14px;flex:1 1 140px;font-size:.95rem;position:relative}
+.flow li b{display:block}
+.ordlist li.bad{background:var(--bad-bg)}
+.thr{width:100%;accent-color:var(--blue);margin:6px 0 4px}
+.thrlab{display:flex;justify-content:space-between;align-items:baseline;font-weight:700}
+.thrlab output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.dist{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block;margin-top:10px}
+.dist .gen{fill:none;stroke:var(--green);stroke-width:3}
+.dist .imp{fill:none;stroke:var(--red);stroke-width:3}
+.dist .far{fill:var(--red);opacity:.28}
+.dist .frr{fill:var(--yellow);opacity:.45}
+.dist .axis{stroke:var(--line);stroke-width:1}
+.dist .thl{stroke:var(--ink);stroke-width:2;stroke-dasharray:5 4}
+.dist text{fill:var(--muted);font-size:12px;font-family:inherit}
+.dist text.k{font-weight:800;font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.88rem;color:var(--muted);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+
+/* ---- AEA2: elements comuns ---- */
+.extra{display:inline-block;font-size:.78rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:middle}
+.game.free>.gh{background:var(--blue)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:0;border:2px solid var(--ink);border-radius:8px;overflow:hidden}
+.seg button{background:var(--surface);border:0;border-right:1px solid var(--line);padding:7px 14px;font-weight:700}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.status{display:inline-flex;align-items:center;gap:8px;font-weight:800;padding:6px 12px;border-radius:6px}
+.status.ok{background:var(--ok-bg);color:var(--green)}
+.status.mid{background:var(--mid-bg)}
+.status.bad{background:var(--bad-bg);color:var(--red)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:12px 0}
+.kv div{background:var(--surface2);border-radius:8px;padding:8px 12px}
+.kv span{display:block;font-size:.82rem;color:var(--muted)}
+.kv b{font-variation-settings:"wdth" 80;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.fact p b{display:inline;margin:0}
+.sel{font:inherit;padding:7px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+
+/* ---- topologia ---- */
+.topo{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block}
+.topo .nd rect{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.topo .nd.net rect{fill:var(--surface2);stroke-dasharray:4 3}
+.topo .nd.store rect{fill:var(--mid-bg);stroke:var(--ink);stroke-width:3}
+.topo .nd.hot rect{stroke:var(--yellow);stroke-width:4}
+.topo .nd text{fill:var(--ink);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:inherit}
+.topo .nd text.sub{font-size:10.5px;font-weight:400;fill:var(--muted)}
+.topo .lk{stroke:var(--muted);stroke-width:3}
+.topo .lk.san{stroke:var(--blue);stroke-width:6}
+.topo .lk.direct{stroke:var(--ink);stroke-width:5}
+.topo .lk.wan{stroke:var(--muted);stroke-dasharray:8 6}
+.topo .zone{fill:none;stroke:var(--blue);stroke-width:2;stroke-dasharray:6 5}
+.topo .zl{fill:var(--blue);font-size:11px;font-weight:700;font-family:inherit}
+.topo .pk{fill:var(--yellow);stroke:#1C2226;stroke-width:2}
+.topo .pkl{font-size:11px;font-weight:800;fill:var(--ink);font-family:inherit;text-anchor:middle}
+.props{width:100%}
+.props td:first-child{font-weight:700;width:34%}
+
+/* ---- DAS sim ---- */
+.pcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:10px 0}
+.pc{background:var(--surface2);border-radius:8px;padding:12px;border-left:6px solid var(--green)}
+.pc.off{border-left-color:var(--muted);opacity:.7}
+.pc b{display:block}
+.pc span{font-size:.88rem;color:var(--muted)}
+
+/* ---- bloc vs fitxer ---- */
+.lanes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:10px 0}
+.lane h4{margin:0 0 8px;font-size:1.05rem}
+.lane ol{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.lane li{background:var(--surface2);border-radius:6px;padding:8px 10px;font-size:.92rem;opacity:.35;border-left:4px solid transparent;transition:opacity .25s}
+.lane li.on{opacity:1}
+.lane li.now{border-left-color:var(--yellow);background:var(--mid-bg)}
+.lane .who{display:inline-block;font-size:.75rem;font-weight:800;background:var(--ink);color:var(--surface);border-radius:4px;padding:0 6px;margin-right:6px}
+.lane .wire{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;margin-top:4px;color:var(--blue)}
+@media (max-width:700px){.lanes{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.lane li{transition:none}}
+</style>
+</head>
+<body>
+<div class="hazard" aria-hidden="true"></div>
+<header class="top">
+  <a class="back" href="aea2_a4.html">← Tornar a A4 · Tipus de sistemes d'emmagatzematge</a>
+  <h1>On viuen les dades: DAS, NAS, SAN i núvol</h1>
+  <p>Set apartats per distingir les maneres de connectar l'emmagatzematge a una xarxa i triar la que encaixa amb cada empresa. Pots enviar peticions pels esquemes i veure què viatja pel cable en cada cas. El progrés es guarda en aquest navegador.</p>
+  <p style="font-size:.9rem">Les parts marcades amb <span class="extra">fora de la presentació</span> amplien el que hi ha a la presentació de Gestió de dispositius d'emmagatzematge i a l'article d'Arsys.</p>
+  <div class="scorebar">
+    <div class="meter" role="progressbar" aria-label="Apartats completats" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><span id="meterFill"></span></div>
+    <span class="scoretxt" id="scoreTxt">0 de 7 apartats · 0 punts</span>
+    <button class="reset" id="resetAll" type="button">Reinicia el progrés</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="mods" aria-label="Apartats"><ol id="navList"></ol></nav>
+  <main>
+
+<!-- 1 -->
+<section class="mod" id="m1" data-title="Quatre maneres de connectar">
+  <h2>Quatre maneres de connectar l'emmagatzematge</h2>
+  <p class="lead">La pregunta és on és el disc i com hi arriben les dades.</p>
+  <p>Els sistemes d'emmagatzematge es classifiquen segons com es connecten i quina arquitectura tenen:</p>
+  <div class="cols">
+    <div class="fact"><b>DAS · Direct Attached Storage</b><p>El disc es connecta directament a un equip, sense xarxa pel mig: un disc intern, un USB extern, una cabina SAS.</p></div>
+    <div class="fact"><b>NAS · Network Attached Storage</b><p>Un dispositiu connectat a la xarxa local que comparteix <b>carpetes i fitxers</b> amb molts usuaris.</p></div>
+    <div class="fact"><b>SAN · Storage Area Network</b><p>Una xarxa dedicada d'alt rendiment que dona als servidors <b>blocs</b> de disc, com si fossin discos locals.</p></div>
+    <div class="fact"><b>Núvol</b><p>Emmagatzematge d'un proveïdor extern, accessible per Internet, que creix sota demanda.</p></div>
+  </div>
+  <div class="game free" id="topo"></div>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="https://www.arsys.es/blog/diferencias-nas-san-storage" target="_blank" rel="noopener">Article: SAN vs NAS, 7 diferències fonamentals (Arsys)</a></li>
+    <li><a href="Gestió de dispositius d'emmagatematge.pptx.pdf" target="_blank" rel="noopener">Presentació: Gestió de dispositius d'emmagatzematge (emmagatzematge distribuït, NAS i núvol)</a></li>
+  </ul></div>
+  <div class="game" id="g1"></div>
+</section>
+
+<!-- 2 -->
+<section class="mod" id="m2" data-title="DAS">
+  <h2>DAS: el disc és meu</h2>
+  <p class="lead">Ràpid, senzill i barat. Però només per a un equip.</p>
+  <p>Un DAS es connecta directament a l'equip per SATA, SAS, USB o Thunderbolt. Només el veu l'equip on està connectat: si un altre el vol fer servir, aquest equip l'ha de compartir per la xarxa i ha d'estar encès.</p>
+  <div class="cols">
+    <div class="fact"><b>Avantatges</b><p>Molt baixa latència, configuració immediata i cost baix. És el disc del teu portàtil o el USB de les còpies.</p></div>
+    <div class="fact"><b>Inconvenients</b><p>No es comparteix bé, cada equip té el seu espai (que no es pot repartir) i cada equip s'ha de gestionar i copiar per separat.</p></div>
+  </div>
+  <div class="game free" id="dassim"></div>
+  <div class="game" id="g2"></div>
+</section>
+
+<!-- 3 -->
+<section class="mod" id="m3" data-title="NAS">
+  <h2>NAS: carpetes per a tothom</h2>
+  <p class="lead">Un petit servidor especialitzat només a guardar i compartir fitxers.</p>
+  <p>Un NAS es connecta a la xarxa local (Ethernet, TCP/IP) i proporciona emmagatzematge centralitzat a molts clients. Treballa a nivell de <b>fitxer</b>: el client demana fitxers sencers i el NAS, que té el seu propi sistema de fitxers, els hi serveix.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Protocol</th><th>Entorn habitual</th></tr></thead>
+    <tbody>
+      <tr><td><b>SMB/CIFS</b></td><td>Windows (unitats de xarxa, <code>\\nas\carpeta</code>)</td></tr>
+      <tr><td><b>NFS</b></td><td>Unix i Linux (<code>mount nas:/carpeta /mnt</code>)</td></tr>
+      <tr><td><b>AFP</b></td><td>Apple (avui els Mac fan servir sobretot SMB)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="cols">
+    <div class="fact"><b>Avantatges</b><p>Centralitza les dades, facilita les còpies de seguretat, permet col·laborar i redueix costos als clients. És assequible i fàcil de configurar.</p></div>
+    <div class="fact"><b>Alta disponibilitat</b><p>Sovint porta RAID a dins i es pot configurar en clúster per tenir redundància d'equip i d'ubicació.</p></div>
+    <div class="fact"><b>Límit</b><p>Depèn de la xarxa d'usuaris i d'un sistema de fitxers compartit: amb molta càrrega o moltes dades costa escalar.</p></div>
+  </div>
+  <div class="game" id="g3"></div>
+</section>
+
+<!-- 4 -->
+<section class="mod" id="m4" data-title="SAN">
+  <h2>SAN: una xarxa només per als discos</h2>
+  <p class="lead">Els servidors veuen discos «locals» que en realitat són en una cabina.</p>
+  <p>Una SAN és una <b>xarxa dedicada</b> d'alt rendiment que interconnecta cabines de discos, commutadors i servidors. Treballa a nivell de <b>bloc</b>: presenta als servidors discos sense format (LUN), i és el sistema operatiu del servidor qui els formata i gestiona el sistema de fitxers. Fa servir <b>Fibre Channel</b> o <b>iSCSI</b> sobre Ethernet.</p>
+  <p>El trànsit de la SAN va separat del dels usuaris, cosa que la fa ideal per a bases de dades, virtualització, comerç electrònic amb molt trànsit o edició de vídeo professional.</p>
+  <div class="game free" id="blocks"></div>
+  <div class="game" id="g4"></div>
+</section>
+
+<!-- 5 -->
+<section class="mod" id="m5" data-title="El núvol">
+  <h2>El núvol: el disc d'un altre</h2>
+  <p class="lead">Accessible des de qualsevol lloc, però sempre exposat a Internet.</p>
+  <p>Serveis com Amazon S3, Google Drive o Microsoft Azure ofereixen replicació geogràfica automàtica, alta disponibilitat i escalabilitat sota demanda. Necessiten connexió a Internet i, com que hi guardes dades personals, han de complir el RGPD.</p>
+  <div class="cols">
+    <div class="fact"><b>Núvol</b><p>Accessible des de qualsevol lloc. Escala automàticament. Requereix connexió a Internet i està sempre exposat.</p></div>
+    <div class="fact"><b>Dispositius extraïbles</b><p>Control físic total. Aïllats de la xarxa, protegits del ransomware mentre estan desconnectats. Transport i maneig manual.</p></div>
+  </div>
+  <div class="note">En tots dos casos cal <b>xifrar</b> les dades i controlar estrictament qui hi té accés.</div>
+  <div class="game" id="g5"></div>
+</section>
+
+<!-- 6 -->
+<section class="mod" id="m6" data-title="Discos i suports">
+  <h2>SSD, HDD i suports de còpia</h2>
+  <p class="lead">Dins de cada DAS, NAS o SAN hi ha discos. I no tots serveixen per al mateix.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Característica</th><th>SSD</th><th>HDD</th></tr></thead>
+    <tbody>
+      <tr><td>Tecnologia</td><td>Memòria flash, sense parts mòbils</td><td>Discos magnètics que giren</td></tr>
+      <tr><td>Velocitat de lectura i escriptura</td><td>500 a 3.500 MB/s</td><td>80 a 160 MB/s</td></tr>
+      <tr><td>Temps d'accés</td><td>0,1 ms</td><td>5 a 10 ms</td></tr>
+      <tr><td>Consum</td><td>Baix (2 a 3 W)</td><td>Alt (6 a 15 W)</td></tr>
+      <tr><td>Preu per GB</td><td>Més alt</td><td>Més baix</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Suport de còpia</th><th>Capacitat</th><th>Cost per GB</th><th>Vida útil</th><th>Ús recomanat</th></tr></thead>
+    <tbody>
+      <tr><td><b>Cinta LTO</b></td><td>12+ TB</td><td>Molt baix</td><td>30+ anys</td><td>Arxius històrics, dades poc consultades</td></tr>
+      <tr><td><b>Disc dur extern</b></td><td>2 a 18 TB</td><td>Baix</td><td>3 a 5 anys</td><td>Còpies regulars amb rotació</td></tr>
+      <tr><td><b>SSD extern</b></td><td>0,5 a 4 TB</td><td>Alt</td><td>5 a 10 anys</td><td>Còpies urgents, dades d'ús freqüent</td></tr>
+      <tr><td><b>Disc òptic (Blu-ray)</b></td><td>25 a 128 GB</td><td>Alt</td><td>10 a 100 anys (M-DISC)</td><td>Arxius permanents, documents legals</td></tr>
+      <tr><td><b>Núvol</b></td><td>Il·limitada</td><td>Variable</td><td>Gestionada pel proveïdor</td><td>Còpies automàtiques, còpia externa</td></tr>
+    </tbody>
+  </table></div>
+  <div class="game" id="g6"></div>
+</section>
+
+<!-- 7 -->
+<section class="mod" id="m7" data-title="Repte final">
+  <h2>Repte final: l'encàrrec</h2>
+  <p class="lead">Ets el tècnic. Cinc clients, cinc pressupostos, una decisió per a cadascun.</p>
+  <p>No hi ha una solució millor que les altres: depèn de quants usuaris hi ha, quin rendiment cal, quant es pot gastar i qui ho gestionarà. Moltes empreses grans combinen NAS i SAN, i gairebé totes fan servir el núvol per a alguna cosa.</p>
+  <div class="game" id="g7"></div>
+</section>
+
+  </main>
+</div>
+<script>
+(function(){
+const STORE_KEY='aea2_das_nas_san';
+
+const MODS=[...document.querySelectorAll('section.mod')];
+const TOTAL=MODS.length;
+let store={};
+try{store=JSON.parse(localStorage.getItem(STORE_KEY)||'{}')||{};}catch(e){store={};}
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(store));}catch(e){}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}kids.flat().forEach(c=>c!=null&&e.append(c));return e;};
+const fmt=(n,d=1)=>{const r=Math.round(n*Math.pow(10,d))/Math.pow(10,d);return r.toLocaleString('ca-ES',{maximumFractionDigits:d});};
+
+/* ---------- navigation & progress ---------- */
+const nav=document.getElementById('navList');
+function show(i){
+  MODS.forEach((m,k)=>m.classList.toggle('active',k===i));
+  [...nav.querySelectorAll('button')].forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'));
+  try{history.replaceState(null,'','#'+MODS[i].id);}catch(e){}
+}
+MODS.forEach((m,i)=>{
+  nav.append(h('li',{},h('button',{type:'button',onclick:()=>{show(i);window.scrollTo({top:0});}},
+    h('span',{class:'n'},String(i+1)),h('span',{},m.dataset.title),h('span',{class:'done','data-done':m.id}))));
+  const pager=h('div',{class:'pager'});
+  pager.append(i>0?h('button',{class:'btn ghost',type:'button',onclick:()=>{show(i-1);window.scrollTo({top:0});}},'Apartat anterior'):h('span'));
+  if(i<MODS.length-1)pager.append(h('button',{class:'btn',type:'button',onclick:()=>{show(i+1);window.scrollTo({top:0});}},'Següent apartat'));
+  m.append(pager);
+});
+const MODGAMES={};
+MODS.forEach(m=>{MODGAMES[m.id]=[...m.querySelectorAll('.game:not(.free)')].map(g=>g.id);});
+function refresh(){
+  let n=0,pts=0;
+  Object.values(MODGAMES).flat().forEach(k=>{if(store[k])pts+=store[k].s;});
+  for(const[m,gs]of Object.entries(MODGAMES)){
+    const d=gs.every(g=>store[g]);if(d)n++;
+    const el=nav.querySelector(`[data-done="${m}"]`);el.textContent=d?'✓':'';el.setAttribute('aria-label',d?'completat':'');
+  }
+  document.getElementById('meterFill').style.width=(n/TOTAL*100)+'%';
+  document.querySelector('.meter').setAttribute('aria-valuenow',n);
+  document.getElementById('scoreTxt').textContent=`${n} de ${TOTAL} apartats · ${pts} punts`;
+}
+function finish(id,s,t){if(!store[id]||s>=store[id].s)store[id]={s,t};save();refresh();}
+document.getElementById('resetAll').onclick=()=>{store={};save();refresh();};
+
+function shell(id,title){
+  const g=document.getElementById(id);g.innerHTML='';
+  const sc=h('span',{class:'gs'});
+  g.append(h('div',{class:'gh'},h('h3',{},title),sc));
+  const body=h('div',{class:'gb'});g.append(body);
+  return {body,sc};
+}
+
+/* ---------- sorting game ---------- */
+function sortGame(id,title,hint,buckets,items){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(items),sel=null,score=0;
+  const pl=h('div',{class:'pool','aria-label':'Targetes per classificar'});
+  const bk=h('div',{class:'buckets'});
+  const fb=h('div',{class:'fb','aria-live':'polite'});
+  const upd=()=>sc.textContent=`${score} / ${items.length}`;
+  const bEls={};
+  buckets.forEach(b=>{
+    const el=h('button',{class:'bucket',type:'button',onclick:()=>place(b.id)},h('strong',{},b.label));
+    if(b.sub)el.append(h('span',{class:'hint',style:'margin:0'},b.sub));
+    bEls[b.id]=el;bk.append(el);
+  });
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach((it,i)=>pl.append(h('button',{class:'chip',type:'button','aria-pressed':sel===i?'true':'false',onclick:()=>{sel=sel===i?null:i;drawPool();}},it.t)));
+    Object.values(bEls).forEach(e=>e.classList.toggle('armed',sel!==null));
+  }
+  function place(bid){
+    if(sel===null){fb.className='fb mid';fb.textContent='Primer tria una targeta de dalt.';return;}
+    const it=pool[sel];const ok=it.b===bid;
+    if(ok)score++;
+    bEls[bid].append(h('span',{class:'placed '+(ok?'ok':'bad')},it.t));
+    if(!ok)bEls[it.b].append(h('span',{class:'placed ok'},it.t));
+    fb.className='fb '+(ok?'ok':'bad');
+    fb.innerHTML=(ok?'<b>Correcte.</b> ':'<b>No.</b> Va a «'+buckets.find(b=>b.id===it.b).label+'». ')+(it.why||'');
+    pool.splice(sel,1);sel=null;drawPool();upd();
+    if(!pool.length){
+      finish(id,score,items.length);
+      body.append(h('div',{class:'row'},h('span',{},`Has encertat ${score} de ${items.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>sortGame(id,title,hint,buckets,items)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,bk,fb);drawPool();upd();
+}
+
+/* ---------- multiple-choice rounds ---------- */
+function choiceGame(id,title,rounds){
+  const {body,sc}=shell(id,title);
+  let r=0,score=0;
+  const upd=()=>sc.textContent=`${score} / ${rounds.length}`;
+  function draw(){
+    body.innerHTML='';upd();
+    if(r>=rounds.length){
+      finish(id,score,rounds.length);
+      body.append(h('p',{},`Has encertat ${score} de ${rounds.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{r=0;score=0;draw();}},'Torna-hi'));return;
+    }
+    const R=rounds[r];
+    body.append(h('p',{class:'hint'},`Pregunta ${r+1} de ${rounds.length}`),h('p',{class:'q'},R.q));
+    if(R.ctx)body.append(h('p',{},R.ctx));
+    const box=h('div',{class:'opts'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    const btns=R.o.map(o=>{
+      const b=h('button',{class:'opt',type:'button',html:o.t});
+      b.onclick=()=>{
+        btns.forEach((x,k)=>{x.disabled=true;const oo=R.o[k];if(oo.ok)x.classList.add('ok');x.append(h('small',{},oo.why));});
+        if(!o.ok)b.classList.add('bad');else score++;
+        fb.className='fb '+(o.ok?'ok':'bad');fb.innerHTML=o.ok?'<b>Correcte.</b> Llegeix també per què les altres no.':"<b>No és la millor opció.</b> Mira l'explicació de cada resposta.";
+        upd();body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<rounds.length?'Següent pregunta':'Veure resultat')));
+      };
+      box.append(b);return b;
+    });
+    body.append(box,fb);
+  }
+  draw();
+}
+
+/* ---------- ordering game ---------- */
+function orderGame(id,title,hint,steps){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(steps.map((t,i)=>({t,i}))),next=0,errors=0;
+  const pl=h('div',{class:'pool'});const ol=h('ol',{class:'ordlist'});const fb=h('div',{class:'fb','aria-live':'polite'});
+  const score=()=>Math.max(0,steps.length-errors);
+  const upd=()=>sc.textContent=`${next} / ${steps.length}`;
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach(it=>pl.append(h('button',{class:'chip',type:'button',onclick:()=>choose(it)},it.t)));
+  }
+  function choose(it){
+    if(it.i===next){
+      ol.append(h('li',{},it.t));pool=pool.filter(x=>x!==it);next++;
+      fb.className='fb ok';fb.innerHTML='<b>Correcte.</b>';
+    }else{
+      errors++;fb.className='fb bad';fb.innerHTML=`<b>Encara no.</b> «${it.t}» no és el pas ${next+1}.`;
+    }
+    drawPool();upd();
+    if(next===steps.length){
+      finish(id,score(),steps.length);
+      fb.className='fb ok';fb.innerHTML=`<b>Ordre complet.</b> Errors: ${errors}. Puntuació: ${score()} de ${steps.length}.`;
+      body.append(h('div',{class:'row'},h('button',{class:'btn ghost',type:'button',onclick:()=>orderGame(id,title,hint,steps)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,ol,fb);drawPool();upd();
+}
+
+
+
+/* ================= m1: esquemes ================= */
+(function(){
+  const {body,sc}=shell('topo','Explora: on és el disc?');sc.textContent='Explora';
+  const W=100,HH=46;
+  const C=[{id:'c1',x:20,y:30,l:'PC Laia'},{id:'c2',x:20,y:127,l:'PC Pau'},{id:'c3',x:20,y:224,l:'PC Marc'}];
+  const T={
+    das:{name:'DAS',nodes:C.concat([{id:'sw',x:180,y:127,l:'Switch LAN',k:'net'},{id:'srv',x:340,y:127,l:'Servidor'},{id:'dk',x:520,y:127,l:'Discos',s:'SAS · USB',k:'store'}]),
+      links:[['c1','sw'],['c2','sw'],['c3','sw'],['sw','srv'],['srv','dk','direct']],path:['c1','sw','srv','dk'],tags:['petició','fitxer','blocs'],
+      msg:'La Laia demana el fitxer al <b>servidor</b> per la xarxa. Només el servidor parla amb els discos, per un cable directe: hi llegeix <b>blocs</b>. Si el servidor s’atura, ningú no hi pot accedir.'},
+    nas:{name:'NAS',nodes:C.concat([{id:'sw',x:180,y:127,l:'Switch LAN',k:'net'},{id:'srv',x:360,y:30,l:'Servidor'},{id:'nas',x:360,y:220,l:'NAS',s:'RAID a dins',k:'store'}]),
+      links:[['c1','sw'],['c2','sw'],['c3','sw'],['sw','srv'],['sw','nas']],path:['c1','sw','nas'],tags:['SMB','\\\\nas\\docs\\informe.pdf'],
+      msg:'Pel cable viatja una petició de <b>fitxer</b> per SMB: <code>\\\\nas\\docs\\informe.pdf</code>. El NAS té el seu propi sistema de fitxers, busca on és el fitxer i el retorna sencer. Qualsevol PC de la xarxa hi pot accedir.'},
+    san:{name:'SAN',nodes:C.concat([{id:'sw',x:150,y:127,l:'Switch LAN',k:'net'},{id:'s1',x:290,y:60,l:'Servidor BD'},{id:'s2',x:290,y:194,l:'Servidor VM'},{id:'fc',x:430,y:127,l:'Switch SAN',s:'FC · iSCSI',k:'net'},{id:'arr',x:560,y:127,l:'Cabina',s:'LUN 1, 2, 3…',k:'store'}]),
+      links:[['c1','sw'],['c2','sw'],['c3','sw'],['sw','s1'],['sw','s2'],['s1','fc','san'],['s2','fc','san'],['fc','arr','san']],path:['c1','sw','s1','fc','arr'],tags:['consulta','','blocs 2048-2063','LUN 3'],zone:[410,20,260,260,'Xarxa SAN dedicada'],
+      msg:'La Laia parla amb el servidor de bases de dades per la xarxa d’usuaris. El servidor, per una <b>xarxa separada</b>, demana a la cabina <code>llegeix blocs 2048-2063 del LUN 3</code>. El sistema de fitxers és al <b>servidor</b>: la cabina només sap de blocs.'},
+    cloud:{name:'Núvol',nodes:C.concat([{id:'sw',x:170,y:127,l:'Switch LAN',k:'net'},{id:'rt',x:310,y:127,l:'Router'},{id:'net',x:440,y:127,l:'Internet',k:'net'},{id:'dc',x:560,y:127,l:'Proveïdor',s:'centre de dades',k:'store'}]),
+      links:[['c1','sw'],['c2','sw'],['c3','sw'],['sw','rt'],['rt','net','wan'],['net','dc','wan']],path:['c1','sw','rt','net','dc'],tags:['','','HTTPS','GET /docs/informe.pdf'],
+      msg:'La petició surt de l’oficina per <b>Internet</b>, xifrada amb HTTPS: <code>GET /docs/informe.pdf</code>. El proveïdor la guarda replicada en diversos centres de dades. Sense connexió, no hi ha dades.'}
+  };
+  const P={
+    das:[['Connexió','Directa a l’equip: SATA, SAS, USB, Thunderbolt'],['Què es demana','Blocs'],['Qui gestiona el sistema de fitxers','L’equip on està connectat'],['Compartit','Només si aquell equip el comparteix i està encès'],['Cost i complexitat','Baix i senzill'],['Ús típic','Disc d’un PC o d’un servidor petit, USB de còpies']],
+    nas:[['Connexió','Xarxa local Ethernet (TCP/IP)'],['Què es demana','Fitxers'],['Qui gestiona el sistema de fitxers','El NAS'],['Compartit','Sí, amb molts usuaris alhora'],['Cost i complexitat','Assequible i fàcil de configurar'],['Ús típic','Pimes, carpetes compartides, còpies dels PCs']],
+    san:[['Connexió','Xarxa dedicada: Fibre Channel o iSCSI sobre Ethernet'],['Què es demana','Blocs (LUN)'],['Qui gestiona el sistema de fitxers','El servidor que fa servir el LUN'],['Compartit','Entre servidors, separat del trànsit d’usuaris'],['Cost i complexitat','Alt; cal personal especialitzat'],['Ús típic','Bases de dades, virtualització, vídeo professional']],
+    cloud:[['Connexió','Internet'],['Què es demana','Fitxers o objectes, per HTTPS i API'],['Qui gestiona el sistema de fitxers','El proveïdor'],['Compartit','Sí, des de qualsevol lloc'],['Cost i complexitat','Pagament per ús, sense comprar maquinari'],['Ús típic','Còpia externa, col·laboració, créixer ràpid']]
+  };
+  let cur='nas',anim=null;
+  const seg=h('div',{class:'seg',role:'group','aria-label':'Tipus d’emmagatzematge'});
+  Object.keys(T).forEach(k=>seg.append(h('button',{type:'button','aria-pressed':String(k===cur),onclick:e=>{cur=k;[...seg.children].forEach(b=>b.setAttribute('aria-pressed','false'));e.currentTarget.setAttribute('aria-pressed','true');draw();}},T[k].name)));
+  const svgBox=h('div');const msg=h('div',{class:'fb','aria-live':'polite'});const props=h('div',{class:'tablewrap'});
+  const send=h('button',{class:'btn',type:'button',onclick:()=>go()},'Envia una petició');
+  const ctr=(n)=>[n.x+W/2,n.y+HH/2];
+  function draw(){
+    if(anim){cancelAnimationFrame(anim);anim=null;}
+    const t=T[cur];const N={};t.nodes.forEach(n=>N[n.id]=n);
+    let s='';
+    if(t.zone){const [x,y,w,hh,l]=t.zone;s+=`<rect class="zone" x="${x}" y="${y}" width="${w}" height="${hh}" rx="12"/><text class="zl" x="${x+10}" y="${y+16}">${l}</text>`;}
+    t.links.forEach(([a,b,c])=>{const [x1,y1]=ctr(N[a]),[x2,y2]=ctr(N[b]);s+=`<line class="lk ${c||''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;});
+    t.nodes.forEach(n=>{s+=`<g class="nd ${n.k||''}" id="nd_${n.id}"><rect x="${n.x}" y="${n.y}" width="${W}" height="${HH}" rx="8"/><text x="${n.x+W/2}" y="${n.y+(n.s?17:HH/2)}">${n.l}</text>${n.s?`<text class="sub" x="${n.x+W/2}" y="${n.y+33}">${n.s}</text>`:''}</g>`;});
+    s+=`<circle class="pk" id="pk" r="9" cx="-20" cy="-20"/><text class="pkl" id="pkl" x="-100" y="-100"></text>`;
+    svgBox.innerHTML=`<svg class="topo" viewBox="0 0 680 290" role="img" aria-label="Esquema de connexió ${t.name}">${s}</svg>`;
+    msg.className='fb';msg.innerHTML='';
+    const tb=h('table',{class:'props'});const tbody=h('tbody');P[cur].forEach(([a,b])=>tbody.append(h('tr',{},h('td',{},a),h('td',{},b))));tb.append(tbody);
+    props.innerHTML='';props.append(tb);
+  }
+  function go(){
+    const t=T[cur];const N={};t.nodes.forEach(n=>N[n.id]=n);
+    const pts=t.path.map(id=>ctr(N[id]));const pk=svgBox.querySelector('#pk'),pl=svgBox.querySelector('#pkl');
+    svgBox.querySelectorAll('.nd').forEach(n=>n.classList.remove('hot'));
+    const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const end=()=>{pk.setAttribute('cx',-20);pk.setAttribute('cy',-20);pl.textContent='';svgBox.querySelector('#nd_'+t.path[t.path.length-1]).classList.add('hot');msg.className='fb mid';msg.innerHTML=t.msg;};
+    if(reduce){end();return;}
+    if(anim)cancelAnimationFrame(anim);
+    let seg_=0,t0=null;const dur=700;
+    const step=ts=>{
+      if(t0===null)t0=ts;const k=Math.min(1,(ts-t0)/dur);
+      const [x1,y1]=pts[seg_],[x2,y2]=pts[seg_+1];const x=x1+(x2-x1)*k,y=y1+(y2-y1)*k;
+      pk.setAttribute('cx',x);pk.setAttribute('cy',y);pl.setAttribute('x',x);pl.setAttribute('y',y-15);pl.textContent=t.tags[seg_]||'';
+      if(k>=1){seg_++;t0=null;if(seg_>=pts.length-1){anim=null;end();return;}}
+      anim=requestAnimationFrame(step);
+    };
+    anim=requestAnimationFrame(step);
+  }
+  body.append(h('p',{class:'hint'},'Tria un tipus, envia una petició des del PC de la Laia i mira per on passa i què hi viatja.'),seg,svgBox,h('div',{class:'row'},send),msg,props);
+  draw();
+})();
+
+sortGame('g1','DAS, NAS, SAN o núvol?','Classifica cada característica.',
+ [{id:'das',label:'DAS'},{id:'nas',label:'NAS'},{id:'san',label:'SAN'},{id:'cl',label:'Núvol'}],
+ [
+  {t:'Disc connectat per USB a un sol PC',b:'das'},
+  {t:'Si l’equip s’apaga, ningú més hi pot accedir',b:'das'},
+  {t:'Comparteix carpetes per SMB i NFS',b:'nas'},
+  {t:'Té el seu propi sistema de fitxers i serveix fitxers sencers',b:'nas'},
+  {t:'Ideal per a una pime: assequible i fàcil de configurar',b:'nas'},
+  {t:'Xarxa dedicada de Fibre Channel',b:'san'},
+  {t:'El servidor veu un disc sense format (LUN) i el formata ell',b:'san',why:'Treballa a nivell de bloc: el sistema de fitxers és al servidor.'},
+  {t:'Pensada per a bases de dades i virtualització a gran escala',b:'san'},
+  {t:'Pagament per ús, sense comprar maquinari',b:'cl'},
+  {t:'Replicació geogràfica automàtica',b:'cl'},
+  {t:'Sense connexió a Internet no hi pots accedir',b:'cl'}
+ ]);
+
+/* ================= m2: DAS ================= */
+(function(){
+  const {body,sc}=shell('dassim','Simulador: el disc USB de la Laia');sc.textContent='Explora';
+  let on=true,shared=false;
+  const pcs=h('div',{class:'pcs'});const fb=h('div',{class:'fb','aria-live':'polite'});
+  function draw(){
+    pcs.innerHTML='';
+    pcs.append(h('div',{class:'pc'+(on?'':' off')},h('b',{},'PC de la Laia'+(on?'':' (apagat)')),h('span',{},'Té el disc USB de 2 TB connectat'+(shared?' i compartit com a \\\\PC-LAIA\\USB':''))));
+    pcs.append(h('div',{class:'pc'},h('b',{},'PC d’en Pau'),h('span',{},'A la mateixa xarxa, sense disc extern')));
+  }
+  const say=(c,t)=>{fb.className='fb '+c;fb.innerHTML=t;};
+  const B=(t,f)=>h('button',{class:'btn ghost',type:'button',onclick:()=>{f();draw();}},t);
+  body.append(h('p',{class:'hint'},'Prova les accions en diferents ordres.'),pcs,
+    h('div',{class:'row'},
+      B('La Laia obre el disc',()=>on?say('ok','<b>Funciona.</b> El disc està connectat directament al seu PC.'):say('bad','El PC de la Laia està apagat.')),
+      B('En Pau obre el disc',()=>!shared?say('bad','<b>No el veu.</b> Un DAS només és visible a l’equip on està connectat.'):on?say('mid','<b>Funciona, però…</b> en Pau hi accedeix a través del PC de la Laia, que fa de servidor. Si ella treballa amb fitxers grans, tot va lent.'):say('bad','<b>No hi pot accedir:</b> el PC de la Laia està apagat i el disc depèn d’ell.')),
+      B('La Laia comparteix el disc',()=>{shared=true;say('mid','Ara el disc es comparteix per la xarxa a través del PC de la Laia.');}),
+      B(on?'La Laia apaga el PC':'La Laia engega el PC',()=>{on=!on;say('mid',on?'El PC de la Laia torna a estar encès.':'El PC de la Laia s’ha apagat.');}),
+      B('Reinicia',()=>{on=true;shared=false;fb.className='fb';fb.textContent='';})),fb);
+  draw();
+})();
+
+choiceGame('g2','DAS a prova',[
+  {q:'Quin d’aquests és un DAS?',o:[
+    {t:'Un disc extern USB connectat al portàtil',ok:true,why:'Connectat directament, sense xarxa.'},
+    {t:'Una carpeta compartida en un Synology',ok:false,why:'Això és un NAS.'},
+    {t:'Un disc de Google Drive',ok:false,why:'Això és el núvol.'}]},
+  {q:'Tres servidors tenen cadascun 2 TB de DAS. Un s’ha quedat sense espai i els altres dos en tenen de sobres. Què passa?',o:[
+    {t:'L’espai lliure dels altres es fa servir automàticament',ok:false,why:'Cada DAS és de l’equip on està connectat.'},
+    {t:'L’espai no es pot repartir: cal comprar un disc per a aquest servidor',ok:true,why:'És un dels límits del DAS: cada equip té el seu espai aïllat.'},
+    {t:'Els servidors es converteixen en una SAN',ok:false,why:'Una SAN necessita una xarxa i una cabina dedicades.'}]},
+  {q:'Per què un DAS té tan poca latència?',o:[
+    {t:'Perquè no hi ha cap xarxa entre l’equip i el disc',ok:true,why:'Les dades van pel cable SATA, SAS o USB directament.'},
+    {t:'Perquè sempre és un SSD',ok:false,why:'Pot ser un SSD o un HDD.'},
+    {t:'Perquè les dades van xifrades',ok:false,why:'Xifrar no fa anar més ràpid.'}]}
+]);
+
+sortGame('g3','Quin protocol fa servir?','Classifica cada situació segons el protocol per accedir al NAS.',
+ [{id:'smb',label:'SMB/CIFS',sub:'Windows'},{id:'nfs',label:'NFS',sub:'Unix i Linux'},{id:'afp',label:'AFP',sub:'Apple'}],
+ [
+  {t:'Una unitat de xarxa Z: en un PC amb Windows 11',b:'smb'},
+  {t:'Escrius \\\\nas\\comptabilitat a l’Explorador de fitxers',b:'smb'},
+  {t:'Una impressora que desa els escanejats en una carpeta compartida de Windows',b:'smb'},
+  {t:'Samba en un servidor Linux perquè hi entrin els PCs Windows',b:'smb',why:'Samba és la implementació lliure d’SMB.'},
+  {t:'mount -t nfs nas:/dades /mnt/dades en un servidor Ubuntu',b:'nfs'},
+  {t:'Una línia a /etc/fstab d’un servidor Debian',b:'nfs'},
+  {t:'Un clúster de servidors Linux que comparteixen /home',b:'nfs'},
+  {t:'Un Mac antic que es connecta a afp://nas.local',b:'afp',why:'Els Mac actuals fan servir sobretot SMB; AFP és el protocol antic d’Apple.'}
+ ]);
+
+/* ================= m4: bloc vs fitxer ================= */
+(function(){
+  const {body,sc}=shell('blocks','Pas a pas: obrir informe.pdf');sc.textContent='Explora';
+  const L={
+    nas:{t:'Amb un NAS (fitxer)',s:[
+      ['App','L’aplicació del PC vol obrir informe.pdf.'],
+      ['PC','El client envia la petició del fitxer per la xarxa d’usuaris.','SMB: llegeix \\\\nas\\docs\\informe.pdf'],
+      ['NAS','El NAS consulta el seu sistema de fitxers per saber on són els blocs.'],
+      ['NAS','Llegeix els blocs dels seus discos i retorna el fitxer sencer.','← informe.pdf (2,4 MB)']]},
+    san:{t:'Amb una SAN (bloc)',s:[
+      ['App','L’aplicació del servidor vol obrir informe.pdf.'],
+      ['Servidor','El sistema de fitxers del servidor (NTFS, ext4…) calcula on són els blocs.'],
+      ['Servidor','Demana els blocs a la cabina per la xarxa SAN.','iSCSI/FC: llegeix blocs 2048-2063 del LUN 3'],
+      ['Cabina','La cabina retorna els blocs. No sap què és un PDF: el servidor munta el fitxer.','← 16 blocs']]}
+  };
+  let step=0;const lanes=h('div',{class:'lanes'});const fb=h('div',{class:'fb','aria-live':'polite'});
+  const items={nas:[],san:[]};
+  Object.keys(L).forEach(k=>{const ol=h('ol');L[k].s.forEach(([w,t,wire])=>{const li=h('li',{},h('span',{class:'who'},w),t,wire?h('span',{class:'wire'},wire):null);items[k].push(li);ol.append(li);});lanes.append(h('div',{class:'lane'},h('h4',{},L[k].t),ol));});
+  function draw(){
+    Object.keys(items).forEach(k=>items[k].forEach((li,i)=>{li.classList.toggle('on',i<step);li.classList.toggle('now',i===step-1);}));
+    if(step>=4){fb.className='fb mid';fb.innerHTML='<b>La diferència clau:</b> al NAS el sistema de fitxers és al NAS i pel cable passen <b>fitxers</b>. A la SAN el sistema de fitxers és al servidor i pel cable passen <b>blocs</b>. Per això a la SAN el servidor creu que té un disc local.';}else{fb.className='fb';fb.textContent='';}
+    nx.textContent=step>=4?'Torna a començar':'Pas següent';
+  }
+  const nx=h('button',{class:'btn',type:'button',onclick:()=>{step=step>=4?0:step+1;draw();}},'Pas següent');
+  body.append(h('p',{class:'hint'},'Avança pas a pas i compara les dues columnes.'),lanes,h('div',{class:'row'},nx),fb);
+  draw();
+})();
+
+sortGame('g4','Les 7 diferències: NAS o SAN?','Classifica cada afirmació, segons l’article d’Arsys.',
+ [{id:'nas',label:'NAS'},{id:'san',label:'SAN'}],
+ [
+  {t:'Es connecta a la xarxa existent de l’empresa per Ethernet',b:'nas'},
+  {t:'Implementa una xarxa pròpia d’alta velocitat',b:'san'},
+  {t:'Treballa a nivell de fitxer',b:'nas'},
+  {t:'Treballa a nivell de bloc',b:'san'},
+  {t:'Protocols NFS i SMB/CIFS',b:'nas'},
+  {t:'Protocols Fibre Channel (FCP) i iSCSI',b:'san'},
+  {t:'Rendiment superior i menor latència',b:'san'},
+  {t:'Adequat per compartir fitxers i emmagatzematge general',b:'nas'},
+  {t:'Més flexibilitat per escalar capacitat i rendiment',b:'san'},
+  {t:'Més econòmic de comprar i de mantenir',b:'nas'},
+  {t:'Necessita commutadors especials i personal especialitzat',b:'san'},
+  {t:'Interfícies senzilles, fàcil d’administrar',b:'nas'}
+ ]);
+
+/* ================= m5 ================= */
+sortGame('g5','Núvol: avantatge, risc o protecció?','Classifica cada targeta.',
+ [{id:'av',label:'Avantatge'},{id:'ri',label:'Risc'},{id:'me',label:'Mesura de protecció'}],
+ [
+  {t:'Replicació geogràfica automàtica',b:'av'},
+  {t:'Creix sota demanda sense comprar discos',b:'av'},
+  {t:'Accessible des de qualsevol lloc',b:'av',why:'També és un risc: si tu hi pots entrar des de qualsevol lloc, un atacant també ho pot intentar.'},
+  {t:'Un contenidor configurat com a públic per error',b:'ri'},
+  {t:'Algú roba la contrasenya i entra al compte (segrest)',b:'ri'},
+  {t:'Un treballador del proveïdor o de l’empresa abusa dels permisos',b:'ri'},
+  {t:'Un atac de denegació de servei deixa el servei inaccessible',b:'ri'},
+  {t:'Sense Internet, no hi ha dades',b:'ri'},
+  {t:'Xifrar les dades abans de pujar-les',b:'me'},
+  {t:'Activar l’autenticació multifactor',b:'me'},
+  {t:'Donar a cada usuari només els permisos que necessita',b:'me'},
+  {t:'Triar un proveïdor que compleixi el RGPD i guardi les dades a la UE',b:'me'}
+ ]);
+
+/* ================= m6 ================= */
+sortGame('g6','Quin suport hi poses?','Relaciona cada necessitat amb el suport més adequat.',
+ [{id:'lto',label:'Cinta LTO'},{id:'hdd',label:'Disc dur extern'},{id:'ssd',label:'SSD'},{id:'bd',label:'Blu-ray / M-DISC'},{id:'cl',label:'Núvol'}],
+ [
+  {t:'Arxiu de 40 TB que s’ha de guardar 25 anys i gairebé no es consulta',b:'lto'},
+  {t:'Còpia setmanal que es va rotant entre tres discos',b:'hdd'},
+  {t:'El disc del sistema d’un servidor que ha d’arrencar ràpid',b:'ssd'},
+  {t:'Restaurar d’urgència una màquina virtual de 300 GB',b:'ssd'},
+  {t:'Escriptures notarials que no es poden modificar mai',b:'bd',why:'Un disc òptic gravat és només de lectura i pot durar dècades.'},
+  {t:'Còpia automàtica cada nit fora de l’oficina',b:'cl'},
+  {t:'Còpia de 6 TB al mínim cost per GB que es consulta de tant en tant',b:'hdd'},
+  {t:'Dades que han de sobreviure a un incendi de l’oficina sense que ningú se les endugui a casa',b:'cl'}
+ ]);
+
+/* ================= m7 ================= */
+choiceGame('g7','Repte final: cinc encàrrecs',[
+  {q:'Fleca amb 2 ordinadors. Volen una còpia de les factures que no depengui de cap PC. Pressupost: 150 €.',o:[
+    {t:'Una SAN amb Fibre Channel',ok:false,why:'Milers d’euros i personal especialitzat per a dos ordinadors.'},
+    {t:'Un disc USB per a les còpies i un servei al núvol barat per tenir-ne una fora',ok:true,why:'Barat, senzill i compleix la idea 3-2-1.'},
+    {t:'Un NAS de 8 badies amb discos SSD',ok:false,why:'Massa car per al que necessiten.'}]},
+  {q:'Gestoria amb 12 treballadors que comparteixen carpetes de clients. Pressupost: 1.500 €. No tenen informàtic.',o:[
+    {t:'Un NAS amb RAID, carpetes compartides per SMB i còpia al núvol',ok:true,why:'Centralitza, és fàcil d’administrar i surt a compte.'},
+    {t:'Un disc USB al PC de la gerent, compartit',ok:false,why:'Depèn d’un PC encès i no escala a 12 persones.'},
+    {t:'Una SAN',ok:false,why:'Massa cara i complexa sense un informàtic.'}]},
+  {q:'Botiga en línia gran: 30 màquines virtuals i una base de dades amb milers de comandes per hora. Tenen equip de sistemes.',o:[
+    {t:'Un NAS domèstic',ok:false,why:'No dona el rendiment ni la latència que necessita una base de dades així.'},
+    {t:'Una SAN amb iSCSI o Fibre Channel, i còpies fora',ok:true,why:'Accés a nivell de bloc, baixa latència i xarxa separada del trànsit d’usuaris.'},
+    {t:'Que cada servidor tingui el seu DAS',ok:false,why:'Les màquines virtuals no es podrien moure entre servidors i l’espai no es podria repartir.'}]},
+  {q:'Estudi de vídeo 8K amb 6 editors treballant alhora sobre els mateixos projectes.',o:[
+    {t:'Google Drive',ok:false,why:'Arrossegar fitxers de molts GB per Internet és inviable per editar en temps real.'},
+    {t:'Una SAN (o un NAS molt potent amb xarxa de 10 Gb o més)',ok:true,why:'L’article d’Arsys recomana la SAN per a l’edició professional d’alta resolució.'},
+    {t:'Un disc USB que es passen d’un editor a l’altre',ok:false,why:'Només un hi pot treballar alhora.'}]},
+  {q:'Una startup de 5 persones que treballen des de casa i creix cada mes.',o:[
+    {t:'Emmagatzematge al núvol amb MFA i permisos per usuari',ok:true,why:'Accés des de qualsevol lloc i escala sense comprar maquinari.'},
+    {t:'Un NAS a casa del fundador',ok:false,why:'Depèn d’una connexió domèstica i d’un sol lloc físic.'},
+    {t:'Un DAS a cada portàtil',ok:false,why:'No comparteixen res i cada portàtil és un punt de pèrdua.'}]}
+]);
+
+/* ---------- start ---------- */
+refresh();
+const start=Math.max(0,MODS.findIndex(m=>'#'+m.id===location.hash));show(start);
+})();
+</script>
+</body>
+</html>

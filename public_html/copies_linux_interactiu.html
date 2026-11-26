@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Còpies de seguretat a Linux · AEA2 · M0226</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E6E2; --surface:#F6F7F4; --surface2:#ECEEEA; --ink:#1C2226; --muted:#56616A; --line:#C7CCC6;
+  --yellow:#F2C200; --yellow-ink:#3A2E00; --red:#C8281E; --green:#0E7F49; --blue:#2F5671;
+  --ok-bg:#DDF0E5; --bad-bg:#F8DEDB; --mid-bg:#FBF0C6; --focus:#2F5671;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+    --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+    --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191C; --surface:#1E2428; --surface2:#262D32; --ink:#E7EAE6; --muted:#A3ADB4; --line:#38424A;
+  --yellow:#F2C200; --yellow-ink:#1A1500; --red:#F0675C; --green:#4CC98A; --blue:#8DB6D3;
+  --ok-bg:#173A29; --bad-bg:#43201D; --mid-bg:#3F3612; --focus:#8DB6D3; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variation-settings:"wdth" 100;font-size:17px;line-height:1.55}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+img,svg{max-width:100%}
+
+.hazard{height:10px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 14px,#1C2226 14px 28px)}
+header.top{padding:28px 24px 22px;max-width:1180px;margin:0 auto}
+header.top h1{margin:0;font-weight:800;font-variation-settings:"wdth" 70;font-size:clamp(2.1rem,6vw,3.6rem);line-height:1;letter-spacing:-.01em}
+header.top p{margin:.6rem 0 0;color:var(--muted);max-width:60ch}
+.scorebar{display:flex;gap:16px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.meter{flex:1 1 220px;max-width:360px;height:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--green);width:0;transition:width .4s}
+.scoretxt{font-weight:700;font-variant-numeric:tabular-nums}
+.reset{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:.85rem;color:var(--muted)}
+
+.layout{max-width:1180px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+nav.mods{position:sticky;top:env(safe-area-inset-top,0px);padding-top:8px}
+nav.mods ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+nav.mods button{width:100%;text-align:left;background:none;border:0;border-left:4px solid transparent;padding:9px 12px;border-radius:0 6px 6px 0;display:flex;gap:10px;align-items:baseline}
+nav.mods button:hover{background:var(--surface2)}
+nav.mods button[aria-current="true"]{background:var(--surface);border-left-color:var(--yellow);font-weight:700}
+nav.mods .n{font-variation-settings:"wdth" 70;font-weight:800;color:var(--muted);min-width:1.2em}
+nav.mods .done{margin-left:auto;color:var(--green);font-weight:800}
+
+main{min-width:0}
+section.mod{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px clamp(18px,4vw,40px) 34px}
+section.mod.active{display:block}
+.mod h2{margin:0 0 .2rem;font-weight:800;font-variation-settings:"wdth" 75;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
+.mod .lead{color:var(--muted);margin:0 0 1.4rem;max-width:68ch}
+.mod h3{font-variation-settings:"wdth" 85;font-weight:750;font-size:1.25rem;margin:2rem 0 .6rem}
+.mod p{max-width:70ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:1rem 0}
+.fact{background:var(--surface2);border-radius:8px;padding:14px 16px;border-top:4px solid var(--blue)}
+.fact b{display:block;margin-bottom:4px}
+.fact p{margin:0;font-size:.95rem}
+.note{border-left:4px solid var(--yellow);background:var(--mid-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:1.2rem 0;max-width:72ch}
+.steps{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface2);border-radius:8px;padding:12px 14px 12px 50px;position:relative;font-size:.95rem}
+.steps li::before{content:counter(s);position:absolute;left:12px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-weight:800}
+.tablewrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-variation-settings:"wdth" 85;background:var(--surface2)}
+
+.game{margin-top:2.2rem;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.game>.gh{background:var(--ink);color:var(--surface);padding:12px 18px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.game>.gh h3{margin:0;color:inherit;font-size:1.15rem}
+.game>.gh .gs{font-weight:700;font-variant-numeric:tabular-nums}
+.game>.gb{padding:18px}
+.hint{color:var(--muted);font-size:.92rem;margin:0 0 12px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:44px}
+.chip{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:7px 14px;font-size:.95rem}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--yellow);color:var(--yellow-ink);font-weight:700}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bucket{background:var(--surface2);border:2px dashed var(--line);border-radius:8px;padding:10px;text-align:left;min-height:110px;display:flex;flex-direction:column;gap:6px}
+.bucket.armed{border-color:var(--ink);border-style:solid}
+.bucket>strong{font-variation-settings:"wdth" 85}
+.placed{font-size:.85rem;border-radius:5px;padding:3px 8px}
+.placed.ok{background:var(--ok-bg)} .placed.bad{background:var(--bad-bg);text-decoration:line-through}
+.fb{margin-top:14px;padding:12px 14px;border-radius:8px;min-height:1em}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg)} .fb.bad{background:var(--bad-bg)} .fb.mid{background:var(--mid-bg)}
+.btn{background:var(--ink);color:var(--surface);border:0;border-radius:6px;padding:9px 16px;font-weight:700}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:11px 14px}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.opt.bad{background:var(--bad-bg);border-color:var(--red)}
+.opt.mid{background:var(--mid-bg);border-color:var(--yellow)}
+.opt small{display:block;color:var(--muted);margin-top:4px}
+.q{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.site{display:block}
+.site ul{margin:6px 0 0;padding-left:18px;font-size:.92rem;color:var(--muted);font-weight:400}
+
+.layers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center}
+.layers svg{width:100%;height:auto}
+.layers svg .ly{cursor:pointer}
+.layers svg .ly rect{stroke:var(--ink);stroke-width:2;transition:fill .2s}
+.layers svg .ly:hover rect,.layers svg .ly.sel rect{fill:var(--yellow)}
+.layers svg text{fill:var(--ink);font-family:inherit;font-size:13px;font-weight:700;pointer-events:none}
+.layerinfo{background:var(--surface2);border-radius:8px;padding:16px;min-height:150px}
+.layerinfo h4{margin:0 0 6px;font-size:1.1rem}
+
+.sim{display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:24px}
+.slider label{display:flex;justify-content:space-between;font-weight:700}
+.slider output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.slider input{width:100%;accent-color:var(--blue);margin:8px 0 18px}
+.eq{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;padding:9px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border-left:6px solid var(--green)}
+.eq.bad{border-left-color:var(--red)} .eq b{font-variation-settings:"wdth" 85}
+.eq .st{font-size:.88rem;color:var(--muted);grid-column:1/-1}
+
+.classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0}
+.cls{border-radius:8px;padding:12px;background:var(--surface2);display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center}
+.cls .L{grid-row:span 2;width:44px;height:44px;border-radius:6px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.5rem;font-variation-settings:"wdth" 70}
+.cls span{font-size:.88rem;color:var(--muted)}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.scen{background:var(--surface2);border-radius:8px;padding:14px 16px;font-size:1.05rem}
+.scen .num{color:var(--muted);font-size:.85rem}
+
+.ordlist{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px;counter-reset:o}
+.ordlist li{counter-increment:o;background:var(--ok-bg);padding:9px 12px 9px 44px;border-radius:6px;position:relative}
+.ordlist li::before{content:counter(o);position:absolute;left:12px;font-weight:800}
+
+.audit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
+.plan{width:100%;height:auto;background:var(--surface2);border-radius:8px}
+.plan .wall{fill:none;stroke:var(--ink);stroke-width:3}
+.plan .room{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.plan .rack{fill:var(--muted)}
+.plan .lbl{fill:var(--muted);font-size:12px;font-family:inherit}
+.plan .hs{cursor:pointer}
+.plan .hs circle{fill:var(--yellow);stroke:#1C2226;stroke-width:2}
+.plan .hs text{fill:#1C2226;font-weight:800;font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-family:inherit}
+.plan .hs.ok circle{fill:#4CC98A}.plan .hs.bad circle{fill:#F0675C}
+.plan .hs.sel circle{stroke-width:4}
+.panel{background:var(--surface2);border-radius:8px;padding:16px;min-height:200px}
+.panel h4{margin:0 0 8px}
+
+.pager{display:flex;justify-content:space-between;margin-top:28px;gap:10px}
+.final{background:var(--ink);color:var(--surface);border-radius:8px;padding:16px 18px;margin-top:16px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  nav.mods{position:static;min-width:0}
+  nav.mods ol{flex-direction:row;overflow-x:auto;padding-bottom:6px}
+  nav.mods button{white-space:nowrap;border-left:0;border-bottom:4px solid transparent;border-radius:6px 6px 0 0}
+  nav.mods button[aria-current="true"]{border-bottom-color:var(--yellow)}
+  .layers,.sim,.audit{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.back{display:inline-block;color:var(--muted);font-size:.9rem;text-decoration:none;margin-bottom:10px}
+.back:hover{color:var(--ink);text-decoration:underline}
+.res{margin:1.6rem 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);max-width:72ch}
+.res b{display:block;margin-bottom:6px}
+.res ul{margin:0;padding-left:20px}
+.res li{margin:3px 0}
+.res a{color:var(--blue);font-weight:600}
+.formula{font-variation-settings:"wdth" 80;font-weight:800;font-size:1.15rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;margin:4px 0;font-variant-numeric:tabular-nums}
+.typesel{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.circuit,.wave{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block}
+.wave{margin-top:10px}
+.circuit .blk rect{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.circuit .blk text{fill:var(--ink);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:inherit}
+.circuit .blk.dead rect{fill:var(--surface2);stroke:var(--muted);stroke-dasharray:5 4}
+.circuit .blk.dead text{fill:var(--muted)}
+.circuit .w{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.circuit .w.by{stroke-dasharray:3 7}
+.circuit .w.on{stroke:var(--yellow);stroke-width:6;stroke-dasharray:12 8;animation:flow .7s linear infinite}
+.circuit .lever{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+.circuit .dot{fill:var(--ink)}
+.circuit .tag{fill:var(--muted);font-size:12px;font-family:inherit}
+.circuit .cut{fill:var(--red);font-size:13px;font-weight:800;font-family:inherit;text-anchor:middle}
+@keyframes flow{to{stroke-dashoffset:-20}}
+.wave .sig{fill:none;stroke:var(--blue);stroke-width:3;stroke-linejoin:round}
+.wave .gap{fill:var(--bad-bg)}
+.wave .axis{stroke:var(--line);stroke-width:1}
+.wave .mk{stroke:var(--red);stroke-width:2;stroke-dasharray:4 3}
+.wave text{fill:var(--muted);font-size:12px;font-family:inherit}
+.wave text.hot{fill:var(--red);font-weight:800}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.readout div{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.readout span{display:block;color:var(--muted);font-size:.85rem}
+.readout b{font-variation-settings:"wdth" 80;font-size:1.2rem;line-height:1.2}
+.readout p{margin:2px 0 0;font-size:.93rem}
+.ups{display:grid;grid-template-columns:minmax(0,280px) 1fr;gap:22px;align-items:start}
+.ups svg{width:100%;height:auto;display:block}
+.ups .led{cursor:pointer}
+.ups .led .l{stroke:#0d1012;stroke-width:2}
+.ups .led .ring{fill:none;stroke-width:3}
+.ups .led text{fill:#E7EAE6;font-size:14px;font-family:inherit;font-weight:600;pointer-events:none}
+.ups .led:hover .hit{fill:rgba(255,255,255,.08)}
+.ups .led:focus{outline:none}
+.ups .led:focus-visible .hit{stroke:#8DB6D3;stroke-width:3}
+.field{display:grid;gap:4px;margin:12px 0}
+.field label{font-weight:700}
+.field input,.field select{font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:min(240px,100%)}
+.field.ok input,.field.ok select{border-color:var(--green);background:var(--ok-bg)}
+.field.bad input,.field.bad select{border-color:var(--red);background:var(--bad-bg)}
+.data{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0 4px}
+.data div{background:var(--surface2);border-radius:8px;padding:8px 12px}
+.data span{display:block;font-size:.82rem;color:var(--muted)}
+.data b{font-variation-settings:"wdth" 80;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.sol{margin-top:12px;background:var(--surface2);border-radius:8px;padding:12px 14px;font-variant-numeric:tabular-nums}
+.sol p{margin:.2rem 0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:860px){.ups{grid-template-columns:1fr}.ups svg{max-width:300px}}
+@media (prefers-reduced-motion:reduce){.circuit .w.on{animation:none}}
+/* ---- específic d'aquesta pàgina ---- */
+.extra{display:inline-block;font-size:.78rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:middle}
+.flow{list-style:none;padding:0;margin:1rem 0;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.flow li{background:var(--surface2);border-radius:8px;padding:10px 14px;flex:1 1 140px;font-size:.95rem;position:relative}
+.flow li b{display:block}
+.ordlist li.bad{background:var(--bad-bg)}
+.thr{width:100%;accent-color:var(--blue);margin:6px 0 4px}
+.thrlab{display:flex;justify-content:space-between;align-items:baseline;font-weight:700}
+.thrlab output{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 70;font-size:2rem;font-weight:800;line-height:1}
+.dist{width:100%;height:auto;background:var(--surface2);border-radius:8px;display:block;margin-top:10px}
+.dist .gen{fill:none;stroke:var(--green);stroke-width:3}
+.dist .imp{fill:none;stroke:var(--red);stroke-width:3}
+.dist .far{fill:var(--red);opacity:.28}
+.dist .frr{fill:var(--yellow);opacity:.45}
+.dist .axis{stroke:var(--line);stroke-width:1}
+.dist .thl{stroke:var(--ink);stroke-width:2;stroke-dasharray:5 4}
+.dist text{fill:var(--muted);font-size:12px;font-family:inherit}
+.dist text.k{font-weight:800;font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.88rem;color:var(--muted);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+
+/* ---- AEA2: elements comuns ---- */
+.extra{display:inline-block;font-size:.78rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:middle}
+.game.free>.gh{background:var(--blue)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:0;border:2px solid var(--ink);border-radius:8px;overflow:hidden}
+.seg button{background:var(--surface);border:0;border-right:1px solid var(--line);padding:7px 14px;font-weight:700}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.status{display:inline-flex;align-items:center;gap:8px;font-weight:800;padding:6px 12px;border-radius:6px}
+.status.ok{background:var(--ok-bg);color:var(--green)}
+.status.mid{background:var(--mid-bg)}
+.status.bad{background:var(--bad-bg);color:var(--red)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:12px 0}
+.kv div{background:var(--surface2);border-radius:8px;padding:8px 12px}
+.kv span{display:block;font-size:.82rem;color:var(--muted)}
+.kv b{font-variation-settings:"wdth" 80;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.fact p b{display:inline;margin:0}
+.sel{font:inherit;padding:7px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+
+/* ---- terminal ---- */
+.term{background:#14181B;color:#D8E0D8;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88rem;line-height:1.45;padding:12px 14px;cursor:text}
+.term .out{white-space:pre-wrap;word-break:break-word;max-height:340px;overflow-y:auto;min-height:120px}
+.term .ln{display:flex;gap:6px;align-items:baseline}
+.term .ps{color:#7FD18B;white-space:nowrap}
+.term .ps b{color:#8DB6D3;font-weight:400}
+.term input{flex:1;min-width:0;background:transparent;border:0;color:#F2F5F2;font:inherit;outline:none;caret-color:#F2C200}
+.term .err{color:#F0897F}
+.term .dir{color:#8DB6D3;font-weight:700}
+.term .arc{color:#F07AC7}
+.term .yes{color:#7FD18B;font-weight:700}
+.term .no{color:#A3ADB4}
+.term .info{color:#F2C200}
+.term:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.missions{list-style:none;padding:0;margin:0 0 6px;display:grid;gap:6px}
+.missions li{background:var(--surface2);border-radius:8px;padding:9px 12px 9px 40px;position:relative}
+.missions li::before{content:"";position:absolute;left:12px;top:11px;width:18px;height:18px;border-radius:4px;border:2px solid var(--muted)}
+.missions li.done{background:var(--ok-bg)}
+.missions li.done::before{content:"✓";border-color:var(--green);background:var(--green);color:#fff;display:grid;place-items:center;font-size:.8rem;font-weight:800}
+.missions .hintbtn{background:none;border:0;color:var(--blue);font-weight:700;text-decoration:underline;padding:0;margin-left:6px;font-size:.88rem}
+.missions code{white-space:nowrap}
+
+/* ---- constructor ---- */
+.bgroup{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.bgroup>span{font-weight:700;min-width:110px}
+.cmdline{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#14181B;color:#F2F5F2;border-radius:8px;padding:12px 14px;margin:10px 0;font-size:1rem;overflow-x:auto;white-space:nowrap}
+.explain{list-style:none;padding:0;margin:0;display:grid;gap:4px;font-size:.93rem}
+.explain li{background:var(--surface2);border-radius:6px;padding:6px 10px}
+
+/* ---- Y/N grid ---- */
+.yn{display:grid;gap:6px;margin:10px 0;overflow-x:auto}
+.ynrow{display:grid;grid-template-columns:minmax(150px,1.6fr) repeat(3,minmax(70px,1fr));gap:6px;align-items:center}
+.ynrow.head{font-weight:800;font-size:.9rem;color:var(--muted)}
+.ynrow .story{font-size:.88rem}
+.ynrow .story b{display:block;font-size:.95rem}
+.cell{height:44px;border-radius:6px;border:2px solid var(--ink);background:var(--surface);font-weight:800;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:1.05rem}
+.cell.ok{background:var(--ok-bg);border-color:var(--green)}
+.cell.bad{background:var(--bad-bg);border-color:var(--red)}
+.cell.given{border-style:dashed;cursor:default}
+
+/* ---- cron ---- */
+.cron{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0}
+.cron label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.88rem}
+.cron select{width:100%}
+.ctrans{background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:1rem}
+@media (max-width:700px){.cron{grid-template-columns:repeat(2,minmax(0,1fr))}.ynrow{grid-template-columns:minmax(120px,1.4fr) repeat(3,minmax(54px,1fr))}}
+.notepad{margin:10px 0;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86rem;padding:10px 12px;white-space:pre;overflow-x:auto}
+@media (max-width:700px){.ynrow{grid-template-columns:minmax(96px,1.3fr) repeat(3,minmax(44px,1fr))}}
+</style>
+</head>
+<body>
+<div class="hazard" aria-hidden="true"></div>
+<header class="top">
+  <a class="back" href="aea2_a3.html">← Tornar a A3 · Còpies de seguretat en Linux</a>
+  <h1>Còpies de seguretat a Linux: tar, cron i rsync</h1>
+  <p>Set apartats per fer còpies de seguretat des de la línia d'ordres. Tens un terminal simulat on pots escriure ordres de veritat: tar, ls, cat, echo, rm… Cada apartat té missions que es marquen quan les aconsegueixes. El progrés es guarda en aquest navegador.</p>
+  <p style="font-size:.9rem">Les parts marcades amb <span class="extra">fora de la presentació</span> amplien l'article de JuncoTIC sobre còpies incrementals amb tar.</p>
+  <div class="scorebar">
+    <div class="meter" role="progressbar" aria-label="Apartats completats" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><span id="meterFill"></span></div>
+    <span class="scoretxt" id="scoreTxt">0 de 7 apartats · 0 punts</span>
+    <button class="reset" id="resetAll" type="button">Reinicia el progrés</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="mods" aria-label="Apartats"><ol id="navList"></ol></nav>
+  <main>
+
+<!-- 1 -->
+<section class="mod" id="m1" data-title="Empaquetar amb tar">
+  <h2>Empaquetar amb tar</h2>
+  <p class="lead">Una carpeta sencera dins d'un sol fitxer, comprimit.</p>
+  <p>L'ordre <code>tar</code> empaqueta un fitxer, una carpeta o fins i tot tot el sistema de fitxers en un sol arxiu (un <i>tarball</i>), i el pot comprimir amb gzip, bzip2 o xz. És l'eina bàsica de còpies de seguretat a Linux.</p>
+  <p><code>tar -cvzf backup/complet.tgz data/</code></p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opció</th><th>Què fa</th></tr></thead>
+    <tbody>
+      <tr><td><code>-c</code></td><td><b>Crea</b> un arxiu nou.</td></tr>
+      <tr><td><code>-x</code></td><td><b>Extreu</b> (restaura) el contingut d'un arxiu.</td></tr>
+      <tr><td><code>-t</code></td><td><b>Llista</b> el contingut sense extreure res.</td></tr>
+      <tr><td><code>-v</code></td><td>Mode explicatiu (<i>verbose</i>): mostra cada fitxer que processa.</td></tr>
+      <tr><td><code>-z</code></td><td>Comprimeix amb gzip. També <code>-j</code> (bzip2) o <code>-J</code> (xz).</td></tr>
+      <tr><td><code>-f fitxer</code></td><td>Nom de l'arxiu. Ha d'anar seguit del nom: per això sol anar l'últim.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="game free" id="builder"></div>
+  <div class="res"><b>Recursos</b><ul>
+    <li><a href="https://juncotic.com/tar-backups-incrementales-gnu-linux/" target="_blank" rel="noopener">Article: TAR i les còpies incrementals a GNU/Linux (JuncoTIC)</a></li>
+    <li><a href="https://www.gnu.org/software/tar/manual/" target="_blank" rel="noopener">Manual oficial de GNU tar</a></li>
+  </ul></div>
+  <div class="game" id="g1"></div>
+</section>
+
+<!-- 2 -->
+<section class="mod" id="m2" data-title="Còpia completa: nivell 0">
+  <h2>La còpia completa: nivell 0</h2>
+  <p class="lead">El punt de partida de tota la cadena.</p>
+  <p>Si la carpeta pesa 100 GB i cada dia canvia molt poc, fer un tarball complet cada dia malgasta espai. La solució és una còpia <b>incremental</b>: només les diferències amb la còpia anterior.</p>
+  <p>Per fer-ho, <code>tar</code> fa servir un <b>fitxer de snapshot</b> (<code>.snar</code>) amb l'opció <code>-g</code> (o <code>--listed-incremental</code>). Aquest fitxer guarda les metadades dels fitxers: què hi havia i com estava. Si el snapshot encara no existeix, tar fa una còpia completa, el <b>nivell 0</b>, i el crea.</p>
+  <p><code>tar -cvzf backup/bkp0.tgz -g backup/snapshot.snar data/</code></p>
+  <div class="note">El terminal d'aquest apartat és la mateixa màquina de l'apartat anterior: els fitxers que hi vas crear encara hi són.</div>
+  <div class="game" id="g2"></div>
+</section>
+
+<!-- 3 -->
+<section class="mod" id="m3" data-title="Còpies incrementals">
+  <h2>Les còpies incrementals</h2>
+  <p class="lead">Mateixa ordre, mateix snapshot, nom d'arxiu nou.</p>
+  <p>Per fer el nivell 1 executes la mateixa ordre canviant només el nom de l'arxiu: <code>tar -cvzf backup/bkp1.tgz -g backup/snapshot.snar data/</code>. Tar compara amb el snapshot, hi posa només el que ha canviat i actualitza el snapshot. El següent cop farà el nivell 2, i així successivament.</p>
+  <p>Si no ha canviat res, l'arxiu només conté el directori <code>data/</code> buit (i la llista de què hi havia).</p>
+  <div class="note"><b>Compte:</b> cada còpia sobreescriu el snapshot. Si vols fer dues còpies del mateix nivell (per exemple, dos nivells 1 a partir del mateix nivell 0), abans copia el <code>.snar</code> amb un altre nom.</div>
+  <div class="game" id="g3"></div>
+</section>
+
+<!-- 4 -->
+<section class="mod" id="m4" data-title="Analitzar les còpies">
+  <h2>Què hi ha a cada còpia?</h2>
+  <p class="lead">Abans de restaurar, mira què conté cada arxiu.</p>
+  <p>Amb <code>tar -G -tvvf backup/bkp2.tgz</code> (o <code>--incremental --list --verbose --verbose</code>) tar mostra, per a cada directori, la llista de fitxers que hi havia en el moment de la còpia, amb una lletra al davant:</p>
+  <div class="cols">
+    <div class="fact"><b>Y</b><p>El fitxer és dins d'aquest arxiu: va canviar o era nou.</p></div>
+    <div class="fact"><b>N</b><p>El fitxer existia, però no ha canviat: no s'ha copiat.</p></div>
+    <div class="fact"><b>No hi surt</b><p>El fitxer ja no existia quan es va fer la còpia: s'havia esborrat. <span class="extra">fora de la presentació</span></p></div>
+  </div>
+  <div class="game" id="g4"></div>
+</section>
+
+<!-- 5 -->
+<section class="mod" id="m5" data-title="Restaurar: escape room">
+  <h2>Restaurar: escape room</h2>
+  <p class="lead">El disc ha mort. La carpeta data/ ha desaparegut. Tens les còpies.</p>
+  <p>Per restaurar, primer extreus la còpia completa i després <b>totes</b> les incrementals, una a una i <b>en ordre</b>. Amb <code>-x</code> hi has d'afegir <code>-g /dev/null</code> o <code>-G</code>: així tar sap que és una còpia incremental. El snapshot no cal, perquè cada arxiu ja porta la informació que necessita.</p>
+  <p><code>tar -xvzf backup/bkp0.tgz -g /dev/null</code></p>
+  <div class="note">Si extreus una incremental amb <code>-G</code>, tar també <b>esborra</b> els fitxers que no existien quan es va fer aquella còpia. Així la carpeta queda exactament igual que estava. Sense <code>-G</code>, els fitxers esborrats tornen a aparèixer. <span class="extra">fora de la presentació</span></div>
+  <div class="game" id="g5"></div>
+</section>
+
+<!-- 6 -->
+<section class="mod" id="m6" data-title="Automatitzar amb cron">
+  <h2>Automatitzar amb cron <span class="extra">fora de la presentació</span></h2>
+  <p class="lead">Una còpia que depèn que te'n recordis no és una política de còpies.</p>
+  <p>El servei <code>cron</code> executa ordres a les hores que li diguis. Amb <code>crontab -e</code> edites la teva taula de tasques. Cada línia té cinc camps de temps i l'ordre:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Minut</th><th>Hora</th><th>Dia del mes</th><th>Mes</th><th>Dia de la setmana</th><th>Ordre</th></tr></thead>
+    <tbody><tr><td class="mono">0-59</td><td class="mono">0-23</td><td class="mono">1-31</td><td class="mono">1-12</td><td class="mono">0-7 (0 i 7 = diumenge)</td><td class="mono">/usr/local/bin/backup.sh</td></tr></tbody>
+  </table></div>
+  <p><code>*</code> vol dir «qualsevol», <code>*/15</code> «cada 15», <code>1-5</code> «de l'1 al 5». Normalment l'ordre és un petit script que posa la data al nom de l'arxiu:</p>
+  <pre class="notepad" style="max-width:68ch">#!/bin/bash
+# /usr/local/bin/backup.sh
+DATA=$(date +%F_%H%M)
+tar -czf /backup/bkp_$DATA.tgz -g /backup/snapshot.snar /home/alumne/data</pre>
+  <div class="game" id="g6"></div>
+</section>
+
+<!-- 7 -->
+<section class="mod" id="m7" data-title="rsync i còpies remotes">
+  <h2>rsync i còpies fora del servidor <span class="extra">fora de la presentació</span></h2>
+  <p class="lead">Una còpia al mateix disc no protegeix de gairebé res.</p>
+  <p><code>rsync</code> sincronitza dues carpetes: només transfereix el que ha canviat, també per xarxa a través de SSH. És ideal per enviar els tarballs a un altre servidor o a un NAS.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Ordre</th><th>Què fa</th></tr></thead>
+    <tbody>
+      <tr><td><code>rsync -av data/ /mnt/usb/data/</code></td><td>Copia data/ a un disc USB conservant permisos i dates (<code>-a</code>) i mostrant què fa (<code>-v</code>).</td></tr>
+      <tr><td><code>rsync -av backup/ copies@nas:/copies/</code></td><td>Envia les còpies a una altra màquina per SSH.</td></tr>
+      <tr><td><code>rsync -av --delete data/ /mnt/usb/data/</code></td><td>Esborra al destí el que ja no existeix a l'origen: un mirall exacte.</td></tr>
+      <tr><td><code>scp backup/bkp0.tgz copies@nas:/copies/</code></td><td>Copia un sol fitxer per SSH.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Atenció amb <code>--delete</code>:</b> si esborres un fitxer per error i sincronitzes, també s'esborra a la còpia. Un mirall no és una còpia de seguretat amb historial: és el mateix problema que amb el RAID.</div>
+  <div class="game" id="g7"></div>
+</section>
+
+  </main>
+</div>
+<script>
+(function(){
+const STORE_KEY='aea2_copies_linux';
+
+const MODS=[...document.querySelectorAll('section.mod')];
+const TOTAL=MODS.length;
+let store={};
+try{store=JSON.parse(localStorage.getItem(STORE_KEY)||'{}')||{};}catch(e){store={};}
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(store));}catch(e){}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}kids.flat().forEach(c=>c!=null&&e.append(c));return e;};
+const fmt=(n,d=1)=>{const r=Math.round(n*Math.pow(10,d))/Math.pow(10,d);return r.toLocaleString('ca-ES',{maximumFractionDigits:d});};
+
+/* ---------- navigation & progress ---------- */
+const nav=document.getElementById('navList');
+function show(i){
+  MODS.forEach((m,k)=>m.classList.toggle('active',k===i));
+  [...nav.querySelectorAll('button')].forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'));
+  try{history.replaceState(null,'','#'+MODS[i].id);}catch(e){}
+}
+MODS.forEach((m,i)=>{
+  nav.append(h('li',{},h('button',{type:'button',onclick:()=>{show(i);window.scrollTo({top:0});}},
+    h('span',{class:'n'},String(i+1)),h('span',{},m.dataset.title),h('span',{class:'done','data-done':m.id}))));
+  const pager=h('div',{class:'pager'});
+  pager.append(i>0?h('button',{class:'btn ghost',type:'button',onclick:()=>{show(i-1);window.scrollTo({top:0});}},'Apartat anterior'):h('span'));
+  if(i<MODS.length-1)pager.append(h('button',{class:'btn',type:'button',onclick:()=>{show(i+1);window.scrollTo({top:0});}},'Següent apartat'));
+  m.append(pager);
+});
+const MODGAMES={};
+MODS.forEach(m=>{MODGAMES[m.id]=[...m.querySelectorAll('.game:not(.free)')].map(g=>g.id);});
+function refresh(){
+  let n=0,pts=0;
+  Object.values(MODGAMES).flat().forEach(k=>{if(store[k])pts+=store[k].s;});
+  for(const[m,gs]of Object.entries(MODGAMES)){
+    const d=gs.every(g=>store[g]);if(d)n++;
+    const el=nav.querySelector(`[data-done="${m}"]`);el.textContent=d?'✓':'';el.setAttribute('aria-label',d?'completat':'');
+  }
+  document.getElementById('meterFill').style.width=(n/TOTAL*100)+'%';
+  document.querySelector('.meter').setAttribute('aria-valuenow',n);
+  document.getElementById('scoreTxt').textContent=`${n} de ${TOTAL} apartats · ${pts} punts`;
+}
+function finish(id,s,t){if(!store[id]||s>=store[id].s)store[id]={s,t};save();refresh();}
+document.getElementById('resetAll').onclick=()=>{store={};save();refresh();};
+
+function shell(id,title){
+  const g=document.getElementById(id);g.innerHTML='';
+  const sc=h('span',{class:'gs'});
+  g.append(h('div',{class:'gh'},h('h3',{},title),sc));
+  const body=h('div',{class:'gb'});g.append(body);
+  return {body,sc};
+}
+
+/* ---------- sorting game ---------- */
+function sortGame(id,title,hint,buckets,items){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(items),sel=null,score=0;
+  const pl=h('div',{class:'pool','aria-label':'Targetes per classificar'});
+  const bk=h('div',{class:'buckets'});
+  const fb=h('div',{class:'fb','aria-live':'polite'});
+  const upd=()=>sc.textContent=`${score} / ${items.length}`;
+  const bEls={};
+  buckets.forEach(b=>{
+    const el=h('button',{class:'bucket',type:'button',onclick:()=>place(b.id)},h('strong',{},b.label));
+    if(b.sub)el.append(h('span',{class:'hint',style:'margin:0'},b.sub));
+    bEls[b.id]=el;bk.append(el);
+  });
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach((it,i)=>pl.append(h('button',{class:'chip',type:'button','aria-pressed':sel===i?'true':'false',onclick:()=>{sel=sel===i?null:i;drawPool();}},it.t)));
+    Object.values(bEls).forEach(e=>e.classList.toggle('armed',sel!==null));
+  }
+  function place(bid){
+    if(sel===null){fb.className='fb mid';fb.textContent='Primer tria una targeta de dalt.';return;}
+    const it=pool[sel];const ok=it.b===bid;
+    if(ok)score++;
+    bEls[bid].append(h('span',{class:'placed '+(ok?'ok':'bad')},it.t));
+    if(!ok)bEls[it.b].append(h('span',{class:'placed ok'},it.t));
+    fb.className='fb '+(ok?'ok':'bad');
+    fb.innerHTML=(ok?'<b>Correcte.</b> ':'<b>No.</b> Va a «'+buckets.find(b=>b.id===it.b).label+'». ')+(it.why||'');
+    pool.splice(sel,1);sel=null;drawPool();upd();
+    if(!pool.length){
+      finish(id,score,items.length);
+      body.append(h('div',{class:'row'},h('span',{},`Has encertat ${score} de ${items.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>sortGame(id,title,hint,buckets,items)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,bk,fb);drawPool();upd();
+}
+
+/* ---------- multiple-choice rounds ---------- */
+function choiceGame(id,title,rounds){
+  const {body,sc}=shell(id,title);
+  let r=0,score=0;
+  const upd=()=>sc.textContent=`${score} / ${rounds.length}`;
+  function draw(){
+    body.innerHTML='';upd();
+    if(r>=rounds.length){
+      finish(id,score,rounds.length);
+      body.append(h('p',{},`Has encertat ${score} de ${rounds.length}.`),h('button',{class:'btn ghost',type:'button',onclick:()=>{r=0;score=0;draw();}},'Torna-hi'));return;
+    }
+    const R=rounds[r];
+    body.append(h('p',{class:'hint'},`Pregunta ${r+1} de ${rounds.length}`),h('p',{class:'q'},R.q));
+    if(R.ctx)body.append(h('p',{},R.ctx));
+    const box=h('div',{class:'opts'});const fb=h('div',{class:'fb','aria-live':'polite'});
+    const btns=R.o.map(o=>{
+      const b=h('button',{class:'opt',type:'button',html:o.t});
+      b.onclick=()=>{
+        btns.forEach((x,k)=>{x.disabled=true;const oo=R.o[k];if(oo.ok)x.classList.add('ok');x.append(h('small',{},oo.why));});
+        if(!o.ok)b.classList.add('bad');else score++;
+        fb.className='fb '+(o.ok?'ok':'bad');fb.innerHTML=o.ok?'<b>Correcte.</b> Llegeix també per què les altres no.':"<b>No és la millor opció.</b> Mira l'explicació de cada resposta.";
+        upd();body.append(h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{r++;draw();}},r+1<rounds.length?'Següent pregunta':'Veure resultat')));
+      };
+      box.append(b);return b;
+    });
+    body.append(box,fb);
+  }
+  draw();
+}
+
+/* ---------- ordering game ---------- */
+function orderGame(id,title,hint,steps){
+  const {body,sc}=shell(id,title);
+  let pool=shuffle(steps.map((t,i)=>({t,i}))),next=0,errors=0;
+  const pl=h('div',{class:'pool'});const ol=h('ol',{class:'ordlist'});const fb=h('div',{class:'fb','aria-live':'polite'});
+  const score=()=>Math.max(0,steps.length-errors);
+  const upd=()=>sc.textContent=`${next} / ${steps.length}`;
+  function drawPool(){
+    pl.innerHTML='';
+    pool.forEach(it=>pl.append(h('button',{class:'chip',type:'button',onclick:()=>choose(it)},it.t)));
+  }
+  function choose(it){
+    if(it.i===next){
+      ol.append(h('li',{},it.t));pool=pool.filter(x=>x!==it);next++;
+      fb.className='fb ok';fb.innerHTML='<b>Correcte.</b>';
+    }else{
+      errors++;fb.className='fb bad';fb.innerHTML=`<b>Encara no.</b> «${it.t}» no és el pas ${next+1}.`;
+    }
+    drawPool();upd();
+    if(next===steps.length){
+      finish(id,score(),steps.length);
+      fb.className='fb ok';fb.innerHTML=`<b>Ordre complet.</b> Errors: ${errors}. Puntuació: ${score()} de ${steps.length}.`;
+      body.append(h('div',{class:'row'},h('button',{class:'btn ghost',type:'button',onclick:()=>orderGame(id,title,hint,steps)},'Torna-hi')));
+    }
+  }
+  body.append(h('p',{class:'hint'},hint),pl,ol,fb);drawPool();upd();
+}
+
+
+
+/* ================= Màquina virtual simulada ================= */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function VM(){this.reset();}
+VM.prototype.reset=function(){
+  this.home='/home/alumne';this.cwd=this.home;this.files={};this.ver=0;
+  this.dirs=new Set(['/','/home','/home/alumne','/dev','/tmp','/home/alumne/data','/home/alumne/backup']);
+  this.files['/dev/null']={kind:'null',c:'',v:0};
+  this.t=new Date(2026,10,26,9,0);this.extractLog=[];
+  this.write('/home/alumne/data/file1','Llista de clients');
+  this.write('/home/alumne/data/file2','Factures de gener');
+  this.listeners=this.listeners||[];
+};
+VM.prototype.on=function(f){this.listeners.push(f);};
+VM.prototype.norm=function(p){
+  if(p===undefined||p==='')return this.cwd;
+  if(p==='~'||p.startsWith('~/'))p=this.home+p.slice(1);
+  const parts=(p.startsWith('/')?p:this.cwd+'/'+p).split('/');const out=[];
+  parts.forEach(x=>{if(!x||x==='.')return;if(x==='..')out.pop();else out.push(x);});
+  return '/'+out.join('/');
+};
+VM.prototype.rel=function(abs,base){base=base||this.cwd;if(abs===base)return '.';if(abs.startsWith(base+'/'))return abs.slice(base.length+1);return abs.replace(/^\//,'');};
+VM.prototype.parent=p=>p.slice(0,p.lastIndexOf('/'))||'/';
+VM.prototype.base=p=>p.slice(p.lastIndexOf('/')+1);
+VM.prototype.isDir=function(p){return this.dirs.has(p);};
+VM.prototype.isFile=function(p){return p in this.files;};
+VM.prototype.children=function(d){
+  const pre=d==='/'?'/':d+'/';const s=new Set();
+  Object.keys(this.files).concat([...this.dirs]).forEach(p=>{if(p!==d&&p.startsWith(pre)){const r=p.slice(pre.length);if(r&&!r.includes('/'))s.add(r);}});
+  return [...s].sort();
+};
+VM.prototype.walk=function(p){
+  if(this.isFile(p))return {files:[p],dirs:[]};
+  const pre=p+'/';
+  return {files:Object.keys(this.files).filter(f=>f.startsWith(pre)).sort(),dirs:[p].concat([...this.dirs].filter(d=>d.startsWith(pre)).sort())};
+};
+VM.prototype.write=function(p,c,extra){
+  this.files[p]=Object.assign({kind:'txt',c:c,v:++this.ver,t:new Date(this.t)},extra||{});
+};
+VM.prototype.date=function(d){d=d||this.t;const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;};
+VM.prototype.size=function(f){if(f.kind==='arc')return 120+f.arc.entries.reduce((a,e)=>a+e.c.length,0);if(f.kind==='snar')return 64+Object.keys(f.snap).length*40;return f.c.length?f.c.length+1:0;};
+
+function tokenize(line){
+  const out=[];let cur='',q=null,has=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(q){if(ch===q)q=null;else cur+=ch;continue;}
+    if(ch==='"'||ch==="'"){q=ch;has=true;continue;}
+    if(ch===' '||ch==='\t'){if(cur||has){out.push(cur);cur='';has=false;}continue;}
+    if(ch==='>'){if(cur||has){out.push(cur);cur='';has=false;}if(line[i+1]==='>'){out.push('>>');i++;}else out.push('>');continue;}
+    cur+=ch;
+  }
+  if(q)return {err:'bash: falta tancar les cometes '+q};
+  if(cur||has)out.push(cur);
+  return {t:out};
+}
+
+/* exec retorna una llista de línies {c:classe,t:text html} */
+VM.prototype.exec=function(line){
+  const O=[];const say=(t,c)=>O.push({t,c});const err=t=>say(esc(t),'err');
+  line=line.trim();const ev={cmd:line,name:'',args:[],ok:true};
+  if(!line){return O;}
+  const tk=tokenize(line);if(tk.err){err(tk.err);return O;}
+  let [name,...args]=tk.t;ev.name=name;ev.args=args;
+  this.t=new Date(this.t.getTime()+60000);
+  const V=this;
+  switch(name){
+  case 'help':
+    say('Ordres disponibles: <b>ls</b> [-l] · <b>cd</b> · <b>pwd</b> · <b>cat</b> · <b>echo</b> text [&gt; o &gt;&gt; fitxer] · <b>touch</b> · <b>mkdir</b> [-p] · <b>rm</b> [-r] · <b>cp</b> · <b>mv</b> · <b>tar</b> · <b>date</b> · <b>history</b> · <b>clear</b>','info');break;
+  case 'pwd':say(esc(this.cwd));break;
+  case 'whoami':say('alumne');break;
+  case 'hostname':say('smx');break;
+  case 'date':say(esc(this.date()));break;
+  case 'cd':{const p=this.norm(args[0]||'~');if(this.isDir(p))this.cwd=p;else{ev.ok=false;err(`bash: cd: ${args[0]}: ${this.isFile(p)?'Not a directory':'No such file or directory'}`);}break;}
+  case 'ls':{
+    const fl=args.filter(a=>a.startsWith('-')).join('');const long=fl.includes('l');
+    const ps=args.filter(a=>!a.startsWith('-'));const targets=ps.length?ps:['.'];
+    targets.forEach((a,k)=>{
+      const p=this.norm(a);
+      if(this.isFile(p)){say(long?this.lsl(p,a):esc(a));return;}
+      if(!this.isDir(p)){ev.ok=false;err(`ls: cannot access '${a}': No such file or directory`);return;}
+      if(targets.length>1)say(esc(a)+':');
+      const ch=this.children(p);
+      if(long){say('total '+ch.length);ch.forEach(n=>say(this.lsl(p==='/'?'/'+n:p+'/'+n,n)));}
+      else if(ch.length)say(ch.map(n=>{const f=p+'/'+n;return this.isDir(f)?`<span class="dir">${esc(n)}</span>`:this.files[f]&&this.files[f].kind!=='txt'?`<span class="arc">${esc(n)}</span>`:esc(n);}).join('  '));
+      if(targets.length>1&&k<targets.length-1)say('');
+    });break;}
+  case 'cat':{
+    if(!args.length){err('cat: cal indicar un fitxer');break;}
+    args.forEach(a=>{const p=this.norm(a);
+      if(this.isDir(p)){ev.ok=false;err(`cat: ${a}: Is a directory`);}
+      else if(!this.isFile(p)){ev.ok=false;err(`cat: ${a}: No such file or directory`);}
+      else{const f=this.files[p];
+        if(f.kind==='arc')say('(Fitxer binari comprimit. Per veure què conté fes servir <b>tar -tvzf '+esc(a)+'</b>)','info');
+        else if(f.kind==='snar')say('GNU tar-1.34-2<br>'+Object.keys(f.snap).map(k=>'· '+esc(k)).join('<br>')+'<br>(Metadades binàries: dispositiu, inode i data de cada fitxer. tar les fa servir per saber què ha canviat.)','info');
+        else if(f.c)say(esc(f.c));}
+    });break;}
+  case 'echo':{
+    const i=args.findIndex(a=>a==='>'||a==='>>');
+    const text=(i<0?args:args.slice(0,i)).join(' ');
+    if(i<0){say(esc(text));break;}
+    const tgt=args[i+1];if(!tgt){err('bash: syntax error near unexpected token `newline\'');break;}
+    const p=this.norm(tgt);if(p==='/dev/null')break;
+    if(this.isDir(p)){err(`bash: ${tgt}: Is a directory`);break;}
+    if(!this.isDir(this.parent(p))){err(`bash: ${tgt}: No such file or directory`);break;}
+    const old=this.isFile(p)&&args[i]==='>>'?this.files[p].c:'';
+    this.write(p,old?old+'\n'+text:text);ev.wrote=p;break;}
+  case 'touch':args.forEach(a=>{const p=this.norm(a);if(this.isFile(p)){this.files[p].v=++this.ver;this.files[p].t=new Date(this.t);}else if(this.isDir(this.parent(p)))this.write(p,'');else err(`touch: cannot touch '${a}': No such file or directory`);});break;
+  case 'mkdir':{const pp=args.includes('-p');args.filter(a=>a!=='-p').forEach(a=>{const p=this.norm(a);
+    if(this.isDir(p)||this.isFile(p)){if(!pp)err(`mkdir: cannot create directory '${a}': File exists`);return;}
+    if(!this.isDir(this.parent(p))){if(!pp){err(`mkdir: cannot create directory '${a}': No such file or directory`);return;}let x=this.parent(p);const stack=[];while(!this.isDir(x)){stack.push(x);x=this.parent(x);}stack.forEach(d=>this.dirs.add(d));}
+    this.dirs.add(p);});break;}
+  case 'rm':{const fl=args.filter(a=>a.startsWith('-')).join('');const r=/r|R/.test(fl);const force=fl.includes('f');
+    args.filter(a=>!a.startsWith('-')).forEach(a=>{const p=this.norm(a);
+      if(this.isFile(p)){if(p==='/dev/null')return;delete this.files[p];}
+      else if(this.isDir(p)){if(!r){err(`rm: cannot remove '${a}': Is a directory`);return;}if(p===this.home||p==='/'){err(`rm: no s'esborra '${a}' en aquesta màquina d'exemple`);return;}const w=this.walk(p);w.files.forEach(f=>delete this.files[f]);w.dirs.forEach(d=>this.dirs.delete(d));if(this.cwd.startsWith(p))this.cwd=this.parent(p);}
+      else if(!force)err(`rm: cannot remove '${a}': No such file or directory`);
+    });break;}
+  case 'cp':case 'mv':{
+    const r=args.some(a=>/^-.*r/i.test(a));const ps=args.filter(a=>!a.startsWith('-'));
+    if(ps.length<2){err(`${name}: missing destination file operand`);break;}
+    const src=this.norm(ps[0]);let dst=this.norm(ps[1]);
+    if(!this.isFile(src)&&!this.isDir(src)){err(`${name}: cannot stat '${ps[0]}': No such file or directory`);break;}
+    if(this.isDir(dst))dst=dst+'/'+this.base(src);
+    if(!this.isDir(this.parent(dst))){err(`${name}: cannot create '${ps[1]}': No such file or directory`);break;}
+    if(this.isFile(src)){const f=Object.assign({},this.files[src]);if(name==='cp'){f.v=++this.ver;}else delete this.files[src];this.files[dst]=f;if(name==='mv')f.v=++this.ver;}
+    else{if(name==='cp'&&!r){err(`cp: -r not specified; omitting directory '${ps[0]}'`);break;}
+      const w=this.walk(src);w.dirs.forEach(d=>this.dirs.add(dst+d.slice(src.length)));
+      w.files.forEach(f=>{const n=Object.assign({},this.files[f]);n.v=++this.ver;this.files[dst+f.slice(src.length)]=n;if(name==='mv')delete this.files[f];});
+      if(name==='mv')w.dirs.forEach(d=>this.dirs.delete(d));}
+    break;}
+  case 'history':(this.hist||[]).forEach((h_,i)=>say(String(i+1).padStart(4)+'  '+esc(h_)));break;
+  case 'tar':this.tar(args,say,err,ev);break;
+  case 'sudo':err('sudo: en aquesta màquina d\'exemple ja tens prou permisos; escriu l\'ordre sense sudo');break;
+  case 'rsync':case 'scp':case 'ssh':err(`${name}: aquesta màquina d'exemple no té xarxa. Prova-ho a la teva màquina virtual.`);break;
+  case 'crontab':err('crontab: practica-ho amb el constructor de l\'apartat 6.');break;
+  case 'nano':case 'vi':case 'vim':err(`${name}: no hi ha editor en aquest terminal. Fes servir echo "text" >> fitxer`);break;
+  default:ev.ok=false;err(`bash: ${name}: command not found`);
+  }
+  ev.out=O;this.listeners.forEach(f=>f(ev,this));
+  return O;
+};
+VM.prototype.lsl=function(p,n){
+  if(this.isDir(p))return `drwxr-xr-x 2 alumne alumne ${String(4096).padStart(6)} ${this.date()} <span class="dir">${esc(n)}</span>`;
+  const f=this.files[p];return `-rw-r--r-- 1 alumne alumne ${String(this.size(f)).padStart(6)} ${this.date(f.t)} ${f.kind!=='txt'?'<span class="arc">'+esc(n)+'</span>':esc(n)}`;
+};
+
+VM.prototype.tar=function(args,say,err,ev){
+  let op=null,v=0,z=false,G=false;const pend=[];let file=null,snar=null,C=null;const mem=[];let bad=null;
+  const flag=(ch)=>{
+    if('cxt'.includes(ch)){if(op&&op!==ch)bad="tar: You may not specify more than one '-Acdtrux' option";op=ch;}
+    else if(ch==='v')v++;else if('zjJ'.includes(ch))z=true;else if(ch==='G')G=true;
+    else if('fgC'.includes(ch))pend.push(ch);else bad=`tar: invalid option -- '${ch}'`;
+  };
+  args.forEach((a,i)=>{
+    if(a.startsWith('--')){
+      const [k,val]=a.split('=');
+      if(k==='--listed-incremental'){snar=val;}else if(k==='--incremental')G=true;else if(k==='--create')op='c';else if(k==='--extract')op='x';else if(k==='--list')op='t';
+      else if(k==='--verbose')v++;else if(k==='--gzip')z=true;else if(k==='--file')file=val;else if(k==='--directory')C=val;else bad=`tar: unrecognized option '${a}'`;
+    }else if(a.startsWith('-')&&a.length>1){[...a.slice(1)].forEach(flag);}
+    else if(pend.length){const k=pend.shift();if(k==='f')file=a;else if(k==='g')snar=a;else C=a;}
+    else if(i===0&&/^[cxtvzjJfgG]+$/.test(a)){[...a].forEach(flag);}
+    else mem.push(a);
+  });
+  ev.tar={op,file,snar,G:G||!!snar,v,z};
+  if(bad){err(bad);ev.ok=false;return;}
+  if(pend.length){err(`tar: option requires an argument -- '${pend[0]}'`);ev.ok=false;return;}
+  if(!op){err("tar: You must specify one of the '-Acdtrux', '--delete' or '--test-label' options");ev.ok=false;return;}
+  if(!file){err(op==='c'?'tar: Refusing to write archive contents to terminal (missing -f option?)':'tar: Refusing to read archive contents from terminal (missing -f option?)');ev.ok=false;return;}
+  const ap=this.norm(file);
+  const base=C?this.norm(C):this.cwd;
+  if(C&&!this.isDir(base)){err(`tar: ${C}: Cannot open: No such file or directory`);ev.ok=false;return;}
+  const nameOf=abs=>this.rel(abs,base);
+  if(op==='c'){
+    if(!mem.length){err('tar: Cowardly refusing to create an empty archive');ev.ok=false;return;}
+    if(!this.isDir(this.parent(ap))){err(`tar: ${file}: Cannot open: No such file or directory`);ev.ok=false;return;}
+    let snap=null,level=0,sp=null;
+    if(snar){sp=this.norm(snar);if(sp!=='/dev/null'&&this.isFile(sp)&&this.files[sp].kind==='snar'){snap=this.files[sp].snap;level=this.files[sp].level+1;}
+      if(!this.isDir(this.parent(sp))){err(`tar: ${snar}: Cannot open: No such file or directory`);ev.ok=false;return;}}
+    const entries=[],dirs={},newSnap={};
+    mem.forEach(m=>{
+      const p=C?(m.startsWith('/')?m:base+'/'+m):this.norm(m);const pp=this.norm(p);
+      if(!this.isFile(pp)&&!this.isDir(pp)){err(`tar: ${m}: Cannot stat: No such file or directory`);ev.ok=false;return;}
+      if(m.startsWith('/'))say("tar: Removing leading `/' from member names",'err');
+      const w=this.walk(pp);
+      w.dirs.forEach(d=>{dirs[nameOf(d)]=this.children(d).filter(n=>!this.isDir(d+'/'+n)||true);if(v)say(esc(nameOf(d))+'/');});
+      w.files.forEach(f=>{
+        if(f===ap||(sp&&f===sp))return;
+        const F=this.files[f];newSnap[f]=F.v;
+        if(!snar||!snap||snap[f]!==F.v){entries.push({name:nameOf(f),c:F.kind==='txt'?F.c:''});if(v)say(esc(nameOf(f)));}
+      });
+    });
+    if(!entries.length&&!Object.keys(dirs).length)return;
+    this.write(ap,'',{kind:'arc',arc:{entries,dirs,inc:!!snar,level,z}});
+    if(snar&&sp!=='/dev/null')this.write(sp,'',{kind:'snar',snap:newSnap,level});
+    ev.tar.level=level;ev.tar.count=entries.length;
+    return;
+  }
+  if(!this.isFile(ap)){err(`tar: ${file}: Cannot open: No such file or directory`);err('tar: Error is not recoverable: exiting now');ev.ok=false;return;}
+  const F=this.files[ap];
+  if(F.kind!=='arc'){err('tar: This does not look like a tar archive');ev.ok=false;return;}
+  const A=F.arc;const inEntries=n=>A.entries.some(e=>e.name===n);
+  if(op==='t'){
+    if(A.inc&&G&&v>=2){
+      Object.keys(A.dirs).forEach(d=>{say(`drwxr-xr-x alumne/alumne ${String(A.dirs[d].length*7).padStart(4)} ${this.date(F.t)} <span class="dir">${esc(d)}/</span>`);
+        A.dirs[d].forEach(n=>say(inEntries(d+'/'+n)?`<span class="yes">Y ${esc(n)}</span>`:`<span class="no">N ${esc(n)}</span>`));say('');});
+      A.entries.forEach(e=>say(`-rw-r--r-- alumne/alumne ${String(e.c.length+1).padStart(4)} ${this.date(F.t)} ${esc(e.name)}`));
+    }else{
+      if(A.inc||mem.length===0)Object.keys(A.dirs).forEach(d=>say(v?`drwxr-xr-x alumne/alumne    0 ${this.date(F.t)} ${esc(d)}/`:esc(d)+'/'));
+      A.entries.forEach(e=>say(v?`-rw-r--r-- alumne/alumne ${String(e.c.length+1).padStart(4)} ${this.date(F.t)} ${esc(e.name)}`:esc(e.name)));
+    }
+    return;
+  }
+  if(op==='x'){
+    const useInc=G&&A.inc;
+    Object.keys(A.dirs).forEach(d=>{
+      const abs=d==='.'?base:base+'/'+d;
+      if(!this.isDir(abs)){let x=abs;const st=[];while(!this.isDir(x)){st.push(x);x=this.parent(x);}st.forEach(s=>this.dirs.add(s));}
+      if(v)say(esc(d)+'/');
+      if(useInc){this.children(abs).forEach(n=>{const f=abs+'/'+n;if(this.isFile(f)&&!A.dirs[d].includes(n)){delete this.files[f];say(`(tar esborra ${esc(d+'/'+n)}: no existia quan es va fer aquesta còpia)`,'info');}});}
+    });
+    A.entries.forEach(e=>{const abs=base+'/'+e.name;const par=this.parent(abs);if(!this.isDir(par)){let x=par;const st=[];while(!this.isDir(x)){st.push(x);x=this.parent(x);}st.forEach(s=>this.dirs.add(s));}
+      this.write(abs,e.c);if(v)say(esc(e.name));});
+    this.extractLog.push({file:this.base(ap),inc:useInc});
+  }
+};
+
+/* ================= Terminal ================= */
+function terminal(container,vm,opts={}){
+  const out=h('div',{class:'out','aria-live':'polite','aria-label':'Sortida del terminal'});
+  const inp=h('input',{type:'text',autocomplete:'off',autocapitalize:'off',spellcheck:'false','aria-label':'Escriu una ordre'});
+  const ps=h('span',{class:'ps'});
+  const hist=[];let hi=0;vm.hist=vm.hist||[];
+  const prompt=()=>{const d=vm.cwd===vm.home?'~':vm.cwd.startsWith(vm.home+'/')?'~'+vm.cwd.slice(vm.home.length):vm.cwd;ps.innerHTML=`alumne@smx:<b>${esc(d)}</b>$`;};
+  const print=(t,c)=>{const d=document.createElement('div');if(c)d.className=c;d.innerHTML=t||'&nbsp;';out.append(d);out.scrollTop=out.scrollHeight;};
+  function run(cmd){
+    print(`<span class="ps">${ps.innerHTML}</span> ${esc(cmd)}`);
+    if(cmd.trim()==='clear'){out.innerHTML='';prompt();return;}
+    if(cmd.trim())vm.hist.push(cmd);
+    vm.exec(cmd).forEach(l=>print(l.t,l.c));prompt();
+  }
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){const c=inp.value;inp.value='';if(c.trim()){hist.push(c);}hi=hist.length;run(c);}
+    else if(e.key==='ArrowUp'){if(hi>0){hi--;inp.value=hist[hi];e.preventDefault();}}
+    else if(e.key==='ArrowDown'){if(hi<hist.length-1){hi++;inp.value=hist[hi];}else{hi=hist.length;inp.value='';}e.preventDefault();}
+    else if(e.key==='Tab'){
+      e.preventDefault();const m=inp.value.match(/(\S*)$/);const w=m[1];const dirPart=w.includes('/')?w.slice(0,w.lastIndexOf('/')+1):'';const pre=w.slice(dirPart.length);
+      const d=vm.norm(dirPart||'.');if(!vm.isDir(d))return;
+      const c=vm.children(d).filter(n=>n.startsWith(pre));
+      if(c.length===1){const full=dirPart+c[0]+(vm.isDir((d==='/'?'':d)+'/'+c[0])?'/':'');inp.value=inp.value.slice(0,inp.value.length-w.length)+full;}
+      else if(c.length>1)print(c.join('  '),'no');
+    }
+  });
+  const box=h('div',{class:'term',onclick:e=>{if(!window.getSelection().toString())inp.focus();}},out,h('div',{class:'ln'},ps,inp));
+  container.append(box);
+  if(opts.welcome)print(opts.welcome,'info');
+  prompt();
+  return {run,print,prompt,set:v=>{inp.value=v;inp.focus();},clear:()=>{out.innerHTML='';prompt();}};
+}
+
+/* ================= Missions ================= */
+function missionGame(id,title,vm,missions,opts={}){
+  const {body,sc}=shell(id,title);
+  const done=missions.map(()=>false);let hints=0,finished=!!store[id];
+  const list=h('ol',{class:'missions'});const fb=h('div',{class:'fb','aria-live':'polite'});
+  const upd=()=>sc.textContent=`${done.filter(Boolean).length} / ${missions.length}`;
+  function drawList(){
+    list.innerHTML='';
+    missions.forEach((m,i)=>{
+      const li=h('li',{class:done[i]?'done':'',html:m.t});
+      if(!done[i]&&m.hint){const hb=h('button',{class:'hintbtn',type:'button'},'Pista');hb.onclick=()=>{hints++;hb.replaceWith(h('span',{},' ',h('code',{},m.hint)));};li.append(hb);}
+      list.append(li);
+    });upd();
+  }
+  vm.on((ev,vm)=>{
+    let changed=false;
+    missions.forEach((m,i)=>{if(!done[i]&&(i===0||done[i-1]||m.any)&&m.test(ev,vm)){done[i]=true;changed=true;}});
+    if(opts.react){const r=opts.react(ev,vm,done);if(r){fb.className='fb '+r[0];fb.innerHTML=r[1];}}
+    if(changed){drawList();
+      if(done.every(Boolean)){const s=Math.max(1,missions.length-hints);finish(id,s,missions.length);fb.className='fb ok';fb.innerHTML=opts.end||'<b>Missions completades.</b>';}
+    }
+  });
+  const tbox=h('div');
+  body.append(h('p',{class:'hint'},(opts.intro||'')+' Les missions es fan en ordre. Escriu les ordres al terminal i prem Retorn.'+(finished?' Ja havies completat aquest apartat; pots tornar-hi a jugar.':'')),list);
+  if(opts.tools)body.append(opts.tools);
+  body.append(tbox,fb);
+  drawList();
+  const T=terminal(tbox,vm,{welcome:opts.welcome});
+  return T;
+}
+
+/* ================= Màquina compartida (apartats 1-3) ================= */
+const vmMain=new VM();
+const H='/home/alumne';
+const arcOf=(vm,n)=>{const f=vm.files[H+'/backup/'+n];return f&&f.kind==='arc'?f.arc:null;};
+const resetBtn=(T,vm,label)=>h('div',{class:'row',style:'margin:0 0 10px'},h('button',{class:'btn ghost',type:'button',onclick:()=>{vm.reset();T&&T.clear();allTerms.forEach(t=>t.print('La màquina s’ha restablert: data/ amb file1 i file2, i backup/ buit.','info'));}},label||'Restableix la màquina'));
+const allTerms=[];
+
+/* constructor (m1) */
+let T1;
+(function(){
+  const {body,sc}=shell('builder','Construeix l’ordre tar');sc.textContent='Explora';
+  const st={op:'c',v:true,z:true,f:'backup/complet.tgz',src:'data/'};
+  const line=h('div',{class:'cmdline','aria-live':'polite'});const ex=h('ul',{class:'explain'});
+  function seg(label,opts,key){const g=h('div',{class:'seg',role:'group','aria-label':label});opts.forEach(([v,t])=>g.append(h('button',{type:'button','aria-pressed':String(st[key]===v),onclick:e=>{st[key]=v;[...g.children].forEach(b=>b.setAttribute('aria-pressed','false'));e.currentTarget.setAttribute('aria-pressed','true');draw();}},t)));return h('div',{class:'bgroup'},h('span',{},label),g);}
+  function tog(label,key,t){const b=h('button',{class:'chip',type:'button','aria-pressed':String(st[key]),onclick:()=>{st[key]=!st[key];b.setAttribute('aria-pressed',String(st[key]));draw();}},t);return b;}
+  const fin=h('input',{type:'text',value:st.f,class:'sel','aria-label':'Nom de l’arxiu',style:'width:220px'});fin.oninput=()=>{st.f=fin.value;draw();};
+  function cmd(){return 'tar -'+st.op+(st.v?'v':'')+(st.z?'z':'')+'f '+st.f+(st.op==='c'?' '+st.src:'');}
+  function draw(){
+    line.textContent=cmd();ex.innerHTML='';
+    ex.append(h('li',{html:{c:'<b>-c</b>: crea un arxiu nou',x:'<b>-x</b>: extreu el contingut a la carpeta actual',t:'<b>-t</b>: només llista el contingut'}[st.op]}));
+    if(st.v)ex.append(h('li',{html:'<b>-v</b>: mostra cada fitxer'}));
+    if(st.z)ex.append(h('li',{html:'<b>-z</b>: comprimit amb gzip (per això l’extensió .tgz o .tar.gz)'}));
+    else if(/\.(tgz|gz)$/.test(st.f))ex.append(h('li',{html:'Compte: l’arxiu es diu .tgz però sense <b>-z</b> no es comprimeix.'}));
+    ex.append(h('li',{html:'<b>-f '+esc(st.f)+'</b>: el nom de l’arxiu'}));
+    if(st.op==='c')ex.append(h('li',{html:'<b>'+esc(st.src)+'</b>: què es copia'}));
+  }
+  body.append(h('p',{class:'hint'},'Tria les peces i mira com queda l’ordre. Després enganxa-la al terminal de la missió.'),
+    seg('Operació',[['c','Crear'],['x','Extreure'],['t','Llistar']],'op'),
+    h('div',{class:'bgroup'},h('span',{},'Opcions'),tog('','v','-v explicatiu'),tog('','z','-z gzip')),
+    h('div',{class:'bgroup'},h('span',{},'Arxiu'),fin),line,ex,
+    h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>T1&&T1.set(cmd())},'Enganxa al terminal')));
+  draw();
+})();
+
+T1=missionGame('g1','Missió: la primera còpia',vmMain,[
+  {t:'Mira què hi ha a la carpeta <code>data/</code>.',hint:'ls data',test:(e,vm)=>e.name==='ls'&&e.ok&&(e.args.some(a=>vm.norm(a)===H+'/data')||(vm.cwd===H+'/data'&&!e.args.filter(a=>!a.startsWith('-')).length))},
+  {t:'Crea una còpia completa comprimida de <code>data/</code> a <code>backup/complet.tgz</code>.',hint:'tar -cvzf backup/complet.tgz data/',test:(e,vm)=>{const a=arcOf(vm,'complet.tgz');return !!a&&a.z&&a.entries.some(x=>/file1$/.test(x.name));}},
+  {t:'Llista el contingut de la còpia sense extreure-la.',hint:'tar -tvzf backup/complet.tgz',test:e=>e.tar&&e.tar.op==='t'&&e.ok&&/complet\.tgz$/.test(e.tar.file)},
+  {t:'Comprova que la còpia funciona: extreu-la a <code>/tmp</code> amb l’opció <code>-C</code>.',hint:'tar -xvzf backup/complet.tgz -C /tmp',test:(e,vm)=>vm.isFile('/tmp/data/file1')}
+],{intro:'Pots fer servir el constructor de dalt o escriure les ordres tu.',welcome:'Escriu help per veure les ordres. Amb la fletxa amunt recuperes l’última ordre i amb el tabulador completes noms.',end:'<b>Missions completades.</b> Comprovar que una còpia es pot restaurar és tan important com fer-la.'});
+allTerms.push(T1);
+(function(){const g=document.getElementById('g1');g.querySelector('.gb').prepend(resetBtn(null,vmMain));})();
+
+const T2=missionGame('g2','Missió: el nivell 0',vmMain,[
+  {t:'Fes la còpia completa <code>backup/bkp0.tgz</code> fent servir el snapshot <code>backup/snapshot.snar</code>.',hint:'tar -cvzf backup/bkp0.tgz -g backup/snapshot.snar data/',test:(e,vm)=>{const a=arcOf(vm,'bkp0.tgz');return !!a&&a.inc&&a.level===0&&a.entries.length>=2;}},
+  {t:'Mira què hi ha ara a <code>backup/</code>: hi ha d’haver el tarball i el snapshot.',hint:'ls -l backup',test:(e,vm)=>e.name==='ls'&&e.args.some(a=>vm.norm(a)===H+'/backup')},
+  {t:'Mira què hi ha dins del snapshot amb <code>cat</code>.',hint:'cat backup/snapshot.snar',test:e=>e.name==='cat'&&e.ok&&e.args.some(a=>/snapshot\.snar$/.test(a))}
+],{intro:'Si el snapshot ja existís, tar no faria un nivell 0. Si t’has equivocat, restableix la màquina.',end:'<b>Nivell 0 fet.</b> Ara el snapshot recorda com estava cada fitxer.',react:(e,vm)=>{if(e.tar&&e.tar.op==='c'&&/bkp0/.test(e.tar.file||'')&&!e.tar.snar)return ['mid','Has fet bkp0 sense <code>-g</code>: és una còpia completa normal, no el nivell 0 d’una cadena incremental. Torna-hi afegint <code>-g backup/snapshot.snar</code>.'];return null;}});
+allTerms.push(T2);
+(function(){const g=document.getElementById('g2');g.querySelector('.gb').prepend(resetBtn(null,vmMain));})();
+
+const T3=missionGame('g3','Missió: la cadena incremental',vmMain,[
+  {t:'Sense canviar res, fes <code>backup/bkp1.tgz</code> amb el mateix snapshot. Mira què hi entra.',hint:'tar -cvzf backup/bkp1.tgz -g backup/snapshot.snar data/',test:(e,vm)=>{const a=arcOf(vm,'bkp1.tgz');return !!a&&a.inc&&a.level>=1&&a.entries.length===0;}},
+  {t:'Afegeix una línia a <code>data/file1</code> i fes <code>backup/bkp2.tgz</code>.',hint:'echo "Client nou" >> data/file1',test:(e,vm)=>{const a=arcOf(vm,'bkp2.tgz');return !!a&&a.inc&&a.level>=1&&a.entries.some(x=>/file1$/.test(x.name))&&!a.entries.some(x=>/file2$/.test(x.name));}},
+  {t:'Crea <code>data/file3</code>, modifica <code>data/file2</code> i fes <code>backup/bkp3.tgz</code>.',hint:'echo "Pressupostos" > data/file3',test:(e,vm)=>{const a=arcOf(vm,'bkp3.tgz');return !!a&&a.inc&&a.entries.some(x=>/file2$/.test(x.name))&&a.entries.some(x=>/file3$/.test(x.name));}},
+  {t:'Mira el detall de <code>bkp3.tgz</code> amb les marques Y i N.',hint:'tar -G -tvvf backup/bkp3.tgz',test:e=>e.tar&&e.tar.op==='t'&&e.ok&&e.tar.G&&e.tar.v>=2&&/bkp3/.test(e.tar.file)}
+],{intro:'Si no has fet el nivell 0 a l’apartat anterior, fes-lo primer.',end:'<b>Cadena feta.</b> Cada arxiu només té el que va canviar, i el darrer et diu què hi havia i què no ha canviat.',
+  react:(e,vm)=>{if(e.tar&&e.tar.op==='c'&&/bkp[123]/.test(e.tar.file||'')){if(!e.tar.snar)return ['bad','Has oblidat <code>-g backup/snapshot.snar</code>: tar ha copiat tots els fitxers.'];if(e.tar.level===0)return ['mid','Aquest arxiu és un nivell 0 perquè no existia el snapshot. Fes primer bkp0 (apartat 2) o restableix la màquina.'];return ['ok',`Nivell ${e.tar.level}: ${e.tar.count} fitxer${e.tar.count===1?'':'s'} copiat${e.tar.count===1?'':'s'}.`];}return null;}});
+allTerms.push(T3);
+(function(){const g=document.getElementById('g3');g.querySelector('.gb').prepend(resetBtn(null,vmMain));})();
+
+/* ================= m4: graella Y/N ================= */
+(function(){
+  const id='g4',{body,sc}=shell(id,'Endevina què diu tar -G -tvv');
+  const FILES=['file1','file2','file3'];
+  const ROWS=[
+    {b:'bkp0.tgz',s:'Nivell 0: hi ha file1 i file2.',a:['Y','Y','—'],given:true},
+    {b:'bkp1.tgz',s:'Afegeixes una línia a file1.',a:['Y','N','—']},
+    {b:'bkp2.tgz',s:'Crees file3 i modifiques file2.',a:['N','Y','Y']},
+    {b:'bkp3.tgz',s:'Esborres file1 i modifiques file3.',a:['—','N','Y']}
+  ];
+  const cyc=['?','Y','N','—'];let state,checked;
+  const grid=h('div',{class:'yn'});const fb=h('div',{class:'fb','aria-live':'polite'});const outBox=h('div');
+  const upd=s=>sc.textContent=s;
+  function start(){state=ROWS.map(r=>r.given?r.a.slice():['?','?','?']);checked=false;outBox.innerHTML='';fb.className='fb';fb.textContent='';draw();upd(`0 / ${ROWS.length-1}`);}
+  function draw(){
+    grid.innerHTML='';
+    grid.append(h('div',{class:'ynrow head'},h('span',{},'Còpia'),...FILES.map(f=>h('span',{style:'text-align:center'},f))));
+    ROWS.forEach((r,i)=>{
+      const row=h('div',{class:'ynrow'},h('div',{class:'story'},h('b',{},r.b),r.s));
+      FILES.forEach((f,k)=>{
+        const v=state[i][k];
+        const c=h('button',{class:'cell'+(r.given?' given':'')+(checked&&!r.given?(v===r.a[k]?' ok':' bad'):''),type:'button','aria-label':`${r.b}, ${f}: ${v==='?'?'sense resposta':v==='—'?'no hi surt':v}`},v);
+        if(!r.given&&!checked)c.onclick=()=>{state[i][k]=cyc[(cyc.indexOf(state[i][k])+1)%cyc.length];draw();};
+        row.append(c);
+      });
+      grid.append(row);
+    });
+  }
+  function check(){
+    if(state.some(r=>r.includes('?'))){fb.className='fb mid';fb.textContent='Omple totes les caselles abans de comprovar.';return;}
+    checked=true;draw();
+    const sc_=ROWS.slice(1).filter((r,i)=>r.a.every((x,k)=>x===state[i+1][k])).length;
+    finish(id,sc_,ROWS.length-1);upd(`${sc_} / ${ROWS.length-1}`);
+    fb.className='fb '+(sc_===ROWS.length-1?'ok':'bad');
+    fb.innerHTML=`<b>${sc_} de ${ROWS.length-1} còpies correctes.</b> Fixa’t sobretot en bkp3: file1 ja no hi surt, perquè s’havia esborrat. És la manera que té tar de recordar els esborrats.`;
+    const t=h('div',{class:'term'});const o=h('div',{class:'out',style:'max-height:none'});t.append(o);
+    o.innerHTML=`<div><span class="ps">alumne@smx:<b>~</b>$</span> tar -G -tvvf backup/bkp3.tgz</div><div>drwxr-xr-x alumne/alumne   14 2026-11-26 09:12 <span class="dir">data/</span></div><div class="no">N file2</div><div class="yes">Y file3</div><div>&nbsp;</div><div>-rw-r--r-- alumne/alumne   38 2026-11-26 09:12 data/file3</div>`;
+    outBox.innerHTML='';outBox.append(h('p',{class:'hint',style:'margin-top:12px'},'Així ho mostraria el terminal:'),t);
+  }
+  body.append(h('p',{class:'hint'},'Clica cada casella per anar canviant entre Y (és dins l’arxiu), N (existia però no ha canviat) i — (no existia). La primera fila ja està feta.'),grid,
+    h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:check},'Comprova'),h('button',{class:'btn ghost',type:'button',onclick:start},'Torna a començar')),fb,outBox);
+  start();
+})();
+
+/* ================= m5: escape room ================= */
+const vmEsc=new VM();
+function setupEscape(vm){
+  vm.reset();vm.listeners=vm.listeners||[];const L=vm.listeners;vm.listeners=[];
+  ['tar -czf backup/bkp0.tgz -g backup/snapshot.snar data/',
+   'echo "Client nou: Ferreteria Puig" >> data/file1','tar -czf backup/bkp1.tgz -g backup/snapshot.snar data/',
+   'echo "Pressupostos 2026" > data/file3','echo "Factures de febrer" >> data/file2','tar -czf backup/bkp2.tgz -g backup/snapshot.snar data/',
+   'rm data/file1','echo "Pressupost aprovat" >> data/file3','tar -czf backup/bkp3.tgz -g backup/snapshot.snar data/',
+   'rm -rf data'].forEach(c=>vm.exec(c));
+  vm.hist=[];vm.extractLog=[];vm.listeners=L;
+}
+setupEscape(vmEsc);
+const EXP={file2:'Factures de gener\nFactures de febrer',file3:'Pressupostos 2026\nPressupost aprovat'};
+const order=vm=>vm.extractLog.map(x=>x.file);
+const prefixOk=vm=>{const o=order(vm);return o.every((f,i)=>f==='bkp'+i+'.tgz');};
+const finalOk=vm=>!vm.isFile(H+'/data/file1')&&Object.keys(EXP).every(k=>vm.isFile(H+'/data/'+k)&&vm.files[H+'/data/'+k].c===EXP[k])&&vm.children(H+'/data').length===2;
+const T5=missionGame('g5','Escape room: recupera data/',vmEsc,[
+  {t:'Comprova la situació: mira què queda a la carpeta personal i a <code>backup/</code>.',hint:'ls backup',test:e=>e.name==='ls'&&e.ok},
+  {t:'Extreu la còpia completa (nivell 0).',hint:'tar -xvzf backup/bkp0.tgz -g /dev/null',test:(e,vm)=>order(vm)[0]==='bkp0.tgz'},
+  {t:'Extreu les incrementals <code>bkp1</code> i <code>bkp2</code>, en ordre.',hint:'tar -xvzf backup/bkp1.tgz -g /dev/null',test:(e,vm)=>prefixOk(vm)&&order(vm).length>=3},
+  {t:'Extreu <code>bkp3</code> perquè <code>data/</code> quedi exactament com estava: file2 i file3 amb tots els canvis, i file1 esborrat.',hint:'tar -xvzf backup/bkp3.tgz -G',test:(e,vm)=>prefixOk(vm)&&order(vm).length>=4&&finalOk(vm)}
+],{intro:'Abans de la catàstrofe es van fer quatre còpies (les mateixes de l’apartat anterior). Després el disc va morir i data/ va desaparèixer.',
+  welcome:'ALERTA: el disc de dades ha fallat. La carpeta data/ ja no existeix. Les còpies són a backup/.',
+  end:'<b>Has escapat!</b> data/ torna a estar com abans de la fallada, fins i tot sense el fitxer que s’havia esborrat.',
+  react:(e,vm)=>{
+    if(!(e.tar&&e.tar.op==='x'&&e.ok))return null;
+    if(!prefixOk(vm))return ['bad',`Has extret en aquest ordre: ${order(vm).join(', ')}. L’ordre ha de ser bkp0, bkp1, bkp2, bkp3. Clica «Reinicia l’escape room» i torna-hi.`];
+    const last=vm.extractLog[vm.extractLog.length-1];
+    if(!last.inc&&/bkp[1-3]/.test(last.file))return ['mid','Has extret una incremental sense <code>-G</code> ni <code>-g /dev/null</code>: els fitxers esborrats no s’eliminaran. Per a bkp3 és important.'];
+    if(order(vm).length===4&&vm.isFile(H+'/data/file1'))return ['bad','file1 encara hi és, però a l’últim moment s’havia esborrat. Reinicia i extreu bkp3 amb <code>-G</code>.'];
+    return ['ok',`Extret ${last.file}. Mira què hi ha a data/ amb ls i cat.`];
+  }});
+(function(){const g=document.getElementById('g5');g.querySelector('.gb').prepend(h('div',{class:'row',style:'margin:0 0 10px'},h('button',{class:'btn ghost',type:'button',onclick:()=>{setupEscape(vmEsc);T5.clear();T5.print('Escape room reiniciat: data/ ha tornat a desaparèixer.','info');}},'Reinicia l’escape room')));})();
+
+/* ================= m6: cron ================= */
+(function(){
+  const id='g6',{body,sc}=shell(id,'Programa les còpies amb cron');
+  const F=[
+    {k:'min',l:'Minut',o:[['*','* (cada minut)'],['0','0'],['15','15'],['30','30'],['45','45'],['*/5','*/5 (cada 5)'],['*/15','*/15 (cada 15)']]},
+    {k:'h',l:'Hora',o:[['*','* (cada hora)']].concat([...Array(24).keys()].map(x=>[String(x),String(x)])).concat([['*/2','*/2 (cada 2)']])},
+    {k:'dom',l:'Dia del mes',o:[['*','* (tots)'],['1','1'],['15','15']]},
+    {k:'mon',l:'Mes',o:[['*','* (tots)'],['1','1 (gener)'],['6','6 (juny)']]},
+    {k:'dow',l:'Dia de la setmana',o:[['*','* (tots)'],['1-5','1-5 (dl a dv)'],['0','0 (diumenge)'],['1','1 (dilluns)'],['5','5 (divendres)'],['6','6 (dissabte)']]}
+  ];
+  const st={min:'*',h:'*',dom:'*',mon:'*',dow:'*'};
+  const T=[
+    {q:'Una incremental cada dia a les 2:30 de la matinada.',a:'30 2 * * *'},
+    {q:'Una incremental de dilluns a divendres a les 23:00.',a:'0 23 * * 1-5'},
+    {q:'La completa setmanal, cada diumenge a les 3:00.',a:'0 3 * * 0'},
+    {q:'Una còpia del servidor de comandes cada 15 minuts.',a:'*/15 * * * *'},
+    {q:'Una còpia el primer dia de cada mes a mitjanit.',a:'0 0 1 * *'}
+  ];
+  let t=0,score=0,first=true;
+  const row=h('div',{class:'cron'});const line=h('div',{class:'cmdline'});const tr=h('div',{class:'ctrans','aria-live':'polite'});
+  const q=h('p',{class:'q'});const fb=h('div',{class:'fb','aria-live':'polite'});const chk=h('button',{class:'btn',type:'button'},'Comprova');
+  const upd=()=>sc.textContent=`${score} / ${T.length}`;
+  const DOW={'0':'diumenge','1':'dilluns','5':'divendres','6':'dissabte','1-5':'de dilluns a divendres'};
+  const MES={'1':'al gener','6':'al juny'};
+  function cur(){return `${st.min} ${st.h} ${st.dom} ${st.mon} ${st.dow}`;}
+  function translate(){
+    let when;
+    const z=n=>String(n).padStart(2,'0');
+    if(st.min.startsWith('*/'))when=`cada ${st.min.slice(2)} minuts`+(st.h==='*'?'':st.h.startsWith('*/')?`, cada ${st.h.slice(2)} hores`:`, durant l’hora de les ${st.h}`);
+    else if(st.min==='*')when='cada minut'+(st.h==='*'?'':` de les ${st.h}:00 a les ${st.h}:59`);
+    else if(st.h==='*')when=`cada hora, al minut ${st.min}`;
+    else if(st.h.startsWith('*/'))when=`cada ${st.h.slice(2)} hores, al minut ${st.min}`;
+    else when=`a les ${st.h}:${z(st.min)}`;
+    let days=[];
+    if(st.dom!=='*')days.push(`el dia ${st.dom} del mes`);
+    if(st.dow!=='*')days.push(DOW[st.dow]);
+    if(!days.length)days.push('cada dia');
+    return `S’executarà <b>${when}</b>, <b>${days.join(' i ')}</b>${st.mon!=='*'?', <b>'+MES[st.mon]+'</b>':''}.`;
+  }
+  function draw(){line.textContent=cur()+'  /usr/local/bin/backup.sh';tr.innerHTML=translate();}
+  F.forEach(f=>{const s=h('select',{class:'sel','aria-label':f.l});f.o.forEach(([v,tx])=>s.append(h('option',{value:v},tx)));s.value=st[f.k];s.onchange=()=>{st[f.k]=s.value;draw();};row.append(h('label',{},f.l,s));});
+  function showQ(){if(t>=T.length){finish(id,score,T.length);q.textContent=`Fet: ${score} de ${T.length} a la primera.`;chk.disabled=true;return;}q.textContent=`${t+1}/${T.length}. ${T[t].q}`;first=true;}
+  chk.onclick=()=>{
+    if(cur()===T[t].a){if(first)score++;upd();fb.className='fb ok';fb.innerHTML=`<b>Correcte:</b> <code>${T[t].a}</code>`;t++;showQ();}
+    else{first=false;fb.className='fb bad';fb.innerHTML='<b>Encara no.</b> Llegeix la traducció de sota: diu el mateix que l’enunciat?';}
+  };
+  body.append(h('p',{class:'hint'},'Tria el valor de cada camp. La línia es tradueix al moment.'),q,row,line,tr,h('div',{class:'row'},chk),fb);
+  draw();showQ();upd();
+})();
+
+/* ================= m7 ================= */
+choiceGame('g7','Repte final: Linux',[
+  {q:'Quina ordre fa el nivell 0 d’una cadena incremental de /srv/dades?',o:[
+    {t:'tar -cvzf nivell0.tgz /srv/dades',ok:false,why:'És una còpia completa, però sense snapshot no podràs fer incrementals a partir d\'aquí.'},
+    {t:'tar -cvzf nivell0.tgz -g dades.snar /srv/dades',ok:true,why:'Com que dades.snar encara no existeix, tar fa el nivell 0 i el crea.'},
+    {t:'tar -xvzf nivell0.tgz -g dades.snar',ok:false,why:'-x extreu; no crea còpies.'}]},
+  {q:'Tens bkp0 a bkp5. Per deixar la carpeta com estava en el moment de bkp3, què extreus?',o:[
+    {t:'Només bkp3',ok:false,why:'Només té el que va canviar en aquell moment.'},
+    {t:'bkp0, bkp1, bkp2 i bkp3, en aquest ordre, amb -G',ok:true,why:'La completa i les incrementals fins a aquell moment.'},
+    {t:'bkp3, bkp2, bkp1 i bkp0',ok:false,why:'Al revés, les versions antigues aixafarien les noves.'}]},
+  {q:'Què vol dir la línia de cron <code>0 22 * * 1-5</code>?',o:[
+    {t:'A les 22:00 de dilluns a divendres',ok:true,why:'Minut 0, hora 22, qualsevol dia del mes i mes, dies de la setmana 1 a 5.'},
+    {t:'Cada 22 minuts, de l’1 al 5 del mes',ok:false,why:'El primer camp és el minut i l\'últim el dia de la setmana.'},
+    {t:'A les 0:22 cada dia',ok:false,why:'L\'ordre dels camps és minut i després hora.'}]},
+  {q:'Sincronitzes cada nit <code>rsync -av --delete data/ /mnt/usb/data/</code>. Un dia esborres un fitxer per error i te n’adones tres dies després. El pots recuperar del USB?',o:[
+    {t:'Sí, rsync guarda totes les versions',ok:false,why:'rsync no guarda historial.'},
+    {t:'No: amb --delete, la nit següent també es va esborrar del USB',ok:true,why:'Un mirall replica els errors. Per això calen còpies amb historial com les incrementals de tar.'},
+    {t:'Sí, si no has fet servir -v',ok:false,why:'-v només mostra què fa.'}]},
+  {q:'Totes les còpies amb tar es guarden a /backup, al mateix disc que les dades. Què falla?',o:[
+    {t:'Res: tar ja comprimeix les dades',ok:false,why:'Comprimir no protegeix de res.'},
+    {t:'Si el disc s’espatlla, perds dades i còpies alhora; cal enviar-les a un altre suport o lloc (per exemple amb rsync)',ok:true,why:'És la regla 3-2-1: dos suports i un fora.'},
+    {t:'tar no pot escriure al mateix disc',ok:false,why:'Sí que pot, però no és segur.'}]},
+  {q:'Per què el fitxer de snapshot és tan important?',o:[
+    {t:'Perquè conté una còpia de totes les dades',ok:false,why:'Només conté metadades, no les dades.'},
+    {t:'Perquè sense ell tar no sap què ha canviat i la següent còpia serà completa',ok:true,why:'Si el perds o el sobreescrius, la cadena torna a començar.'},
+    {t:'Perquè sense ell no es pot extreure cap còpia',ok:false,why:'Per extreure no cal: es fa servir -g /dev/null.'}]}
+]);
+
+/* ---------- start ---------- */
+refresh();
+const start=Math.max(0,MODS.findIndex(m=>'#'+m.id===location.hash));show(start);
+})();
+</script>
+</body>
+</html>
