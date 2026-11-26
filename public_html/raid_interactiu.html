@@ -337,6 +337,15 @@ button.bit:hover{background:var(--mid-bg)}
     <div class="fact"><b>RAID per maquinari</b><p>Una controladora dedicada gestiona els discos. El sistema operatiu només veu el volum final.</p></div>
     <div class="fact"><b>RAID per programari</b><p>El gestiona el sistema operatiu: Espais d'emmagatzematge a Windows, <code>mdadm</code> a Linux. Més barat, però gasta CPU.</p></div>
   </div>
+  <h3>Els nivells més habituals</h3>
+  <p>Cada nivell combina d'una manera diferent el repartiment, el mirall i la paritat. Aquí en tens un resum; als apartats següents els veuràs amb detall.</p>
+  <div class="cols">
+    <div class="fact"><b>RAID 0 · repartiment</b><p>Les dades es reparteixen entre tots els discos. És el més ràpid i aprofita tot l'espai, però no té redundància: si falla un disc ho perds tot. Mínim 2 discos.</p></div>
+    <div class="fact"><b>RAID 1 · mirall</b><p>Cada disc té una còpia idèntica de les dades. Molt segur, però només aprofites l'espai d'un disc. Mínim 2 discos.</p></div>
+    <div class="fact"><b>RAID 5 · paritat</b><p>Les dades es reparteixen i s'hi afegeix un bloc de paritat, que es va alternant entre discos. Equivalent a gastar un disc en paritat. Aguanta la fallada d'1 disc. Mínim 3 discos.</p></div>
+    <div class="fact"><b>RAID 6 · doble paritat</b><p>Com el RAID 5, però amb dos blocs de paritat. Gastes l'equivalent a dos discos i aguanta la fallada de 2 discos alhora. Mínim 4 discos.</p></div>
+    <div class="fact"><b>RAID 10 · mirall + repartiment</b><p>Parelles de discos en mirall (RAID 1) unides en repartiment (RAID 0). Ràpid i segur, però aprofites només el 50 % de l'espai. Mínim 4 discos, sempre en nombre parell.</p></div>
+  </div>
   <div class="game free" id="calc"></div>
   <div class="res"><b>Recursos</b><ul>
     <li><a href="RAID 0,1,5,10.pptx.pdf" target="_blank" rel="noopener">Presentació: RAID</a></li>
@@ -597,6 +606,13 @@ const LV={
   6:{name:'RAID 6',min:4,tol:n=>2,cap:(n,s)=>(n-2)*s},
   10:{name:'RAID 10',min:4,tol:n=>1,cap:(n,s)=>n/2*s}
 };
+const DESC={
+  0:'<b>RAID 0:</b> reparteix les dades entre tots els discos. Màxima velocitat i capacitat, però cap protecció.',
+  1:'<b>RAID 1:</b> tots els discos guarden la mateixa còpia (mirall). Molt segur, però la capacitat és la d\'un sol disc.',
+  5:'<b>RAID 5:</b> reparteix les dades i afegeix un bloc de paritat que va canviant de disc. Perds l\'espai d\'un disc i en pots perdre 1.',
+  6:'<b>RAID 6:</b> com el RAID 5, però amb doble paritat. Perds l\'espai de dos discos i en pots perdre 2.',
+  10:'<b>RAID 10:</b> parelles en mirall (RAID 1) unides en repartiment (RAID 0). Ràpid i segur, però només aprofites la meitat.'
+};
 const LET='ABCDEFGH';
 /* returns array[disk] of block {t,kind} for row r */
 function rowLayout(lv,n,r){
@@ -630,9 +646,10 @@ const tolText=(lv,n)=>lv===10?'1 segur (fins a '+n/2+' si són de parelles difer
   const sSel=h('select',{class:'sel','aria-label':'Mida de cada disc'});
   [1,2,4,8,12].forEach(v=>sSel.append(h('option',{value:String(v)},v+' TB')));sSel.value=String(s);
   const out=h('div',{class:'kv','aria-live':'polite'});const msg=h('div',{class:'fb'});
+  const desc=h('p',{class:'hint',style:'margin-top:12px'});
   nIn.oninput=()=>{n=+nIn.value;draw();};sSel.onchange=()=>{s=+sSel.value;draw();};
   function draw(){
-    nOut.textContent=n;out.innerHTML='';msg.className='fb';msg.textContent='';
+    desc.innerHTML=DESC[lv];nOut.textContent=n;out.innerHTML='';msg.className='fb';msg.textContent='';
     const L=LV[lv];
     if(n<L.min){msg.className='fb bad';msg.innerHTML=`<b>${L.name} necessita com a mínim ${L.min} discos.</b> Afegeix-ne més amb el control lliscant.`;return;}
     if(lv===10&&n%2){msg.className='fb bad';msg.innerHTML='<b>RAID 10 necessita un nombre parell de discos</b>, perquè van per parelles en mirall.';return;}
@@ -641,7 +658,7 @@ const tolText=(lv,n)=>lv===10?'1 segur (fins a '+n/2+' si són de parelles difer
     if(lv===0){msg.className='fb mid';msg.innerHTML=`Aprofites tot l'espai, però si falla qualsevol dels ${n} discos ho perds tot.`;}
     if(lv===1&&n>2){msg.className='fb mid';msg.innerHTML=`${n} còpies idèntiques: molt segur, però pagues ${n} discos per tenir-ne la capacitat d'un.`;}
   }
-  body.append(h('p',{class:'hint'},'Tria un nivell, el nombre de discos i la mida de cada disc.'),segL,
+  body.append(h('p',{class:'hint'},'Tria un nivell, el nombre de discos i la mida de cada disc.'),segL,desc,
     h('div',{class:'thrlab',style:'margin-top:14px'},h('span',{},'Nombre de discos'),nOut),nIn,
     h('label',{style:'font-weight:700;display:flex;gap:10px;align-items:center'},'Mida de cada disc',sSel),out,msg);
   draw();
