@@ -604,7 +604,14 @@ function orderGame(id,title,hint,steps){
     san:[['Connexió','Xarxa dedicada: Fibre Channel o iSCSI sobre Ethernet'],['Què es demana','Blocs (LUN)'],['Qui gestiona el sistema de fitxers','El servidor que fa servir el LUN'],['Compartit','Entre servidors, separat del trànsit d’usuaris'],['Cost i complexitat','Alt; cal personal especialitzat'],['Ús típic','Bases de dades, virtualització, vídeo professional']],
     cloud:[['Connexió','Internet'],['Què es demana','Fitxers o objectes, per HTTPS i API'],['Qui gestiona el sistema de fitxers','El proveïdor'],['Compartit','Sí, des de qualsevol lloc'],['Cost i complexitat','Pagament per ús, sense comprar maquinari'],['Ús típic','Còpia externa, col·laboració, créixer ràpid']]
   };
+  const DESC={
+    das:'<b>DAS (Direct Attached Storage):</b> el disc es connecta directament a un sol equip (SATA, SAS, USB). Senzill i barat, però només hi accedeix aquell equip.',
+    nas:'<b>NAS (Network Attached Storage):</b> un dispositiu a la xarxa local que comparteix <b>fitxers</b> i carpetes amb molts usuaris alhora (SMB, NFS).',
+    san:'<b>SAN (Storage Area Network):</b> una xarxa dedicada (Fibre Channel o iSCSI) que dona <b>blocs</b> de disc als servidors com si fossin discos locals.',
+    cloud:'<b>Núvol:</b> emmagatzematge d’un proveïdor extern, al qual s’accedeix per Internet i que es paga segons l’ús.'
+  };
   let cur='nas',anim=null;
+  const desc=h('p',{class:'hint',style:'margin-top:12px'});
   const seg=h('div',{class:'seg',role:'group','aria-label':'Tipus d’emmagatzematge'});
   Object.keys(T).forEach(k=>seg.append(h('button',{type:'button','aria-pressed':String(k===cur),onclick:e=>{cur=k;[...seg.children].forEach(b=>b.setAttribute('aria-pressed','false'));e.currentTarget.setAttribute('aria-pressed','true');draw();}},T[k].name)));
   const svgBox=h('div');const msg=h('div',{class:'fb','aria-live':'polite'});const props=h('div',{class:'tablewrap'});
@@ -613,6 +620,7 @@ function orderGame(id,title,hint,steps){
   function draw(){
     if(anim){cancelAnimationFrame(anim);anim=null;}
     const t=T[cur];const N={};t.nodes.forEach(n=>N[n.id]=n);
+    desc.innerHTML=DESC[cur];
     let s='';
     if(t.zone){const [x,y,w,hh,l]=t.zone;s+=`<rect class="zone" x="${x}" y="${y}" width="${w}" height="${hh}" rx="12"/><text class="zl" x="${x+10}" y="${y+16}">${l}</text>`;}
     t.links.forEach(([a,b,c])=>{const [x1,y1]=ctr(N[a]),[x2,y2]=ctr(N[b]);s+=`<line class="lk ${c||''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;});
@@ -641,7 +649,7 @@ function orderGame(id,title,hint,steps){
     };
     anim=requestAnimationFrame(step);
   }
-  body.append(h('p',{class:'hint'},'Tria un tipus, envia una petició des del PC de la Laia i mira per on passa i què hi viatja.'),seg,svgBox,h('div',{class:'row'},send),msg,props);
+  body.append(h('p',{class:'hint'},'Tria un tipus, envia una petició des del PC de la Laia i mira per on passa i què hi viatja.'),seg,desc,svgBox,h('div',{class:'row'},send),msg,props);
   draw();
 })();
 
