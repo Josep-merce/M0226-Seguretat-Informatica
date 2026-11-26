@@ -673,7 +673,9 @@ function orderGame(id,title,hint,steps){
     res.innerHTML=`<b>Divendres al vespre el disc mor.</b> Per restaurar necessites ${chain.length} còpi${chain.length>1?'es':'a'}: ${chain.map(c=>DAYS[c].d.toLowerCase()).join(', ')} (marcades en verd). Has copiat ${total} fitxers en total durant la setmana.`+
       (extra.length?`<br><b>Atenció:</b> després de restaurar tornen a aparèixer <b>${extra.join(' i ')}</b>, que ja no existien. La còpia de dilluns els conté i les còpies següents no registren els esborrats ni els canvis de nom. <span class="extra">fora de la presentació</span>`:'');
   }
-  body.append(h('p',{class:'hint'},'Tria el tipus de còpia de cada dia i mira què es copia (en groc) i quines còpies et calen per restaurar divendres.'),presets,wk,res);
+  body.append(h('p',{class:'hint'},'Tria el tipus de còpia de cada dia i mira què es copia (en groc) i quines còpies et calen per restaurar divendres.'),presets,
+    h('ul',{class:'hint',style:'margin:12px 0 4px;padding-left:1.2em',html:'<li><b>Completa:</b> copia tots els fitxers. Per restaurar només cal aquesta.</li><li><b>Incremental:</b> copia el que ha canviat des de l’<b>última còpia</b>. Per restaurar cal la completa i totes les incrementals posteriors.</li><li><b>Diferencial:</b> copia el que ha canviat des de l’<b>última completa</b>. Per restaurar cal la completa i l’última diferencial.</li>'}),
+    wk,res);
   draw();
 })();
 
